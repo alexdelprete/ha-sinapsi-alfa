@@ -1,0 +1,135 @@
+modbus:
+  - name: Alfa
+    type: tcp
+    host: <AlfaIP>
+    port: 502
+    sensors:
+      - name: Potenza Attiva Prelevata Istantanea
+        device_class: power
+        unit_of_measurement: W
+        state_class: measurement
+        data_type: uint16
+        address: 2
+      - name: Potenza Attiva Immessa Istantanea
+        device_class: power
+        unit_of_measurement: W
+        state_class: measurement
+        data_type: uint16
+        address: 12
+      - name: Potenza Attiva Prodotta Istantanea
+        device_class: power
+        unit_of_measurement: W
+        state_class: measurement
+        data_type: uint16
+        address: 921
+      - name: Energia Attiva Prelevata Totale
+        device_class: energy
+        unit_of_measurement: Wh
+        state_class: total_increasing
+        data_type: uint32
+        address: 5
+      - name: Energia Attiva Immessa Totale
+        device_class: energy
+        unit_of_measurement: Wh
+        state_class: total_increasing
+        data_type: uint32
+        address: 15
+      - name: Energia Attiva Prodotta Totale
+        device_class: energy
+        unit_of_measurement: Wh
+        state_class: total_increasing
+        data_type: uint32
+        address: 924
+      - name: Pot Att Prel Quart Media
+        device_class: power
+        unit_of_measurement: W
+        state_class: measurement
+        data_type: uint16
+        address: 9
+      - name: Pot Att Imm Quart Media
+        device_class: power
+        unit_of_measurement: W
+        state_class: measurement
+        data_type: uint16
+        address: 19
+      - name: Tot Energ Att Prel Giorno-1 F1
+        device_class: energy
+        unit_of_measurement: Wh
+        state_class: total_increasing
+        data_type: uint32
+        address: 30
+      - name: Tot Energ Att Prel Giorno-1 F2
+        device_class: energy
+        unit_of_measurement: Wh
+        state_class: total_increasing
+        data_type: uint32
+        address: 32
+      - name: Tot Energ Att Prel Giorno-1 F3
+        device_class: energy
+        unit_of_measurement: Wh
+        state_class: total_increasing
+        data_type: uint32
+        address: 34
+      - name: Tot Energ Att Prel Giorno-1 F4
+        device_class: energy
+        unit_of_measurement: Wh
+        state_class: total_increasing
+        data_type: uint32
+        address: 36
+      - name: Tot Energ Att Prel Giorno-1 F5
+        device_class: energy
+        unit_of_measurement: Wh
+        state_class: total_increasing
+        data_type: uint32
+        address: 38
+      - name: Tot Energ Att Prel Giorno-1 F6
+        device_class: energy
+        unit_of_measurement: Wh
+        state_class: total_increasing
+        data_type: uint32
+        address: 40
+      - name: Tot Energ Att Imm Giorno-1 F1
+        device_class: energy
+        unit_of_measurement: Wh
+        state_class: total_increasing
+        data_type: uint32
+        address: 54
+      - name: Tot Energ Att Imm Giorno-1 F2
+        device_class: energy
+        unit_of_measurement: Wh
+        state_class: total_increasing
+        data_type: uint32
+        address: 56
+      - name: Tot Energ Att Imm Giorno-1 F3
+        device_class: energy
+        unit_of_measurement: Wh
+        state_class: total_increasing
+        data_type: uint32
+        address: 58
+      - name: Tot Energ Att Imm Giorno-1 F4
+        device_class: energy
+        unit_of_measurement: Wh
+        state_class: total_increasing
+        data_type: uint32
+        address: 60
+      - name: Tot Energ Att Imm Giorno-1 F5
+        device_class: energy
+        unit_of_measurement: Wh
+        state_class: total_increasing
+        data_type: uint32
+        address: 62
+      - name: Tot Energ Att Imm Giorno-1 F6
+        device_class: energy
+        unit_of_measurement: Wh
+        state_class: total_increasing
+        data_type: uint32
+        address: 64
+      - name: Fascia oraria corrente
+        data_type: uint16
+        address: 203
+      - name: Data evento
+        data_type: uint32
+        address: 780
+      - name: Tempo residuo distacco
+        data_type: uint16
+        address: 782
