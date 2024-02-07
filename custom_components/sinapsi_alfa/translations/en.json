@@ -2,13 +2,13 @@
   "config": {
     "step": {
       "user": {
-        "title": "Inverter Connection Configuration",
-        "description": "If you need help with the configuration go to: https://github.com/alexdelprete/ha-abb-powerone-pvi-sunspec",
+        "title": "Alfa Connection Configuration",
+        "description": "If you need help with the configuration go to: https://github.com/alexdelprete/ha-sinapsi-alfa",
         "data": {
-          "name": "Custom Name of the inverter (used for sensors' prefix)",
+          "name": "Custom Name of the device (used for sensors' prefix)",
           "host": "IP or hostname",
           "port": "TCP port",
-          "slave_id": "Modbus Slave address of the inverter",
+          "slave_id": "Modbus Slave address of the device",
           "base_addr": "Modbus Register Map Base Address",
           "scan_interval": "Polling Period (min: 30s max: 600s)"
         }
@@ -24,7 +24,7 @@
   "options": {
     "step": {
       "init": {
-        "title": "Inverter Connection Options",
+        "title": "Alfa Connection Options",
         "description": "Set Connection Options",
         "data": {
           "port": "TCP port",

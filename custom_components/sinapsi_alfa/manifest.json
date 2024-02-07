@@ -1,13 +1,13 @@
 {
-  "domain": "abb_powerone_pvi_sunspec",
-  "name": "ABB/Power-One/FIMER PVI SunSpec",
+  "domain": "sinapsi_alfa",
+  "name": "Alfa by Sinapsi",
   "codeowners": ["@alexdelprete"],
   "config_flow": true,
-  "documentation": "https://github.com/alexdelprete/ha-abb-powerone-pvi-sunspec",
+  "documentation": "https://github.com/alexdelprete/ha-sinapsi-alfa",
   "integration_type": "hub",
   "iot_class": "local_polling",
-  "issue_tracker": "https://github.com/alexdelprete/ha-abb-powerone-pvi-sunspec/issues",
-  "loggers": ["custom_components.abb_powerone_pvi_sunspec"],
+  "issue_tracker": "https://github.com/alexdelprete/ha-sinapsi-alfa/issues",
+  "loggers": ["custom_components.sinapsi_alfa"],
   "requirements": ["pymodbus>=3.5.4"],
-  "version": "3.3.2"
+  "version": "0.1.0"
 }
