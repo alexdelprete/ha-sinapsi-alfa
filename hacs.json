@@ -1,8 +1,8 @@
 {
-  "name": "ABB Power-One PVI SunSpec",
+  "name": "Sinapsi Alfa",
   "homeassistant": "2023.11.0",
   "content_in_root": false,
   "render_readme": true,
   "zip_release": true,
-  "filename": "abb_powerone_pvi_sunspec.zip"
+  "filename": "sinapsi_alfa.zip"
 }

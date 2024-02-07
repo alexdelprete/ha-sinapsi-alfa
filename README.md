@@ -1,4 +1,4 @@
-# HA Custom Component for ABB/FIMER/P1 inverters 
+# HA Custom Component for Sinapsi Alfa energy monitoring device
 
 [![GitHub Release][releases-shield]][releases]
 [![BuyMeCoffee][buymecoffee-shield]][buymecoffee]
