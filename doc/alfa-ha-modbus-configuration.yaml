@@ -4,121 +4,121 @@ modbus:
     host: <AlfaIP>
     port: 502
     sensors:
-      - name: Potenza Attiva Prelevata Istantanea
+      - name: Potenza Prelevata Istantanea
         device_class: power
         unit_of_measurement: W
         state_class: measurement
         data_type: uint16
         address: 2
-      - name: Potenza Attiva Immessa Istantanea
+      - name: Potenza Immessa Istantanea
         device_class: power
         unit_of_measurement: W
         state_class: measurement
         data_type: uint16
         address: 12
-      - name: Potenza Attiva Prodotta Istantanea
+      - name: Potenza Prodotta Istantanea
         device_class: power
         unit_of_measurement: W
         state_class: measurement
         data_type: uint16
         address: 921
-      - name: Energia Attiva Prelevata Totale
+      - name: Energia Prelevata Totale
         device_class: energy
         unit_of_measurement: Wh
         state_class: total_increasing
         data_type: uint32
         address: 5
-      - name: Energia Attiva Immessa Totale
+      - name: Energia Immessa Totale
         device_class: energy
         unit_of_measurement: Wh
         state_class: total_increasing
         data_type: uint32
         address: 15
-      - name: Energia Attiva Prodotta Totale
+      - name: Energia Prodotta Totale
         device_class: energy
         unit_of_measurement: Wh
         state_class: total_increasing
         data_type: uint32
         address: 924
-      - name: Pot Att Prel Quart Media
+      - name: Pot Prel Quart Media
         device_class: power
         unit_of_measurement: W
         state_class: measurement
         data_type: uint16
         address: 9
-      - name: Pot Att Imm Quart Media
+      - name: Pot Imm Quart Media
         device_class: power
         unit_of_measurement: W
         state_class: measurement
         data_type: uint16
         address: 19
-      - name: Tot Energ Att Prel Giorno-1 F1
+      - name: Tot Energ Prel Giorno-1 F1
         device_class: energy
         unit_of_measurement: Wh
         state_class: total_increasing
         data_type: uint32
         address: 30
-      - name: Tot Energ Att Prel Giorno-1 F2
+      - name: Tot Energ Prel Giorno-1 F2
         device_class: energy
         unit_of_measurement: Wh
         state_class: total_increasing
         data_type: uint32
         address: 32
-      - name: Tot Energ Att Prel Giorno-1 F3
+      - name: Tot Energ Prel Giorno-1 F3
         device_class: energy
         unit_of_measurement: Wh
         state_class: total_increasing
         data_type: uint32
         address: 34
-      - name: Tot Energ Att Prel Giorno-1 F4
+      - name: Tot Energ Prel Giorno-1 F4
         device_class: energy
         unit_of_measurement: Wh
         state_class: total_increasing
         data_type: uint32
         address: 36
-      - name: Tot Energ Att Prel Giorno-1 F5
+      - name: Tot Energ Prel Giorno-1 F5
         device_class: energy
         unit_of_measurement: Wh
         state_class: total_increasing
         data_type: uint32
         address: 38
-      - name: Tot Energ Att Prel Giorno-1 F6
+      - name: Tot Energ Prel Giorno-1 F6
         device_class: energy
         unit_of_measurement: Wh
         state_class: total_increasing
         data_type: uint32
         address: 40
-      - name: Tot Energ Att Imm Giorno-1 F1
+      - name: Tot Energ Imm Giorno-1 F1
         device_class: energy
         unit_of_measurement: Wh
         state_class: total_increasing
         data_type: uint32
         address: 54
-      - name: Tot Energ Att Imm Giorno-1 F2
+      - name: Tot Energ Imm Giorno-1 F2
         device_class: energy
         unit_of_measurement: Wh
         state_class: total_increasing
         data_type: uint32
         address: 56
-      - name: Tot Energ Att Imm Giorno-1 F3
+      - name: Tot Energ Imm Giorno-1 F3
         device_class: energy
         unit_of_measurement: Wh
         state_class: total_increasing
         data_type: uint32
         address: 58
-      - name: Tot Energ Att Imm Giorno-1 F4
+      - name: Tot Energ Imm Giorno-1 F4
         device_class: energy
         unit_of_measurement: Wh
         state_class: total_increasing
         data_type: uint32
         address: 60
-      - name: Tot Energ Att Imm Giorno-1 F5
+      - name: Tot Energ Imm Giorno-1 F5
         device_class: energy
         unit_of_measurement: Wh
         state_class: total_increasing
         data_type: uint32
         address: 62
-      - name: Tot Energ Att Imm Giorno-1 F6
+      - name: Tot Energ Imm Giorno-1 F6
         device_class: energy
         unit_of_measurement: Wh
         state_class: total_increasing

@@ -1,6 +1,6 @@
-"""Config Flow for ABB Power-One PVI SunSpec.
+"""Config Flow for Sinapsi Alfa.
 
-https://github.com/alexdelprete/ha-abb-powerone-pvi-sunspec
+https://github.com/alexdelprete/ha-sinapsi-alfa
 """
 
 import ipaddress
@@ -15,7 +15,7 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.selector import selector
 from pymodbus.exceptions import ConnectionException
 
-from .api import ABBPowerOneFimerAPI
+from .api import SinapsiAlfaAPI
 from .const import (
     CONF_BASE_ADDR,
     CONF_HOST,
@@ -53,8 +53,8 @@ def get_host_from_config(hass: HomeAssistant):
     }
 
 
-class ABBPowerOneFimerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    """ABB Power-One PVI SunSpec config flow."""
+class SinapsiAlfaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+    """Sinapsi Alfa config flow."""
 
     VERSION = 1
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
@@ -63,7 +63,7 @@ class ABBPowerOneFimerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     @callback
     def async_get_options_flow(config_entry: ConfigEntry):
         """Initiate Options Flow Instance."""
-        return ABBPowerOneFimerOptionsFlow(config_entry)
+        return SinapsiAlfaOptionsFlow(config_entry)
 
     def _host_in_configuration_exists(self, host) -> bool:
         """Return True if host exists in configuration."""
@@ -78,7 +78,7 @@ class ABBPowerOneFimerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         _LOGGER.debug(f"Test connection to {host}:{port} slave id {slave_id}")
         try:
             _LOGGER.debug("Creating API Client")
-            self.api = ABBPowerOneFimerAPI(
+            self.api = SinapsiAlfaAPI(
                 self.hass, name, host, port, slave_id, base_addr, scan_interval
             )
             _LOGGER.debug("API Client created: calling get data")
@@ -167,7 +167,7 @@ class ABBPowerOneFimerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
 
-class ABBPowerOneFimerOptionsFlow(config_entries.OptionsFlow):
+class SinapsiAlfaOptionsFlow(config_entries.OptionsFlow):
     """Config flow options handler."""
 
     VERSION = 1

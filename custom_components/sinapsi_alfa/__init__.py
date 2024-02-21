@@ -1,6 +1,6 @@
-"""ABB Power-One PVI SunSpec Integration.
+"""Sinapsi Alfa Integration.
 
-https://github.com/alexdelprete/ha-abb-powerone-pvi-sunspec
+https://github.com/alexdelprete/ha-sinapsi-alfa
 """
 
 import asyncio
@@ -20,7 +20,7 @@ from .const import (
     STARTUP_MESSAGE,
     UPDATE_LISTENER,
 )
-from .coordinator import ABBPowerOneFimerCoordinator
+from .coordinator import SinapsiAlfaCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -42,7 +42,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
         _LOGGER.info(STARTUP_MESSAGE)
 
     _LOGGER.debug(f"Setup config_entry for {DOMAIN}")
-    coordinator = ABBPowerOneFimerCoordinator(hass, config_entry)
+    coordinator = SinapsiAlfaCoordinator(hass, config_entry)
     # If the refresh fails, async_config_entry_first_refresh() will
     # raise ConfigEntryNotReady and setup will try again later
     # ref.: https://developers.home-assistant.io/docs/integration_setup_failures

@@ -1,6 +1,6 @@
-"""Sensor Platform Device for ABB Power-One PVI SunSpec.
+"""Sensor Platform Device for Sinapsi Alfa.
 
-https://github.com/alexdelprete/ha-abb-powerone-pvi-sunspec
+https://github.com/alexdelprete/ha-sinapsi-alfa
 """
 
 import logging
@@ -15,32 +15,10 @@ from .const import (
     CONF_NAME,
     DATA,
     DOMAIN,
-    INVERTER_TYPE,
-    SENSOR_TYPES_COMMON,
-    SENSOR_TYPES_DUAL_MPPT,
-    SENSOR_TYPES_SINGLE_MPPT,
-    SENSOR_TYPES_SINGLE_PHASE,
-    SENSOR_TYPES_THREE_PHASE,
+    SENSOR_ENTITIES,
 )
 
 _LOGGER = logging.getLogger(__name__)
-
-
-def add_sensor_defs(coordinator, config_entry, sensor_list, sensor_definitions):
-    """Class Initializitation."""
-
-    for sensor_info in sensor_definitions.values():
-        sensor_data = {
-            "name": sensor_info[0],
-            "key": sensor_info[1],
-            "unit": sensor_info[2],
-            "icon": sensor_info[3],
-            "device_class": sensor_info[4],
-            "state_class": sensor_info[5],
-        }
-        sensor_list.append(
-            ABBPowerOneFimerSensor(coordinator, config_entry, sensor_data)
-        )
 
 
 async def async_setup_entry(hass: HomeAssistant, config_entry, async_add_entities):
@@ -50,63 +28,52 @@ async def async_setup_entry(hass: HomeAssistant, config_entry, async_add_entitie
     coordinator = hass.data[DOMAIN][config_entry.entry_id][DATA]
 
     _LOGGER.debug("(sensor) Name: %s", config_entry.data.get(CONF_NAME))
-    _LOGGER.debug("(sensor) Manufacturer: %s", coordinator.api.data["comm_manufact"])
-    _LOGGER.debug("(sensor) Model: %s", coordinator.api.data["comm_model"])
-    _LOGGER.debug("(sensor) SW Version: %s", coordinator.api.data["comm_version"])
-    _LOGGER.debug("(sensor) Inverter Type (str): %s", coordinator.api.data["invtype"])
-    _LOGGER.debug("(sensor) MPPT #: %s", coordinator.api.data["mppt_nr"])
-    _LOGGER.debug("(sensor) Serial#: %s", coordinator.api.data["comm_sernum"])
+    _LOGGER.debug("(sensor) Manufacturer: %s", coordinator.api.data["manufact"])
+    _LOGGER.debug("(sensor) Model: %s", coordinator.api.data["model"])
+    _LOGGER.debug("(sensor) HW Version: %s", coordinator.api.data["hwver"])
+    _LOGGER.debug("(sensor) SW Version: %s", coordinator.api.data["swver"])
+    _LOGGER.debug("(sensor) Serial#: %s", coordinator.api.data["sn"])
 
-    sensor_list = []
-    add_sensor_defs(coordinator, config_entry, sensor_list, SENSOR_TYPES_COMMON)
+    sensors = []
+    for sensor in SENSOR_ENTITIES:
+        if coordinator.api.data[sensor["key"]] is not None:
+            sensors.append(
+                SinapsiAlfaSensor(
+                    coordinator,
+                    sensor["name"],
+                    sensor["key"],
+                    sensor["icon"],
+                    sensor["device_class"],
+                    sensor["state_class"],
+                    sensor["unit"],
+                )
+            )
 
-    if coordinator.api.data["invtype"] == INVERTER_TYPE[101]:
-        add_sensor_defs(
-            coordinator, config_entry, sensor_list, SENSOR_TYPES_SINGLE_PHASE
-        )
-    elif coordinator.api.data["invtype"] == INVERTER_TYPE[103]:
-        add_sensor_defs(
-            coordinator, config_entry, sensor_list, SENSOR_TYPES_THREE_PHASE
-        )
-
-    _LOGGER.debug(
-        "(sensor) DC Voltages : single=%s dc1=%s dc2=%s",
-        coordinator.api.data["dcvolt"],
-        coordinator.api.data["dc1volt"],
-        coordinator.api.data["dc2volt"],
-    )
-    if coordinator.api.data["mppt_nr"] == 1:
-        add_sensor_defs(
-            coordinator, config_entry, sensor_list, SENSOR_TYPES_SINGLE_MPPT
-        )
-    else:
-        add_sensor_defs(coordinator, config_entry, sensor_list, SENSOR_TYPES_DUAL_MPPT)
-
-    async_add_entities(sensor_list)
+    async_add_entities(sensors)
 
     return True
 
 
-class ABBPowerOneFimerSensor(CoordinatorEntity, SensorEntity):
-    """Representation of an ABB SunSpec Modbus sensor."""
+class SinapsiAlfaSensor(CoordinatorEntity, SensorEntity):
+    """Representation of a Sinapsi Alfa sensor."""
 
-    def __init__(self, coordinator, config_entry, sensor_data):
+    def __init__(self, coordinator, name, key, icon, device_class, state_class, unit):
         """Class Initializitation."""
         super().__init__(coordinator)
-        self.coordinator = coordinator
-        self._name = sensor_data["name"]
-        self._key = sensor_data["key"]
-        self._unit_of_measurement = sensor_data["unit"]
-        self._icon = sensor_data["icon"]
-        self._device_class = sensor_data["device_class"]
-        self._state_class = sensor_data["state_class"]
-        self._device_name = self.coordinator.api.name
-        self._device_host = self.coordinator.api.host
-        self._device_model = self.coordinator.api.data["comm_model"]
-        self._device_manufact = self.coordinator.api.data["comm_manufact"]
-        self._device_sn = self.coordinator.api.data["comm_sernum"]
-        self._device_swver = self.coordinator.api.data["comm_version"]
-        self._device_hwver = self.coordinator.api.data["comm_options"]
+        self._coordinator = coordinator
+        self._name = name
+        self._key = key
+        self._icon = icon
+        self._device_class = device_class
+        self._state_class = state_class
+        self._unit_of_measurement = unit
+        self._device_name = self._coordinator.api.name
+        self._device_host = self._coordinator.api.host
+        self._device_model = self._coordinator.api.data["model"]
+        self._device_manufact = self._coordinator.api.data["manufact"]
+        self._device_sn = self._coordinator.api.data["sn"]
+        self._device_swver = self._coordinator.api.data["swver"]
+        self._device_hwver = self._coordinator.api.data["hwver"]
 
     @callback
     def _handle_coordinator_update(self) -> None:

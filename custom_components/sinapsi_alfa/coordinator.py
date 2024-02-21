@@ -1,6 +1,6 @@
-"""Data Update Coordinator for ABB Power-One PVI SunSpec.
+"""Data Update Coordinator for Sinapsi Alfa.
 
-https://github.com/alexdelprete/ha-abb-powerone-pvi-sunspec
+https://github.com/alexdelprete/ha-sinapsi-alfa
 """
 
 import logging
@@ -10,7 +10,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .api import ABBPowerOneFimerAPI
+from .api import SinapsiAlfaAPI
 from .const import (
     CONF_BASE_ADDR,
     CONF_HOST,
@@ -26,7 +26,7 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 
-class ABBPowerOneFimerCoordinator(DataUpdateCoordinator):
+class SinapsiAlfaCoordinator(DataUpdateCoordinator):
     """Class to manage fetching data from the API."""
 
     config_entry: ConfigEntry
@@ -59,7 +59,7 @@ class ABBPowerOneFimerCoordinator(DataUpdateCoordinator):
         self.last_update_time = datetime.now()
         self.last_update_success = True
 
-        self.api = ABBPowerOneFimerAPI(
+        self.api = SinapsiAlfaAPI(
             hass,
             config_entry.data.get(CONF_NAME),
             config_entry.data.get(CONF_HOST),

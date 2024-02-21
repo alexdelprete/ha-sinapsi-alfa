@@ -23,15 +23,15 @@ jobs:
         shell: "bash"
         run: |
           yq -i -o json '.version="${{ github.event.release.tag_name }}"' \
-            "${{ github.workspace }}/custom_components/abb_powerone_pvi_sunspec/manifest.json"
+            "${{ github.workspace }}/custom_components/sinapsi_alfa/manifest.json"
 
       - name: "ZIP the integration directory"
         shell: "bash"
         run: |
-          cd "${{ github.workspace }}/custom_components/abb_powerone_pvi_sunspec"
-          zip abb_powerone_pvi_sunspec.zip -r ./
+          cd "${{ github.workspace }}/custom_components/sinapsi_alfa"
+          zip sinapsi_alfa.zip -r ./
 
       - name: "Upload the ZIP file to the release"
         uses: softprops/action-gh-release@v0.1.15
         with:
-          files: ${{ github.workspace }}/custom_components/abb_powerone_pvi_sunspec/abb_powerone_pvi_sunspec.zip
+          files: ${{ github.workspace }}/custom_components/sinapsi_alfa/sinapsi_alfa.zip
