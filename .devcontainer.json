@@ -1,6 +1,13 @@
 {
     "name": "Sinapsi Alfa Modbus integration development",
-    "image": "mcr.microsoft.com/devcontainers/python:3.11-bullseye",
+    "image": "mcr.microsoft.com/devcontainers/python:3.12-bullseye",
+    "remoteUser": "vscode",
+	"features": {
+		"ghcr.io/devcontainers/features/python:1": {
+            "installTools": true,
+            "version": "3.12"
+        }
+	},
     "postCreateCommand": "scripts/setup",
     "forwardPorts": [
         8123
@@ -47,9 +54,5 @@
                 // End Ruff config
             }
         }
-    },
-    "remoteUser": "vscode",
-    "features": {
-        "ghcr.io/devcontainers/features/rust:1": {}
     }
 }
