@@ -7,6 +7,7 @@ import logging
 import socket
 import threading
 
+import getmac
 from homeassistant.components.sensor import SensorDeviceClass
 from pymodbus.client import ModbusTcpClient
 from pymodbus.constants import Endian
@@ -35,8 +36,6 @@ class SinapsiAlfaAPI:
         name,
         host,
         port,
-        slave_id,
-        base_addr,
         scan_interval,
     ):
         """Initialize the Modbus API Client."""
@@ -44,8 +43,6 @@ class SinapsiAlfaAPI:
         self._name = name
         self._host = host
         self._port = port
-        self._slave_id = slave_id
-        self._base_addr = base_addr
         self._update_interval = scan_interval
         # Ensure ModBus Timeout is 1s less than scan_interval
         # https://github.com/binsentsu/home-assistant-solaredge-modbus/pull/183
@@ -54,6 +51,7 @@ class SinapsiAlfaAPI:
             host=self._host, port=self._port, timeout=self._timeout
         )
         self._lock = threading.Lock()
+        self._uid = self.get_mac_address(self._host)
         self._sensors = []
         self.data = {}
         # Initialize ModBus data structure before first read
@@ -82,6 +80,7 @@ class SinapsiAlfaAPI:
         self.data["fascia_oraria_attuale"] = 1
         self.data["data_evento"] = 1
         self.data["tempo_residuo_distacco"] = 1
+        self.data["mac_address"] = self._uid
 
     @property
     def name(self):
@@ -90,8 +89,24 @@ class SinapsiAlfaAPI:
 
     @property
     def host(self):
-        """Return the device name."""
+        """Return the hostname."""
         return self._host
+
+    @property
+    def uid(self):
+        """Return the unique id."""
+        return self._uid
+
+    def get_mac_address(hostname):
+        """Get mac address from ip/hostname."""
+        try:
+            # Get MAC address from the ARP cache using the hostname
+            mac_address_with_colons = getmac.get_mac_address(hostname=hostname)
+            # Remove colons and convert to uppercase
+            mac_address = mac_address_with_colons.replace(":", "").upper()
+            return mac_address
+        except Exception as e:
+            return f"(get_mac_address) ERROR: {e}"
 
     def check_port(self) -> bool:
         """Check if port is available."""
@@ -133,7 +148,7 @@ class SinapsiAlfaAPI:
     def connect(self):
         """Connect client."""
         _LOGGER.debug(
-            f"API Client connect to IP: {self._host} port: {self._port} slave id: {self._slave_id} timeout: {self._timeout}"
+            f"API Client connect to IP: {self._host} port: {self._port} timeout: {self._timeout}"
         )
         if self.check_port():
             _LOGGER.debug("Inverter ready for Modbus TCP connection")
@@ -142,22 +157,22 @@ class SinapsiAlfaAPI:
                     self._client.connect()
                 if not self._client.connected:
                     raise ConnectionError(
-                        f"Failed to connect to {self._host}:{self._port} slave id {self._slave_id} timeout: {self._timeout}"
+                        f"Failed to connect to {self._host}:{self._port} timeout: {self._timeout}"
                     )
                 else:
                     _LOGGER.debug("Modbus TCP Client connected")
                     return True
             except ModbusException:
                 raise ConnectionError(
-                    f"Failed to connect to {self._host}:{self._port} slave id {self._slave_id} timeout: {self._timeout}"
+                    f"Failed to connect to {self._host}:{self._port} timeout: {self._timeout}"
                 )
         else:
             _LOGGER.debug("Inverter not ready for Modbus TCP connection")
             raise ConnectionError(f"Inverter not active on {self._host}:{self._port}")
 
-    def read_holding_registers(self, slave, address, count):
+    def read_holding_registers(self, address, count):
         """Read holding registers."""
-        kwargs = {"slave": slave} if slave else {}
+        kwargs = {}
         try:
             with self._lock:
                 return self._client.read_holding_registers(address, count, **kwargs)
@@ -174,9 +189,9 @@ class SinapsiAlfaAPI:
         try:
             if self.connect():
                 _LOGGER.debug(
-                    "Start Get data (Slave ID: %s - Base Address: %s)",
-                    self._slave_id,
-                    self._base_addr,
+                    "Start Get data (Host: %s - Port: %s)",
+                    self._host,
+                    self._port,
                 )
                 # HA way to call a sync function from async function
                 # https://developers.home-assistant.io/docs/asyncio_working_with_async?#calling-sync-functions-from-async
@@ -234,7 +249,7 @@ class SinapsiAlfaAPI:
                     )
                 else:
                     read_data = self.read_holding_registers(
-                        slave=self._slave_id, address=reg_addr, count=reg_count
+                        address=reg_addr, count=reg_count
                     )
                     # No connection errors, we can start scraping registers
                     decoder = BinaryPayloadDecoder.fromRegisters(

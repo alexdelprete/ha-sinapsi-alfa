@@ -17,17 +17,13 @@ from pymodbus.exceptions import ConnectionException
 
 from .api import SinapsiAlfaAPI
 from .const import (
-    CONF_BASE_ADDR,
     CONF_HOST,
     CONF_NAME,
     CONF_PORT,
     CONF_SCAN_INTERVAL,
-    CONF_SLAVE_ID,
-    DEFAULT_BASE_ADDR,
     DEFAULT_NAME,
     DEFAULT_PORT,
     DEFAULT_SCAN_INTERVAL,
-    DEFAULT_SLAVE_ID,
     DOMAIN,
 )
 
@@ -71,24 +67,20 @@ class SinapsiAlfaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return True
         return False
 
-    async def test_connection(
-        self, name, host, port, slave_id, base_addr, scan_interval
-    ):
+    async def get_unique_id(self, name, host, port, scan_interval):
         """Return true if credentials is valid."""
-        _LOGGER.debug(f"Test connection to {host}:{port} slave id {slave_id}")
+        _LOGGER.debug(f"Test connection to {host}:{port}")
         try:
             _LOGGER.debug("Creating API Client")
-            self.api = SinapsiAlfaAPI(
-                self.hass, name, host, port, slave_id, base_addr, scan_interval
-            )
+            self.api = SinapsiAlfaAPI(self.hass, name, host, port, scan_interval)
             _LOGGER.debug("API Client created: calling get data")
             self.api_data = await self.api.async_get_data()
             _LOGGER.debug("API Client: get data")
             _LOGGER.debug(f"API Client Data: {self.api_data}")
-            return self.api.data["comm_sernum"]
+            return self.api.uid()
         except ConnectionException as connerr:
             _LOGGER.error(
-                f"Failed to connect to host: {host}:{port} - slave id: {slave_id} - Exception: {connerr}"
+                f"Failed to connect to host: {host}:{port} - Exception: {connerr}"
             )
             return False
 
@@ -100,18 +92,14 @@ class SinapsiAlfaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             name = user_input[CONF_NAME]
             host = user_input[CONF_HOST]
             port = user_input[CONF_PORT]
-            slave_id = user_input[CONF_SLAVE_ID]
-            base_addr = user_input[CONF_BASE_ADDR]
             scan_interval = user_input[CONF_SCAN_INTERVAL]
 
             if self._host_in_configuration_exists(host):
                 errors[CONF_HOST] = "Device Already Configured"
             elif not host_valid(user_input[CONF_HOST]):
-                errors[CONF_HOST] = "invalid Host IP"
+                errors[CONF_HOST] = "Invalid Host IP"
             else:
-                uid = await self.test_connection(
-                    name, host, port, slave_id, base_addr, scan_interval
-                )
+                uid = await self.get_unique_id(name, host, port, scan_interval)
                 if uid is not False:
                     _LOGGER.debug(f"Device unique id: {uid}")
                     await self.async_set_unique_id(uid)
@@ -122,7 +110,7 @@ class SinapsiAlfaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 else:
                     errors[
                         CONF_HOST
-                    ] = "Connection to device failed (S/N not retreived)"
+                    ] = "Connection to device failed (Unique ID not available)"
 
         return self.async_show_form(
             step_id="user",
@@ -138,14 +126,6 @@ class SinapsiAlfaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     vol.Required(
                         CONF_PORT,
                         default=DEFAULT_PORT,
-                    ): vol.Coerce(int),
-                    vol.Required(
-                        CONF_SLAVE_ID,
-                        default=DEFAULT_SLAVE_ID,
-                    ): vol.Coerce(int),
-                    vol.Required(
-                        CONF_BASE_ADDR,
-                        default=DEFAULT_BASE_ADDR,
                     ): vol.Coerce(int),
                     vol.Required(
                         CONF_SCAN_INTERVAL,
@@ -180,14 +160,6 @@ class SinapsiAlfaOptionsFlow(config_entries.OptionsFlow):
                 vol.Required(
                     CONF_PORT,
                     default=self.config_entry.data.get(CONF_PORT),
-                ): vol.Coerce(int),
-                vol.Required(
-                    CONF_SLAVE_ID,
-                    default=self.config_entry.data.get(CONF_SLAVE_ID),
-                ): vol.Coerce(int),
-                vol.Required(
-                    CONF_BASE_ADDR,
-                    default=self.config_entry.data.get(CONF_BASE_ADDR),
                 ): vol.Coerce(int),
                 vol.Required(
                     CONF_SCAN_INTERVAL,

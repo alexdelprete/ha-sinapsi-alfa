@@ -12,12 +12,10 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 
 from .api import SinapsiAlfaAPI
 from .const import (
-    CONF_BASE_ADDR,
     CONF_HOST,
     CONF_NAME,
     CONF_PORT,
     CONF_SCAN_INTERVAL,
-    CONF_SLAVE_ID,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
     MIN_SCAN_INTERVAL,
@@ -64,8 +62,6 @@ class SinapsiAlfaCoordinator(DataUpdateCoordinator):
             config_entry.data.get(CONF_NAME),
             config_entry.data.get(CONF_HOST),
             config_entry.data.get(CONF_PORT),
-            config_entry.data.get(CONF_SLAVE_ID),
-            config_entry.data.get(CONF_BASE_ADDR),
             self.scan_interval,
         )
 
@@ -74,7 +70,6 @@ class SinapsiAlfaCoordinator(DataUpdateCoordinator):
             "Coordinator API init: Host: %s Port: %s ID: %s ScanInterval: %s",
             config_entry.data.get(CONF_HOST),
             config_entry.data.get(CONF_PORT),
-            config_entry.data.get(CONF_SLAVE_ID),
             self.scan_interval,
         )
 

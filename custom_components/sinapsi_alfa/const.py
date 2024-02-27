@@ -23,13 +23,9 @@ DATA = "data"
 CONF_NAME = "name"
 CONF_HOST = "host"
 CONF_PORT = "port"
-CONF_SLAVE_ID = "slave_id"
-CONF_BASE_ADDR = "base_addr"
 CONF_SCAN_INTERVAL = "scan_interval"
 DEFAULT_NAME = "Alfa"
 DEFAULT_PORT = 502
-DEFAULT_SLAVE_ID = 2
-DEFAULT_BASE_ADDR = 0
 DEFAULT_SCAN_INTERVAL = 60
 MIN_SCAN_INTERVAL = 30
 CONN_TIMEOUT = 5
@@ -228,6 +224,36 @@ SENSOR_ENTITIES = [
         "modbus_addr": 64,
     },
     {
+        "name": "Fascia Oraria Attuale",
+        "key": "fascia_oraria_attuale",
+        "icon": "mdi:information-outline",
+        "device_class": None,
+        "state_class": None,
+        "unit": None,
+        "modbus_type": "uint16",
+        "modbus_addr": 203,
+    },
+    {
+        "name": "Data Evento",
+        "key": "data_evento",
+        "icon": "mdi:calendar-outline",
+        "device_class": SensorDeviceClass.DATE,
+        "state_class": None,
+        "unit": None,
+        "modbus_type": "uint32",
+        "modbus_addr": 780,
+    },
+    {
+        "name": "Tempo Residuo Distacco",
+        "key": "tempo_residuo_distacco",
+        "icon": "mdi:timer-outline",
+        "device_class": None,
+        "state_class": None,
+        "unit": None,
+        "modbus_type": "uint16",
+        "modbus_addr": 782,
+    },
+    {
         "name": "Potenza Consumata",
         "key": "potenza_consumata",
         "icon": "mdi:home-lightning-bolt-outline",
@@ -268,33 +294,13 @@ SENSOR_ENTITIES = [
         "modbus_addr": None,
     },
     {
-        "name": "Fascia Oraria Attuale",
-        "key": "fascia_oraria_attuale",
-        "icon": "mdi:information-outline",
+        "name": "MAC Address",
+        "key": "mac_address",
+        "icon": "mdi:network-outline",
         "device_class": None,
         "state_class": None,
         "unit": None,
-        "modbus_type": "uint16",
-        "modbus_addr": 203,
-    },
-    {
-        "name": "Data Evento",
-        "key": "data_evento",
-        "icon": "mdi:calendar-outline",
-        "device_class": SensorDeviceClass.DATE,
-        "state_class": None,
-        "unit": None,
-        "modbus_type": "uint32",
-        "modbus_addr": 780,
-    },
-    {
-        "name": "Tempo Residuo Distacco",
-        "key": "tempo_residuo_distacco",
-        "icon": "mdi:timer-outline",
-        "device_class": None,
-        "state_class": None,
-        "unit": None,
-        "modbus_type": "uint16",
-        "modbus_addr": 782,
+        "modbus_type": "calculated",
+        "modbus_addr": None,
     },
 ]
