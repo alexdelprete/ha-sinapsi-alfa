@@ -14,7 +14,7 @@ from pymodbus.constants import Endian
 from pymodbus.exceptions import ConnectionException, ModbusException
 from pymodbus.payload import BinaryPayloadDecoder
 
-from .const import SENSOR_ENTITIES
+from .const import MANUFACTURER, MODEL, SENSOR_ENTITIES
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -51,7 +51,7 @@ class SinapsiAlfaAPI:
             host=self._host, port=self._port, timeout=self._timeout
         )
         self._lock = threading.Lock()
-        self._uid = self.get_mac_address(self._host)
+        self._uid = self.get_mac_address()
         self._sensors = []
         self.data = {}
         # Initialize ModBus data structure before first read
@@ -80,28 +80,31 @@ class SinapsiAlfaAPI:
         self.data["fascia_oraria_attuale"] = 1
         self.data["data_evento"] = 1
         self.data["tempo_residuo_distacco"] = 1
-        self.data["mac_address"] = self._uid
+        # custom fields to reuse code structure
+        self.data["manufact"] = MANUFACTURER
+        self.data["model"] = MODEL
+        self.data["sn"] = self._uid
 
     @property
-    def name(self):
+    def name(self) -> str:
         """Return the device name."""
         return self._name
 
     @property
-    def host(self):
+    def host(self) -> str:
         """Return the hostname."""
         return self._host
 
     @property
-    def uid(self):
+    def uid(self) -> str:
         """Return the unique id."""
         return self._uid
 
-    def get_mac_address(hostname):
+    def get_mac_address(self) -> str:
         """Get mac address from ip/hostname."""
         try:
             # Get MAC address from the ARP cache using the hostname
-            mac_address_with_colons = getmac.get_mac_address(hostname=hostname)
+            mac_address_with_colons = getmac.get_mac_address(hostname=self._host)
             # Remove colons and convert to uppercase
             mac_address = mac_address_with_colons.replace(":", "").upper()
             return mac_address
@@ -195,9 +198,7 @@ class SinapsiAlfaAPI:
                 )
                 # HA way to call a sync function from async function
                 # https://developers.home-assistant.io/docs/asyncio_working_with_async?#calling-sync-functions-from-async
-                result = await self._hass.async_add_executor_job(
-                    self.read_modbus_alfa()
-                )
+                result = await self._hass.async_add_executor_job(self.read_modbus_alfa)
                 self.close()
                 _LOGGER.debug("End Get data")
                 if result:

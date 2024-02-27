@@ -30,8 +30,6 @@ async def async_setup_entry(hass: HomeAssistant, config_entry, async_add_entitie
     _LOGGER.debug("(sensor) Name: %s", config_entry.data.get(CONF_NAME))
     _LOGGER.debug("(sensor) Manufacturer: %s", coordinator.api.data["manufact"])
     _LOGGER.debug("(sensor) Model: %s", coordinator.api.data["model"])
-    _LOGGER.debug("(sensor) HW Version: %s", coordinator.api.data["hwver"])
-    _LOGGER.debug("(sensor) SW Version: %s", coordinator.api.data["swver"])
     _LOGGER.debug("(sensor) Serial#: %s", coordinator.api.data["sn"])
 
     sensors = []
@@ -72,8 +70,6 @@ class SinapsiAlfaSensor(CoordinatorEntity, SensorEntity):
         self._device_model = self._coordinator.api.data["model"]
         self._device_manufact = self._coordinator.api.data["manufact"]
         self._device_sn = self._coordinator.api.data["sn"]
-        self._device_swver = self._coordinator.api.data["swver"]
-        self._device_hwver = self._coordinator.api.data["hwver"]
 
     @callback
     def _handle_coordinator_update(self) -> None:
@@ -156,6 +152,6 @@ class SinapsiAlfaSensor(CoordinatorEntity, SensorEntity):
             "model": self._device_model,
             "name": self._device_name,
             "serial_number": self._device_sn,
-            "sw_version": self._device_swver,
+            "sw_version": None,
             "via_device": None,
         }

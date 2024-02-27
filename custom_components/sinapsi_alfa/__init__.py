@@ -12,7 +12,6 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr
 
 from .const import (
-    CONF_HOST,
     CONF_NAME,
     DATA,
     DOMAIN,
@@ -47,7 +46,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     # raise ConfigEntryNotReady and setup will try again later
     # ref.: https://developers.home-assistant.io/docs/integration_setup_failures
     await coordinator.async_config_entry_first_refresh()
-    if not coordinator.api.data["comm_sernum"]:
+    if not coordinator.api.data["sn"]:
         raise ConfigEntryNotReady(
             f"Timeout connecting to {config_entry.data.get(CONF_NAME)}"
         )
@@ -80,13 +79,13 @@ async def async_update_device_registry(hass: HomeAssistant, config_entry):
     device_registry.async_get_or_create(
         config_entry_id=config_entry.entry_id,
         hw_version=None,
-        configuration_url=f"http://{config_entry.data.get(CONF_HOST)}",
-        identifiers={(DOMAIN, coordinator.api.data["comm_sernum"])},
-        manufacturer=coordinator.api.data["comm_manufact"],
-        model=coordinator.api.data["comm_model"],
+        configuration_url=None,
+        identifiers={(DOMAIN, coordinator.api.data["sn"])},
+        manufacturer=coordinator.api.data["manufact"],
+        model=coordinator.api.data["model"],
         name=config_entry.data.get(CONF_NAME),
-        serial_number=coordinator.api.data["comm_sernum"],
-        sw_version=coordinator.api.data["comm_version"],
+        serial_number=coordinator.api.data["sn"],
+        sw_version=None,
         via_device=None,
     )
 
@@ -149,7 +148,7 @@ async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> 
 #         coordinator = hass.data[DOMAIN][config_entry.entry_id][DATA]
 #         _LOGGER.debug("Migrating from version %s", version)
 #         old_uid = config_entry.unique_id
-#         new_uid = coordinator.api.data["comm_sernum"]
+#         new_uid = coordinator.api.data["mac_address"]
 #         if old_uid != new_uid:
 #             hass.config_entries.async_update_entry(
 #                 config_entry, unique_id=new_uid

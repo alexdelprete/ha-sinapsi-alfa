@@ -77,7 +77,7 @@ class SinapsiAlfaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             self.api_data = await self.api.async_get_data()
             _LOGGER.debug("API Client: get data")
             _LOGGER.debug(f"API Client Data: {self.api_data}")
-            return self.api.uid()
+            return self.api.data["sn"]
         except ConnectionException as connerr:
             _LOGGER.error(
                 f"Failed to connect to host: {host}:{port} - Exception: {connerr}"

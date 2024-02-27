@@ -293,14 +293,4 @@ SENSOR_ENTITIES = [
         "modbus_type": "calculated",
         "modbus_addr": None,
     },
-    {
-        "name": "MAC Address",
-        "key": "mac_address",
-        "icon": "mdi:network-outline",
-        "device_class": None,
-        "state_class": None,
-        "unit": None,
-        "modbus_type": "calculated",
-        "modbus_addr": None,
-    },
 ]
