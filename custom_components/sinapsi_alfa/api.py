@@ -228,7 +228,7 @@ class SinapsiAlfaAPI:
                 reg_addr = sensor["modbus_addr"]
                 reg_count = 1 if reg_type == "uint16" else 2
                 _LOGGER.debug(
-                    f"(read_modbus_alfa) Key: {reg_key} Addr: {reg_addr} Type: {reg_type} DevClass: {reg_dev_class}"
+                    f"(read_modbus_alfa) Key: {reg_key} Addr: {str(reg_addr)} Type: {reg_type} DevClass: {reg_dev_class}"
                 )
                 if reg_type == "calculated":
                     self.data["potenza_consumata"] = (

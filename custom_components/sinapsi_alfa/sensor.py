@@ -125,6 +125,8 @@ class SinapsiAlfaSensor(CoordinatorEntity, SensorEntity):
         """Return the state of the sensor."""
         if self._key in self.coordinator.api.data:
             return self.coordinator.api.data[self._key]
+        else:
+            return None
 
     @property
     def state_attributes(self) -> dict[str, Any] | None:
