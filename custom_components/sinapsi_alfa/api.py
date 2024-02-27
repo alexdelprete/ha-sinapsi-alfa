@@ -234,7 +234,7 @@ class SinapsiAlfaAPI:
                     self.data["potenza_consumata"] = (
                         self.data["potenza_prodotta"]
                         - self.data["potenza_immessa"]
-                        + self.data["potenza_prelevata"],
+                        + self.data["potenza_prelevata"]
                     )
                     self.data["potenza_auto_consumata"] = (
                         self.data["potenza_prodotta"] - self.data["potenza_immessa"]
@@ -243,7 +243,7 @@ class SinapsiAlfaAPI:
                     self.data["energia_consumata"] = (
                         self.data["energia_prodotta"]
                         - self.data["energia_immessa"]
-                        + self.data["energia_prelevata"],
+                        + self.data["energia_prelevata"]
                     )
                     self.data["energia_auto_consumata"] = (
                         self.data["energia_prodotta"] - self.data["energia_immessa"]
@@ -267,6 +267,8 @@ class SinapsiAlfaAPI:
                         SensorDeviceClass.POWER,
                     ]:
                         value = round(float(value / 1000), 2)
+                    else:
+                        value = int(value)
                     self.data[reg_key] = value
                     _LOGGER.debug(f"(read_modbus_alfa) Data: {self.data[reg_key]}")
         except Exception as modbus_error:

@@ -139,7 +139,7 @@ class SinapsiAlfaSensor(CoordinatorEntity, SensorEntity):
     @property
     def unique_id(self):
         """Return a unique ID to use for this entity."""
-        return f"{self._device_sn}_{self._key}"
+        return f"{DOMAIN}_{self._device_sn}_{self._key}"
 
     @property
     def device_info(self):
