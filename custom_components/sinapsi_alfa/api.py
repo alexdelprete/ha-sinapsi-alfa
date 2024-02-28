@@ -15,6 +15,7 @@ from pymodbus.exceptions import ConnectionException, ModbusException
 from pymodbus.payload import BinaryPayloadDecoder
 
 from .const import MANUFACTURER, MODEL, SENSOR_ENTITIES
+from .helpers import unix_timestamp_to_iso8601_local_tz
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -256,19 +257,37 @@ class SinapsiAlfaAPI:
                     decoder = BinaryPayloadDecoder.fromRegisters(
                         read_data.registers, byteorder=Endian.BIG
                     )
+
+                    # decode the register based on type
                     if reg_type == "uint16":
                         value = round(float(decoder.decode_16bit_uint()), 2)
                     elif reg_type == "uint32":
                         value = round(float(decoder.decode_32bit_uint()), 2)
                     _LOGGER.debug(f"(read_modbus_alfa) Raw Value: {value}")
+
                     # Alfa provides power/energy data in W/Wh, we want kW/kWh
                     if reg_dev_class in [
                         SensorDeviceClass.ENERGY,
                         SensorDeviceClass.POWER,
                     ]:
                         value = round(float(value / 1000), 2)
+                    # if not power/energy type, it's an integer
                     else:
                         value = int(value)
+
+                    # if distacco is 65535 set it to 0
+                    if reg_key == "tempo_residuo_distacco":
+                        if value == 65535:
+                            value = 0
+                    # if data_evento is > 4294967294 then no event
+                    if reg_key == "data_evento":
+                        if value > 4294967294:
+                            value = "None"
+                        else:
+                            # convert timestamp to ISO8601
+                            value = unix_timestamp_to_iso8601_local_tz(
+                                value + self.data["tempo_residuo_distacco"]
+                            )
                     self.data[reg_key] = value
                     _LOGGER.debug(f"(read_modbus_alfa) Data: {self.data[reg_key]}")
         except Exception as modbus_error:

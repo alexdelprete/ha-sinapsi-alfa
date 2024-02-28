@@ -254,16 +254,6 @@ SENSOR_ENTITIES = [
         "modbus_addr": 203,
     },
     {
-        "name": "Data Evento",
-        "key": "data_evento",
-        "icon": "mdi:calendar-outline",
-        "device_class": None,
-        "state_class": None,
-        "unit": None,
-        "modbus_type": "uint32",
-        "modbus_addr": 780,
-    },
-    {
         "name": "Tempo Residuo Distacco",
         "key": "tempo_residuo_distacco",
         "icon": "mdi:timer-outline",
@@ -272,6 +262,16 @@ SENSOR_ENTITIES = [
         "unit": None,
         "modbus_type": "uint16",
         "modbus_addr": 782,
+    },
+    {
+        "name": "Data Evento",
+        "key": "data_evento",
+        "icon": "mdi:calendar-outline",
+        "device_class": None,
+        "state_class": None,
+        "unit": None,
+        "modbus_type": "uint32",
+        "modbus_addr": 780,
     },
     {
         "name": "Potenza Consumata",
