@@ -155,7 +155,7 @@ SENSOR_ENTITIES = [
     },
     {
         "name": "Energia Prelevata Giornaliera F4",
-        "key": "energia_prelevata_giornaliera_f1",
+        "key": "energia_prelevata_giornaliera_f4",
         "icon": "mdi:transmission-tower-import",
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,
@@ -165,7 +165,7 @@ SENSOR_ENTITIES = [
     },
     {
         "name": "Energia Prelevata Giornaliera F5",
-        "key": "energia_prelevata_giornaliera_f1",
+        "key": "energia_prelevata_giornaliera_f5",
         "icon": "mdi:transmission-tower-import",
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,
@@ -215,7 +215,7 @@ SENSOR_ENTITIES = [
     },
     {
         "name": "Energia Immessa Giornaliera F4",
-        "key": "energia_immessa_giornaliera_f1",
+        "key": "energia_immessa_giornaliera_f4",
         "icon": "mdi:transmission-tower-export",
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,
@@ -225,7 +225,7 @@ SENSOR_ENTITIES = [
     },
     {
         "name": "Energia Immessa Giornaliera F5",
-        "key": "energia_immessa_giornaliera_f1",
+        "key": "energia_immessa_giornaliera_f5",
         "icon": "mdi:transmission-tower-export",
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,

@@ -4,7 +4,6 @@ https://github.com/alexdelprete/ha-sinapsi-alfa
 """
 
 import logging
-import re
 from typing import Any
 
 from homeassistant.components.sensor import SensorEntity
@@ -51,19 +50,6 @@ async def async_setup_entry(hass: HomeAssistant, config_entry, async_add_entitie
     async_add_entities(sensors)
 
     return True
-
-
-def to_unique_id(raw: str):
-    """Convert string to unique_id."""
-    string = (
-        re.sub(r"(?<=[a-z0-9:_])(?=[A-Z])|[^a-zA-Z0-9:_]", " ", raw)
-        .strip()
-        .replace(" ", "_")
-    )
-    result = "".join(string.lower())
-    while "__" in result:
-        result = result.replace("__", "_")
-    return result
 
 
 class SinapsiAlfaSensor(CoordinatorEntity, SensorEntity):
@@ -155,7 +141,7 @@ class SinapsiAlfaSensor(CoordinatorEntity, SensorEntity):
     @property
     def unique_id(self):
         """Return a unique ID to use for this entity."""
-        return to_unique_id(f"{self._device_sn}_{self._key}")
+        return f"{DOMAIN}_{self._device_sn}_{self._key}"
 
     @property
     def device_info(self):
