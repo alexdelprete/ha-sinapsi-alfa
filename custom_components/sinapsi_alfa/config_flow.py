@@ -97,9 +97,9 @@ class SinapsiAlfaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         title=user_input[CONF_NAME], data=user_input
                     )
                 else:
-                    errors[
-                        CONF_HOST
-                    ] = "Connection to device failed (Unique ID not available)"
+                    errors[CONF_HOST] = (
+                        "Connection to device failed (Unique ID not available)"
+                    )
 
         return self.async_show_form(
             step_id="user",
