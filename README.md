@@ -1,4 +1,4 @@
-# HA Custom Component: Alfa by Sinapsi energy monitoring device
+# HA Custom Integration: Alfa by Sinapsi energy monitoring device
 
 [![GitHub Release][releases-shield]][releases][![BuyMeCoffee][buymecoffee-shield]][buymecoffee][![Community Forum][forum-shield]][forum]
 
