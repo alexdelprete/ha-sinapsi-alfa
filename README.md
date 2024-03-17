@@ -55,7 +55,7 @@ Configuration is done via config flow right after adding the integration. After 
 <img style="border: 5px solid #767676;border-radius: 10px;max-width: 500px;width: 50%;box-sizing: border-box;" src="https://github.com/alexdelprete/ha-sinapsi-alfa/blob/master/gfxfiles/alfaconfig.png" alt="Config">
 
 # Sensor view
-<img style="border: 5px solid #767676;border-radius: 10px;max-width: 500px;width: 75%;box-sizing: border-box;" src="https://github.com/alexdelprete/ha-sinapsi-alfa/blob/master/gfxfiles/alfasensors.png" alt="Config">
+<img style="border: 5px solid #767676;border-radius: 10px;max-width: 500px;width: 75%;box-sizing: border-box;" src="https://github.com/alexdelprete/ha-sinapsi-alfa/blob/master/gfxfiles/alfasensors.gif" alt="Config">
 
 # Coffee
 
