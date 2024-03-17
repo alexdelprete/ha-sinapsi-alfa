@@ -11,7 +11,7 @@ _This project is not endorsed by, directly affiliated with, maintained, authoriz
 HA Custom Component to integrate data from [Sinapsi Alfa](https://www.alfabysinapsi.it/) device.
 Tested on my Alfa to monitor the power/energy consumption and photovoltaic power/energy production directly from the energy provider's OpenMeter 2.0.
 
-![alfa-device](https://github.com/alexdelprete/ha-sinapsi-alfa/blob/master/gfxfiles/alfadevice.png)
+<img style="border: 5px solid #767676;border-radius: 10px;max-width: 500px;width: 50%;box-sizing: border-box;" src="https://github.com/alexdelprete/ha-sinapsi-alfa/blob/9cdc7bf681db4ad83700ddaf8d7e745a8769e684/gfxfiles/alfadevice.png" alt="Config">
 
 Alfa is a great product, it provides official measurements, and it provides local API to get the data (for now it's through ModBus).
 
@@ -52,10 +52,10 @@ Configuration is done via config flow right after adding the integration. After 
 - **tcp port**: TCP port of the device. tcp/502 is the only known working port, but I preferred to leave it configurable
 - **polling period**: frequency, in seconds, to read the registers and update the sensors
 
-<img style="border: 5px solid #767676;border-radius: 10px;max-width: 500px;width: 50%;box-sizing: border-box;" src="https://github.com/alexdelprete/ha-sinapsi-alfa/blob/master/gfxfiles/alfaconfig.png" alt="Config">
+<img style="border: 5px solid #767676;border-radius: 10px;max-width: 500px;width: 50%;box-sizing: border-box;" src="https://github.com/alexdelprete/ha-sinapsi-alfa/blob/9cdc7bf681db4ad83700ddaf8d7e745a8769e684/gfxfiles/alfaconfig.png" alt="Config">
 
 # Sensor view
-<img style="border: 5px solid #767676;border-radius: 10px;max-width: 500px;width: 75%;box-sizing: border-box;" src="https://github.com/alexdelprete/ha-sinapsi-alfa/blob/master/gfxfiles/alfasensors.gif" alt="Config">
+<img style="border: 5px solid #767676;border-radius: 10px;max-width: 500px;width: 75%;box-sizing: border-box;" src="https://github.com/alexdelprete/ha-sinapsi-alfa/blob/9cdc7bf681db4ad83700ddaf8d7e745a8769e684/gfxfiles/alfasensors.gif" alt="Config">
 
 # Coffee
 
