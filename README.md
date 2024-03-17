@@ -1,16 +1,16 @@
-# HA Custom Component for 4-noks Elios4you energy monitoring device
+# HA Custom Component: Alfa by Sinapsi energy monitoring device
 
 [![GitHub Release][releases-shield]][releases][![BuyMeCoffee][buymecoffee-shield]][buymecoffee][![Community Forum][forum-shield]][forum]
 [![GitHub Activity][commits-shield]][commits]![Project Maintenance][maintenance-shield]
 
-_This project is not endorsed by, directly affiliated with, maintained, authorized, or sponsored by 4-noks / Astrel Group_
+_This project is not endorsed by, directly affiliated with, maintained, authorized, or sponsored by Sinapsi_
 
 # Introduction
 
 HA Custom Component to integrate data from [Sinapsi Alfa](https://www.alfabysinapsi.it/) device.
-Tested on my Alfa to monitor tha power/energy consumption and photovoltaic power/energy production directly from the provider's meter through the OpenMeter 2.0 protocol.
+Tested on my Alfa to monitor tha power/energy consumption and photovoltaic power/energy production directly from the energy provider's meter that support the OpenMeter 2.0 protocol.
 
-![alfa-device](https://github.com/alexdelprete/ha-sinapsi-alfa/assets/7027842/58b63c17-e532-4ffc-871f-95948193591e)
+![alfa-device](upload://am5ecsbONooZ4GZocipotzN2BP0.png)
 
 Alfa is a great product, it provides official measurements, and it provides local API to get the data (for now it's through ModBus).
 
@@ -19,8 +19,7 @@ So finally here we are with the first official version of the HA custom integrat
 ### Features
 
 - Installation/Configuration through Config Flow UI
-- Sensor entities for all data provided by the device (I don't even know what some of the ones in the diagnostic category specifically represent)
-- Switch entity to control the device internal relay
+- Sensor entities for all data provided by the device
 - Configuration options: Name, hostname, tcp port, polling period
 - Reconfigure options (except device name) also at runtime: no restart needed.
 
@@ -32,11 +31,11 @@ This integration is available in [HACS][hacs] official repository. Click this bu
 
 1. Either click the button above, or navigate to HACS in Home Assistant and:
    - 'Explore & Download Repositories'
-   - Search for '4-noks Elios4You'
+   - Search for 'Alfa by Sinapsi'
    - Download
 2. Restart Home Assistant
 3. Go to Settings > Devices and Services > Add Integration
-4. Search for and select '4-noks Elios4You' (if the integration is not found, do a hard-refresh (ctrl+F5) in the browser)
+4. Search for and select 'Alfa by Sinapsi' (if the integration is not found, do a hard-refresh (ctrl+F5) in the browser)
 5. Proceed with the configuration
 
 # Manual Installation
@@ -45,17 +44,17 @@ Download the source code archive from the release page. Unpack the archive and c
 
 # Configuration
 
-Configuration is done via config flow right after adding the integration. After the first configuration you can change parameters (except device name) at runtime through the integration page configuration, without the need to restart HA.
+Configuration is done via config flow right after adding the integration. After the first configuration you can change parameters (except device name) at runtime through the integration page configuration, without the need to restart HA. 
 
 - **custom name**: custom name for the device, that will be used as prefix for sensors created by the component
 - **ip/hostname**: IP/hostname of the inverter - this is used as unique_id, if you change it and reinstall you will lose historical data, that's why I advice to use hostname, so you can change IP without losing historical data
-- **tcp port**: TCP port of the device. tcp/5001 is the only known working port, but I preferred to leave it configurable
+- **tcp port**: TCP port of the device. tcp/502 is the only known working port, but I preferred to leave it configurable
 - **polling period**: frequency, in seconds, to read the registers and update the sensors
 
-<img style="border: 5px solid #767676;border-radius: 10px;max-width: 500px;width: 50%;box-sizing: border-box;" src="https://github.com/alexdelprete/ha-sinapsi-alfa/assets/7027842/4a0b3168-4f4a-489f-90ac-eaff6edab6e2" alt="Config">
+<img style="border: 5px solid #767676;border-radius: 10px;max-width: 500px;width: 50%;box-sizing: border-box;" src="upload://kL4ybstJKBvYVI3blIqs8raRP2m.png" alt="Config">
 
 # Sensor view
-<img style="border: 5px solid #767676;border-radius: 10px;max-width: 500px;width: 75%;box-sizing: border-box;" src="https://raw.githubusercontent.com/alexdelprete/ha-4noks-elios4you/master/gfxfiles/elios4you_sensors.gif" alt="Config">
+<img style="border: 5px solid #767676;border-radius: 10px;max-width: 500px;width: 75%;box-sizing: border-box;" src="upload://a57bCqjn4gxGLXqDx1kvGtpTFap.gif" alt="Config">
 
 # Coffee
 
