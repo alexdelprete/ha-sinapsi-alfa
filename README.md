@@ -68,6 +68,6 @@ _If you like this integration, I'll gladly accept some quality coffee, but pleas
 [hacs]: https://hacs.xyz
 [my-hacs]: https://my.home-assistant.io/redirect/hacs_repository/?owner=alexdelprete&repository=ha-sinapsi-alfa&category=integration
 [forum-shield]: https://img.shields.io/badge/community-forum-darkred?style=for-the-badge
-[forum]: https://community.home-assistant.io/t/custom-component-sinapsi-alfa-data-integration/705294
+[forum]: https://community.home-assistant.io/t/custom-component-alfa-by-sinapsi-data-integration/705294
 [releases-shield]: https://img.shields.io/github/v/release/alexdelprete/ha-sinapsi-alfa?style=for-the-badge&color=darkgreen
 [releases]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases
