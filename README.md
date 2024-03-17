@@ -47,7 +47,7 @@ Configuration is done via config flow right after adding the integration. After 
 
 - **custom name**: custom name for the device, that will be used as prefix for sensors created by the component
 - **ip/hostname**: IP/hostname of the inverter - this is used as unique_id, if you change it and reinstall you will lose historical data, that's why I advice to use hostname, so you can change IP without losing historical data
-- **tcp port**: TCP port of the device. tcp/5001 is the only known working port, but I preferred to leave it configurable
+- **tcp port**: TCP port of the device. tcp/502 is the only known working port, but I preferred to leave it configurable
 - **polling period**: frequency, in seconds, to read the registers and update the sensors
 
 <img style="border: 5px solid #767676;border-radius: 10px;max-width: 500px;width: 50%;box-sizing: border-box;" src="https://github.com/alexdelprete/ha-sinapsi-alfa/assets/7027842/4a0b3168-4f4a-489f-90ac-eaff6edab6e2" alt="Config">
