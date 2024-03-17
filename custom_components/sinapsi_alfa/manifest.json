@@ -3,12 +3,12 @@
   "name": "Alfa by Sinapsi",
   "codeowners": ["@alexdelprete"],
   "config_flow": true,
-  "single_config_entry": true,
   "documentation": "https://github.com/alexdelprete/ha-sinapsi-alfa",
   "integration_type": "hub",
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/alexdelprete/ha-sinapsi-alfa/issues",
   "loggers": ["custom_components.sinapsi_alfa"],
   "requirements": ["pymodbus>=3.5.4", "getmac>=0.9.4"],
+  "single_config_entry": true,
   "version": "0.1.0"
 }
