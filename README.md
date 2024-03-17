@@ -9,7 +9,7 @@ _This project is not endorsed by, directly affiliated with, maintained, authoriz
 # Introduction
 
 HA Custom Component to integrate data from [Sinapsi Alfa](https://www.alfabysinapsi.it/) device.
-Tested on my Alfa to monitor tha power/energy consumption and photovoltaic power/energy production directly from the energy provider's meter that support the OpenMeter 2.0 protocol.
+Tested on my Alfa to monitor the power/energy consumption and photovoltaic power/energy production directly from the energy provider's OpenMeter 2.0.
 
 ![alfa-device](upload://am5ecsbONooZ4GZocipotzN2BP0.png)
 
