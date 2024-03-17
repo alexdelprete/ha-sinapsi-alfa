@@ -105,6 +105,7 @@ class SinapsiAlfaAPI:
         """Get mac address from ip/hostname."""
         mac_address = None
         i = 0
+        # we want to ensure a mac address if found, sometimes it takes more than 1 try
         while not mac_address and i < 10:
             if self.check_port():
                 _LOGGER.debug(
@@ -115,7 +116,6 @@ class SinapsiAlfaAPI:
                     f"Get_Mac_Address (ERROR): port not available on {self._host}:{self._port}"
                 )
             # Get MAC address from the ARP cache using the hostname
-            getmac.FORCE_METHOD = "ArpVariousArgs"
             mac_address = getmac.get_mac_address(
                 hostname=self._host, network_request=False
             )
