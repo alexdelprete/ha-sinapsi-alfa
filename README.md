@@ -75,4 +75,4 @@ _If you like this integration, I'll gladly accept some quality coffee, but pleas
 [hacs-shield]: https://img.shields.io/badge/HACS-Default-blue.svg?style=for-the-badge
 [my-hacs]: https://my.home-assistant.io/redirect/hacs_repository/?owner=alexdelprete&repository=ha-sinapsi-alfa&category=integration
 [releases]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases
-[releases-shield]: https://img.shields.io/github/v/release/alexdelprete/ha-sinapsi-alfa?style=for-the-badge
+[releases-shield]: https://img.shields.io/github/v/release/alexdelprete/ha-sinapsi-alfa?style=for-the-badge&color=darkgreen
