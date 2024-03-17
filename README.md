@@ -11,7 +11,7 @@ _This project is not endorsed by, directly affiliated with, maintained, authoriz
 HA Custom Component to integrate data from [Sinapsi Alfa](https://www.alfabysinapsi.it/) device.
 Tested on my Alfa to monitor the power/energy consumption and photovoltaic power/energy production directly from the energy provider's OpenMeter 2.0.
 
-<img style="border: 5px solid #767676;border-radius: 10px;max-width: 500px;width: 50%;box-sizing: border-box;" src="https://github.com/alexdelprete/ha-sinapsi-alfa/blob/9cdc7bf681db4ad83700ddaf8d7e745a8769e684/gfxfiles/alfadevice.png" alt="Config">
+<img style="border: 5px solid #767676;border-radius: 10px;max-width: 500px;width: 40%;box-sizing: border-box;" src="https://github.com/alexdelprete/ha-sinapsi-alfa/blob/9cdc7bf681db4ad83700ddaf8d7e745a8769e684/gfxfiles/alfadevice.png" alt="Config">
 
 Alfa is a great product, it provides official measurements, and it provides local API to get the data (for now it's through ModBus).
 
