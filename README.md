@@ -1,6 +1,7 @@
 # HA Custom Component: Alfa by Sinapsi energy monitoring device
 
 [![GitHub Release][releases-shield]][releases][![BuyMeCoffee][buymecoffee-shield]][buymecoffee][![Community Forum][forum-shield]][forum]
+
 [![GitHub Activity][commits-shield]][commits]![Project Maintenance][maintenance-shield]
 
 _This project is not endorsed by, directly affiliated with, maintained, authorized, or sponsored by Sinapsi_
