@@ -1,4 +1,4 @@
-# HA Custom Component for Sinapsi Alfa energy monitoring device
+# HA Custom Component: Alfa by Sinapsi energy monitoring device
 
 [![GitHub Release][releases-shield]][releases][![BuyMeCoffee][buymecoffee-shield]][buymecoffee][![Community Forum][forum-shield]][forum]
 
@@ -30,11 +30,11 @@ This integration is available in [HACS][hacs] official repository. Click this bu
 
 1. Either click the button above, or navigate to HACS in Home Assistant and:
    - 'Explore & Download Repositories'
-   - Search for 'Sinapsi Alfa'
+   - Search for 'Alfa by Sinapsi'
    - Download
 2. Restart Home Assistant
 3. Go to Settings > Devices and Services > Add Integration
-4. Search for and select 'Sinapsi Alfa' (if the integration is not found, do a hard-refresh (ctrl+F5) in the browser)
+4. Search for and select 'Alfa by Sinapsi' (if the integration is not found, do a hard-refresh (ctrl+F5) in the browser)
 5. Proceed with the configuration
 
 # Manual Installation
