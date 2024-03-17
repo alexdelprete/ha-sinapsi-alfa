@@ -2,7 +2,7 @@
 
 [![GitHub Release][releases-shield]][releases][![BuyMeCoffee][buymecoffee-shield]][buymecoffee][![Community Forum][forum-shield]][forum]
 
-[![GitHub Activity][commits-shield]][commits]![Project Maintenance][maintenance-shield]
+[![GitHub Activity][commits-shield]][commits]![Project Maintenance][maintenance-shield][![hacs][hacs-shield]][hacs]
 
 _This project is not endorsed by, directly affiliated with, maintained, authorized, or sponsored by Sinapsi_
 
@@ -73,5 +73,6 @@ _If you like this integration, I'll gladly accept some quality coffee, but pleas
 [forum]: https://community.home-assistant.io/t/custom-component-4-noks-elios4you-data-integration/692883?u=alexdelprete
 [hacs]: https://hacs.xyz
 [my-hacs]: https://my.home-assistant.io/redirect/hacs_repository/?owner=alexdelprete&repository=ha-sinapsi-alfa&category=integration
+[hacs-shield]: https://img.shields.io/badge/HACS-Default-orange.svg?style=for-the-badge
 [releases]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases
 [releases-shield]: https://img.shields.io/github/v/release/alexdelprete/ha-sinapsi-alfa?style=for-the-badge&color=darkgreen
