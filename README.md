@@ -20,8 +20,7 @@ So finally here we are with the first official version of the HA custom integrat
 ### Features
 
 - Installation/Configuration through Config Flow UI
-- Sensor entities for all data provided by the device (I don't even know what some of the ones in the diagnostic category specifically represent)
-- Switch entity to control the device internal relay
+- Sensor entities for all data provided by the device
 - Configuration options: Name, hostname, tcp port, polling period
 - Reconfigure options (except device name) also at runtime: no restart needed.
 
