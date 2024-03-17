@@ -1,4 +1,4 @@
-# HA Custom Component for 4-noks Elios4you energy monitoring device
+# HA Custom Component for Sinapsi Alfa energy monitoring device
 
 [![GitHub Release][releases-shield]][releases]
 [![BuyMeCoffee][buymecoffee-shield]][buymecoffee]
