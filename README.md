@@ -1,10 +1,10 @@
 # HA Custom Component for 4-noks Elios4you energy monitoring device
 
 [![GitHub Release][releases-shield]][releases]
-[![GitHub Activity][commits-shield]][commits]
-[![Project Maintenance][maintenance-shield]]
 [![BuyMeCoffee][buymecoffee-shield]][buymecoffee]
 [![Community Forum][forum-shield]][forum]
+[![GitHub Activity][commits-shield]][commits]
+![Project Maintenance][maintenance-shield]
 
 _This project is not endorsed by, directly affiliated with, maintained, authorized, or sponsored by 4-noks / Astrel Group_
 
@@ -67,9 +67,9 @@ _If you like this integration, I'll gladly accept some quality coffee, but pleas
 [![BuyMeCoffee][buymecoffee-shield]][buymecoffee]
 
 ---
-[commits-shield]: https://img.shields.io/github/commit-activity/y/alexdelprete/ha-sinapsi-alfa.svg?style=flat-square
+[commits-shield]: https://img.shields.io/github/commit-activity/y/alexdelprete/ha-sinapsi-alfa.svg?style=for-the-badge
 [commits]: https://github.com/alexdelprete/ha-sinapsi-alfa/commits/master
-[maintenance-shield]: https://img.shields.io/badge/maintainer-Alessandro%20Del%20Prete%20%40alexdelprete-blue.svg?style=flat-square
+[maintenance-shield]: https://img.shields.io/badge/maintainer-Alessandro%20Del%20Prete%20%40alexdelprete-blue.svg?style=for-the-badge
 [buymecoffee]: https://www.buymeacoffee.com/alexdelprete
 [buymecoffee-shield]: https://img.shields.io/badge/buy%20me%20a%20coffee-donate-white?style=for-the-badge
 [forum-shield]: https://img.shields.io/badge/community-forum-darkred?style=for-the-badge
