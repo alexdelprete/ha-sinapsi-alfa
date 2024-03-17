@@ -66,7 +66,7 @@ _If you like this integration, I'll gladly accept some quality coffee, but pleas
 ---
 [commits-shield]: https://img.shields.io/github/commit-activity/y/alexdelprete/ha-sinapsi-alfa.svg?style=for-the-badge
 [commits]: https://github.com/alexdelprete/ha-sinapsi-alfa/commits/master
-[maintenance-shield]: https://img.shields.io/badge/maintainer-Alessandro%20Del%20Prete%20%40alexdelprete-blue.svg?style=for-the-badge
+[maintenance-shield]: https://img.shields.io/badge/maintainer-%40alexdelprete-blue.svg?style=for-the-badge
 [buymecoffee]: https://www.buymeacoffee.com/alexdelprete
 [buymecoffee-shield]: https://img.shields.io/badge/buy%20me%20a%20coffee-donate-white?style=for-the-badge
 [forum-shield]: https://img.shields.io/badge/community-forum-darkred?style=for-the-badge
