@@ -1,13 +1,17 @@
-# HA Custom Component: Alfa by Sinapsi energy monitoring device
+# HA Custom Component for 4-noks Elios4you energy monitoring device
 
-[![GitHub Release][releases-shield]][releases][![BuyMeCoffee][buymecoffee-shield]][buymecoffee][![Community Forum][forum-shield]][forum]
+[![GitHub Release][releases-shield]][releases]
+[![GitHub Activity][commits-shield]][commits]
+[![Project Maintenance][maintenance-shield]]
+[![BuyMeCoffee][buymecoffee-shield]][buymecoffee]
+[![Community Forum][forum-shield]][forum]
 
-_This project is not endorsed by, directly affiliated with, maintained, authorized, or sponsored by Sinapsi_
+_This project is not endorsed by, directly affiliated with, maintained, authorized, or sponsored by 4-noks / Astrel Group_
 
 # Introduction
 
 HA Custom Component to integrate data from [Sinapsi Alfa](https://www.alfabysinapsi.it/) device.
-Tested on my Alfa to monitor tha power/energy consumption and photovoltaic power/energy production directly from the energy provider's meter that support the OpenMeter 2.0 protocol.
+Tested on my Alfa to monitor tha power/energy consumption and photovoltaic power/energy production directly from the provider's meter through the OpenMeter 2.0 protocol.
 
 ![alfa-device](https://github.com/alexdelprete/ha-sinapsi-alfa/assets/7027842/58b63c17-e532-4ffc-871f-95948193591e)
 
@@ -18,7 +22,8 @@ So finally here we are with the first official version of the HA custom integrat
 ### Features
 
 - Installation/Configuration through Config Flow UI
-- Sensor entities for all data provided by the device
+- Sensor entities for all data provided by the device (I don't even know what some of the ones in the diagnostic category specifically represent)
+- Switch entity to control the device internal relay
 - Configuration options: Name, hostname, tcp port, polling period
 - Reconfigure options (except device name) also at runtime: no restart needed.
 
@@ -30,11 +35,11 @@ This integration is available in [HACS][hacs] official repository. Click this bu
 
 1. Either click the button above, or navigate to HACS in Home Assistant and:
    - 'Explore & Download Repositories'
-   - Search for 'Alfa by Sinapsi'
+   - Search for '4-noks Elios4You'
    - Download
 2. Restart Home Assistant
 3. Go to Settings > Devices and Services > Add Integration
-4. Search for and select 'Alfa by Sinapsi' (if the integration is not found, do a hard-refresh (ctrl+F5) in the browser)
+4. Search for and select '4-noks Elios4You' (if the integration is not found, do a hard-refresh (ctrl+F5) in the browser)
 5. Proceed with the configuration
 
 # Manual Installation
@@ -43,17 +48,17 @@ Download the source code archive from the release page. Unpack the archive and c
 
 # Configuration
 
-Configuration is done via config flow right after adding the integration. After the first configuration you can change parameters (except device name) at runtime through the integration page configuration, without the need to restart HA. 
+Configuration is done via config flow right after adding the integration. After the first configuration you can change parameters (except device name) at runtime through the integration page configuration, without the need to restart HA.
 
 - **custom name**: custom name for the device, that will be used as prefix for sensors created by the component
 - **ip/hostname**: IP/hostname of the inverter - this is used as unique_id, if you change it and reinstall you will lose historical data, that's why I advice to use hostname, so you can change IP without losing historical data
-- **tcp port**: TCP port of the device. tcp/502 is the only known working port, but I preferred to leave it configurable
+- **tcp port**: TCP port of the device. tcp/5001 is the only known working port, but I preferred to leave it configurable
 - **polling period**: frequency, in seconds, to read the registers and update the sensors
 
 <img style="border: 5px solid #767676;border-radius: 10px;max-width: 500px;width: 50%;box-sizing: border-box;" src="https://github.com/alexdelprete/ha-sinapsi-alfa/assets/7027842/4a0b3168-4f4a-489f-90ac-eaff6edab6e2" alt="Config">
 
 # Sensor view
-<img style="border: 5px solid #767676;border-radius: 10px;max-width: 500px;width: 75%;box-sizing: border-box;" src="https://github.com/alexdelprete/ha-sinapsi-alfa/assets/7027842/7664a9a6-a5ed-4b9e-ab52-d863e2c1e523" alt="Config">
+<img style="border: 5px solid #767676;border-radius: 10px;max-width: 500px;width: 75%;box-sizing: border-box;" src="https://raw.githubusercontent.com/alexdelprete/ha-4noks-elios4you/master/gfxfiles/elios4you_sensors.gif" alt="Config">
 
 # Coffee
 
@@ -62,12 +67,14 @@ _If you like this integration, I'll gladly accept some quality coffee, but pleas
 [![BuyMeCoffee][buymecoffee-shield]][buymecoffee]
 
 ---
-
+[commits-shield]: https://img.shields.io/github/commit-activity/y/alexdelprete/ha-sinapsi-alfa.svg?style=flat-square
+[commits]: https://github.com/alexdelprete/ha-sinapsi-alfa/commits/master
+[maintenance-shield]: https://img.shields.io/badge/maintainer-Alessandro%20Del%20Prete%20%40alexdelprete-blue.svg?style=flat-square
 [buymecoffee]: https://www.buymeacoffee.com/alexdelprete
 [buymecoffee-shield]: https://img.shields.io/badge/buy%20me%20a%20coffee-donate-white?style=for-the-badge
+[forum-shield]: https://img.shields.io/badge/community-forum-darkred?style=for-the-badge
+[forum]: https://community.home-assistant.io/t/custom-component-4-noks-elios4you-data-integration/692883?u=alexdelprete
 [hacs]: https://hacs.xyz
 [my-hacs]: https://my.home-assistant.io/redirect/hacs_repository/?owner=alexdelprete&repository=ha-sinapsi-alfa&category=integration
-[forum-shield]: https://img.shields.io/badge/community-forum-darkred?style=for-the-badge
-[forum]: https://community.home-assistant.io/t/custom-component-alfa-by-sinapsi-data-integration/705294
-[releases-shield]: https://img.shields.io/github/v/release/alexdelprete/ha-sinapsi-alfa?style=for-the-badge&color=darkgreen
 [releases]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases
+[releases-shield]: https://img.shields.io/github/v/release/alexdelprete/ha-sinapsi-alfa?style=for-the-badge&color=darkgreen
