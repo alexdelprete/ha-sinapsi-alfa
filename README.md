@@ -72,7 +72,7 @@ _If you like this integration, I'll gladly accept some quality coffee, but pleas
 [forum-shield]: https://img.shields.io/badge/community-forum-darkred?style=for-the-badge
 [forum]: https://community.home-assistant.io/t/custom-component-4-noks-elios4you-data-integration/692883?u=alexdelprete
 [hacs]: https://github.com/hacs/integration
-[hacs-shield]: https://img.shields.io/badge/HACS-Default?style=for-the-badge&color=darkgreen
+[hacs-shield]: https://img.shields.io/badge/HACS-Default.svg?style=for-the-badge&color=darkgreen
 [my-hacs]: https://my.home-assistant.io/redirect/hacs_repository/?owner=alexdelprete&repository=ha-sinapsi-alfa&category=integration
 [releases]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases
 [releases-shield]: https://img.shields.io/github/v/release/alexdelprete/ha-sinapsi-alfa?style=for-the-badge&color=darkgreen
