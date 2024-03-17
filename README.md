@@ -8,18 +8,14 @@ _This project is not endorsed by, directly affiliated with, maintained, authoriz
 
 # Introduction
 
-HA Custom Component to integrate data from [4-noks Elios4you](https://www.4-noks.com/product-categories/solar-photovoltaic-en/elios4you-en/?lang=en) products.
-Tested personally on my [Elios4you Pro](https://www.4-noks.com/shop/elios4you-en/elios4you-pro/?lang=en) to monitor tha main 3-phase 6kw line, plus my 7.5kW photovoltaic system.
+HA Custom Component to integrate data from [Sinapsi Alfa](https://www.alfabysinapsi.it/) device.
+Tested on my Alfa to monitor tha power/energy consumption and photovoltaic power/energy production directly from the provider's meter through the OpenMeter 2.0 protocol.
 
-![image](https://github.com/alexdelprete/ha-4noks-elios4you/assets/7027842/70bb7791-8d01-4fc2-bef6-9a9110558c0b)
+![alfa-device](https://github.com/alexdelprete/ha-sinapsi-alfa/assets/7027842/58b63c17-e532-4ffc-871f-95948193591e)
 
-Elio4you is a great product, it provides very reliable measurements, but it has no documented local API to get the energy data. Luckily, 3y ago I found [this great article](https://www.hackster.io/daveVertu/reverse-engineering-elios4you-photovoltaic-monitoring-device-458aa0) by Davide Vertuani, that reversed-engineered how the official mobile app communicated with the device to fetch data, and found out it's a tcp connection on port 5001, through which the app sent specific commands to which the device replies with data. That was a great find by Davide, and I initially used Node-RED to create a quick integration like Davide suggested in the article: I completed a full integration in 1 day and was rock solid, Node-RED is fantastic. :)
+Alfa is a great product, it provides official measurements, and it provides local API to get the data (for now it's through ModBus).
 
-![image](https://github.com/alexdelprete/ha-4noks-elios4you/assets/7027842/46eb022f-1da0-48eb-ad70-46832bfa2f4e)
-
-One month ago I decided to port the Node-RED integration to an HA Custom Component, because in the last 2 years I developed my first HA component to monitor ABB/FIMER inverters, and now I'm quite knowledgable on custom component developement (learned a lot thanks to the dev community and studying some excellent integrations).
-
-So finally here we are with the first official version of the HA custom integration for Elios4you devices. :)
+So finally here we are with the first official version of the HA custom integration for Alfa devices. :)
 
 ### Features
 
@@ -57,7 +53,7 @@ Configuration is done via config flow right after adding the integration. After 
 - **tcp port**: TCP port of the device. tcp/5001 is the only known working port, but I preferred to leave it configurable
 - **polling period**: frequency, in seconds, to read the registers and update the sensors
 
-<img style="border: 5px solid #767676;border-radius: 10px;max-width: 500px;width: 50%;box-sizing: border-box;" src="https://github.com/alexdelprete/ha-4noks-elios4you/assets/7027842/cbe045c6-8753-4c52-9d50-97de983d18b0" alt="Config">
+<img style="border: 5px solid #767676;border-radius: 10px;max-width: 500px;width: 50%;box-sizing: border-box;" src="https://github.com/alexdelprete/ha-sinapsi-alfa/assets/7027842/4a0b3168-4f4a-489f-90ac-eaff6edab6e2" alt="Config">
 
 # Sensor view
 <img style="border: 5px solid #767676;border-radius: 10px;max-width: 500px;width: 75%;box-sizing: border-box;" src="https://raw.githubusercontent.com/alexdelprete/ha-4noks-elios4you/master/gfxfiles/elios4you_sensors.gif" alt="Config">
@@ -73,8 +69,8 @@ _If you like this integration, I'll gladly accept some quality coffee, but pleas
 [buymecoffee]: https://www.buymeacoffee.com/alexdelprete
 [buymecoffee-shield]: https://img.shields.io/badge/buy%20me%20a%20coffee-donate-white?style=for-the-badge
 [hacs]: https://hacs.xyz
-[my-hacs]: https://my.home-assistant.io/redirect/hacs_repository/?owner=alexdelprete&repository=ha-4noks-elios4you&category=integration
+[my-hacs]: https://my.home-assistant.io/redirect/hacs_repository/?owner=alexdelprete&repository=ha-sinapsi-alfa&category=integration
 [forum-shield]: https://img.shields.io/badge/community-forum-darkred?style=for-the-badge
 [forum]: https://community.home-assistant.io/t/custom-component-4-noks-elios4you-data-integration/692883?u=alexdelprete
-[releases-shield]: https://img.shields.io/github/v/release/alexdelprete/ha-4noks-elios4you?style=for-the-badge&color=darkgreen
-[releases]: https://github.com/alexdelprete/ha-4noks-elios4you/releases
+[releases-shield]: https://img.shields.io/github/v/release/alexdelprete/ha-sinapsi-alfa?style=for-the-badge&color=darkgreen
+[releases]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases
