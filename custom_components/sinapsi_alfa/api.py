@@ -103,16 +103,32 @@ class SinapsiAlfaAPI:
 
     def get_mac_address(self) -> str:
         """Get mac address from ip/hostname."""
-        try:
+        mac_address = None
+        i = 0
+        while not mac_address and i < 10:
+            if self.check_port():
+                _LOGGER.debug(
+                    f"Get_Mac_Address (SUCCESS): port open on {self._host}:{self._port}"
+                )
+            else:
+                _LOGGER.debug(
+                    f"Get_Mac_Address (ERROR): port not available on {self._host}:{self._port}"
+                )
             # Get MAC address from the ARP cache using the hostname
-            mac_address_with_colons = getmac.get_mac_address(
+            getmac.FORCE_METHOD = "ArpVariousArgs"
+            mac_address = getmac.get_mac_address(
                 hostname=self._host, network_request=False
             )
+            i = i + 1
+        if mac_address is not None:
             # Remove colons and convert to uppercase
-            mac_address = mac_address_with_colons.replace(":", "").upper()
-            return mac_address
-        except Exception as e:
-            return f"(get_mac_address) ERROR: {e}"
+            mac_address = mac_address.replace(":", "").upper()
+            _LOGGER.debug(f"Get_Mac_Address (SUCCESS): found mac address {mac_address}")
+        else:
+            _LOGGER.debug(
+                f"Get_Mac_Address (ERROR): mac address not found! {mac_address}"
+            )
+        return mac_address
 
     def check_port(self) -> bool:
         """Check if port is available."""
