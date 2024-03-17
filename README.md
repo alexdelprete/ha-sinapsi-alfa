@@ -1,10 +1,8 @@
 # HA Custom Component for Sinapsi Alfa energy monitoring device
 
-[![GitHub Release][releases-shield]][releases]
-[![BuyMeCoffee][buymecoffee-shield]][buymecoffee]
-[![Community Forum][forum-shield]][forum]
+[![GitHub Release][releases-shield]][releases][![BuyMeCoffee][buymecoffee-shield]][buymecoffee][![Community Forum][forum-shield]][forum]
 
-_This project is not endorsed by, directly affiliated with, maintained, authorized, or sponsored by 4-noks / Astrel Group_
+_This project is not endorsed by, directly affiliated with, maintained, authorized, or sponsored by Sinapsi_
 
 # Introduction
 
