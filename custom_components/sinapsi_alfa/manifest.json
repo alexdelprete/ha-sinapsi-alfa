@@ -3,6 +3,7 @@
   "name": "Alfa by Sinapsi",
   "codeowners": ["@alexdelprete"],
   "config_flow": true,
+  "single_config_entry": true,
   "documentation": "https://github.com/alexdelprete/ha-sinapsi-alfa",
   "integration_type": "hub",
   "iot_class": "local_polling",

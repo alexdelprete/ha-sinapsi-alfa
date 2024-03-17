@@ -7,7 +7,7 @@ import logging
 import socket
 import threading
 
-import getmac
+from getmac import getmac
 from homeassistant.components.sensor import SensorDeviceClass
 from pymodbus.client import ModbusTcpClient
 from pymodbus.constants import Endian
@@ -105,7 +105,9 @@ class SinapsiAlfaAPI:
         """Get mac address from ip/hostname."""
         try:
             # Get MAC address from the ARP cache using the hostname
-            mac_address_with_colons = getmac.get_mac_address(hostname=self._host)
+            mac_address_with_colons = getmac.get_mac_address(
+                hostname=self._host, network_request=False
+            )
             # Remove colons and convert to uppercase
             mac_address = mac_address_with_colons.replace(":", "").upper()
             return mac_address
