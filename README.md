@@ -30,11 +30,11 @@ This integration is available in [HACS][hacs] official repository. Click this bu
 
 1. Either click the button above, or navigate to HACS in Home Assistant and:
    - 'Explore & Download Repositories'
-   - Search for '4-noks Elios4You'
+   - Search for 'Sinapsi Alfa'
    - Download
 2. Restart Home Assistant
 3. Go to Settings > Devices and Services > Add Integration
-4. Search for and select '4-noks Elios4You' (if the integration is not found, do a hard-refresh (ctrl+F5) in the browser)
+4. Search for and select 'Sinapsi Alfa' (if the integration is not found, do a hard-refresh (ctrl+F5) in the browser)
 5. Proceed with the configuration
 
 # Manual Installation
@@ -68,6 +68,6 @@ _If you like this integration, I'll gladly accept some quality coffee, but pleas
 [hacs]: https://hacs.xyz
 [my-hacs]: https://my.home-assistant.io/redirect/hacs_repository/?owner=alexdelprete&repository=ha-sinapsi-alfa&category=integration
 [forum-shield]: https://img.shields.io/badge/community-forum-darkred?style=for-the-badge
-[forum]: https://community.home-assistant.io/t/custom-component-4-noks-elios4you-data-integration/692883?u=alexdelprete
+[forum]: https://community.home-assistant.io/t/custom-component-sinapsi-alfa-data-integration/705294
 [releases-shield]: https://img.shields.io/github/v/release/alexdelprete/ha-sinapsi-alfa?style=for-the-badge&color=darkgreen
 [releases]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases
