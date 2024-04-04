@@ -2,7 +2,7 @@
   "name": "Alfa by Sinapsi",
   "homeassistant": "2024.3.0",
   "content_in_root": false,
-  "render_readme": true,
+  "render_readme": false,
   "zip_release": true,
   "filename": "sinapsi_alfa.zip"
 }
