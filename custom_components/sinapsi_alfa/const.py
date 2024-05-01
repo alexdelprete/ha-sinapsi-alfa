@@ -280,7 +280,7 @@ SENSOR_ENTITIES = [
         "device_class": SensorDeviceClass.POWER,
         "state_class": SensorStateClass.MEASUREMENT,
         "unit": UnitOfPower.KILO_WATT,
-        "modbus_type": "calculated",
+        "modbus_type": "calcolato",
         "modbus_addr": None,
     },
     {
@@ -290,7 +290,7 @@ SENSOR_ENTITIES = [
         "device_class": SensorDeviceClass.POWER,
         "state_class": SensorStateClass.MEASUREMENT,
         "unit": UnitOfPower.KILO_WATT,
-        "modbus_type": "calculated",
+        "modbus_type": "calcolato",
         "modbus_addr": None,
     },
     {
@@ -300,7 +300,7 @@ SENSOR_ENTITIES = [
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,
         "unit": UnitOfEnergy.KILO_WATT_HOUR,
-        "modbus_type": "calculated",
+        "modbus_type": "calcolato",
         "modbus_addr": None,
     },
     {
@@ -310,7 +310,7 @@ SENSOR_ENTITIES = [
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,
         "unit": UnitOfEnergy.KILO_WATT_HOUR,
-        "modbus_type": "calculated",
+        "modbus_type": "calcolato",
         "modbus_addr": None,
     },
 ]

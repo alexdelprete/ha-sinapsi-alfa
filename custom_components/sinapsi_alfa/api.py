@@ -249,7 +249,7 @@ class SinapsiAlfaAPI:
                 _LOGGER.debug(
                     f"(read_modbus_alfa) Key: {reg_key} Addr: {reg_addr} Type: {reg_type} DevClass: {reg_dev_class}"
                 )
-                if reg_type == "calculated":
+                if reg_type == "calcolato":
                     self.data["potenza_auto_consumata"] = (
                         self.data["potenza_prodotta"] - self.data["potenza_immessa"]
                     )
