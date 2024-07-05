@@ -11,21 +11,24 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
+from . import SinapsiAlfaConfigEntry
 from .const import (
     CONF_NAME,
-    DATA,
     DOMAIN,
     SENSOR_ENTITIES,
 )
+from .coordinator import SinapsiAlfaCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_entry(hass: HomeAssistant, config_entry, async_add_entities):
+async def async_setup_entry(
+    hass: HomeAssistant, config_entry: SinapsiAlfaConfigEntry, async_add_entities
+):
     """Sensor Platform setup."""
 
-    # Get handler to coordinator from config
-    coordinator = hass.data[DOMAIN][config_entry.entry_id][DATA]
+    # This gets the data update coordinator from hass.data as specified in your __init__.py
+    coordinator: SinapsiAlfaCoordinator = config_entry.runtime_data.coordinator
 
     _LOGGER.debug("(sensor) Name: %s", config_entry.data.get(CONF_NAME))
     _LOGGER.debug("(sensor) Manufacturer: %s", coordinator.api.data["manufact"])

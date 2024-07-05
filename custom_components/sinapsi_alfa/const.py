@@ -12,13 +12,6 @@ DOMAIN = "sinapsi_alfa"
 ATTRIBUTION = "by @alexdelprete"
 ISSUE_URL = "https://github.com/alexdelprete/ha-sinapsi-alfa/issues"
 
-# Platforms
-PLATFORMS = [
-    "sensor",
-]
-UPDATE_LISTENER = "update_listener"
-DATA = "data"
-
 # Configuration and options
 CONF_NAME = "name"
 CONF_HOST = "host"
