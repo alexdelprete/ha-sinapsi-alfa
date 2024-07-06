@@ -132,7 +132,9 @@ async def async_remove_config_entry_device(
     return True
 
 
-async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
+async def async_unload_entry(
+    hass: HomeAssistant, config_entry: SinapsiAlfaConfigEntry
+) -> bool:
     """Unload a config entry."""
     # This is called when you remove your integration or shutdown HA.
     # If you have created any custom services, they need to be removed here too.
