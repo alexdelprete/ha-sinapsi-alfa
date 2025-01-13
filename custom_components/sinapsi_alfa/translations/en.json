@@ -12,9 +12,6 @@
         }
       }
     },
-    "error": {
-      "already_configured": "Device is already configured"
-    },
     "abort": {
       "already_configured": "Device is already configured"
     }
@@ -25,6 +22,7 @@
         "title": "Alfa Connection Options",
         "description": "Set Connection Options",
         "data": {
+          "host": "IP or hostname",
           "port": "TCP port",
           "scan_interval": "Polling Period (min: 30s max: 600s)"
         }

@@ -85,6 +85,7 @@ class SinapsiAlfaSensor(CoordinatorEntity, SensorEntity):
                 "_handle_coordinator_update: sensors state written to state machine"
             )
 
+    # when has_entity_name is True, the resulting entity name will be: {device_name}_{self._name}
     @property
     def has_entity_name(self):
         """Return the name state."""

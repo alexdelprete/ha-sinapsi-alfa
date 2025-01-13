@@ -7,7 +7,12 @@ import logging
 
 import voluptuous as vol
 from homeassistant import config_entries
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.config_entries import (
+    ConfigEntry,
+    ConfigFlow,
+    ConfigFlowResult,
+    OptionsFlow,
+)
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.selector import selector
@@ -38,7 +43,7 @@ def get_host_from_config(hass: HomeAssistant):
     }
 
 
-class SinapsiAlfaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):
     """Sinapsi Alfa config flow."""
 
     VERSION = 1
@@ -73,7 +78,7 @@ class SinapsiAlfaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             )
             return False
 
-    async def async_step_user(self, user_input=None):
+    async def async_step_user(self, user_input=None) -> ConfigFlowResult:
         """Handle the initial step."""
         errors = {}
 
@@ -115,7 +120,7 @@ class SinapsiAlfaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     vol.Required(
                         CONF_PORT,
                         default=DEFAULT_PORT,
-                    ): vol.Coerce(int),
+                    ): vol.All(vol.Coerce(int), vol.Range(min=0, max=65535)),
                     vol.Required(
                         CONF_SCAN_INTERVAL,
                         default=DEFAULT_SCAN_INTERVAL,
@@ -136,7 +141,7 @@ class SinapsiAlfaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
 
-class SinapsiAlfaOptionsFlow(config_entries.OptionsFlow):
+class SinapsiAlfaOptionsFlow(OptionsFlow):
     """Config flow options handler."""
 
     VERSION = 1
@@ -147,9 +152,12 @@ class SinapsiAlfaOptionsFlow(config_entries.OptionsFlow):
         self.data_schema = vol.Schema(
             {
                 vol.Required(
+                    CONF_HOST,
+                ): cv.string,
+                vol.Required(
                     CONF_PORT,
                     default=self.config_entry.data.get(CONF_PORT),
-                ): vol.Coerce(int),
+                ): vol.All(vol.Coerce(int), vol.Range(min=0, max=65535)),
                 vol.Required(
                     CONF_SCAN_INTERVAL,
                     default=self.config_entry.data.get(CONF_SCAN_INTERVAL),
@@ -167,15 +175,13 @@ class SinapsiAlfaOptionsFlow(config_entries.OptionsFlow):
             }
         )
 
-    async def async_step_init(self, user_input=None):
+    async def async_step_init(self, user_input=None) -> ConfigFlowResult:
         """Manage the options."""
 
         if user_input is not None:
             # complete non-edited entries before update (ht @PeteRage)
             if CONF_NAME in self.config_entry.data:
                 user_input[CONF_NAME] = self.config_entry.data.get(CONF_NAME)
-            if CONF_HOST in self.config_entry.data:
-                user_input[CONF_HOST] = self.config_entry.data.get(CONF_HOST)
 
             # write updated config entries (ht @PeteRage / @fuatakgun)
             self.hass.config_entries.async_update_entry(

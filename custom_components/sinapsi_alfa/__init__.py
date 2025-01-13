@@ -37,16 +37,6 @@ class RuntimeData:
     update_listener: Callable
 
 
-def get_instance_count(hass: HomeAssistant) -> int:
-    """Return number of instances."""
-    entries = [
-        entry
-        for entry in hass.config_entries.async_entries(DOMAIN)
-        if not entry.disabled_by
-    ]
-    return len(entries)
-
-
 async def async_setup_entry(hass: HomeAssistant, config_entry: SinapsiAlfaConfigEntry):
     """Set up integration from a config entry."""
 
@@ -73,7 +63,11 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: SinapsiAlfaConfig
 
     # Initialise a listener for config flow options changes.
     # See config_flow for defining an options setting that shows up as configure on the integration.
-    update_listener = config_entry.add_update_listener(_async_update_listener)
+    update_listener = config_entry.add_update_listener(async_reload_entry)
+
+    # Register an update listener to the config entry that will be called when the entry is updated
+    # ref.: https://developers.home-assistant.io/docs/config_entries_options_flow_handler/#signal-updates
+    config_entry.async_on_unload(update_listener)
 
     # Add the coordinator and update listener to hass data to make
     # accessible throughout your integration
@@ -111,12 +105,6 @@ async def async_update_device_registry(
     )
 
 
-async def _async_update_listener(hass: HomeAssistant, config_entry):
-    """Handle config options update."""
-    # Reload the integration when the options change.
-    await hass.config_entries.async_reload(config_entry.entry_id)
-
-
 async def async_remove_config_entry_device(
     hass: HomeAssistant, config_entry, device_entry
 ) -> bool:
@@ -139,34 +127,43 @@ async def async_unload_entry(
     # This is called when you remove your integration or shutdown HA.
     # If you have created any custom services, they need to be removed here too.
 
-    _LOGGER.debug("Unload config_entry")
+    _LOGGER.debug("Unload config_entry: started")
 
-    # This is called when you remove your integration or shutdown HA.
-    # If you have created any custom services, they need to be removed here too.
-
-    # Remove the config options update listener
-    _LOGGER.debug("Detach config update listener")
-    hass.data[DOMAIN][config_entry.entry_id].update_listener()
-
-    # Check if there are other instances
-    if get_instance_count(hass) == 0:
-        _LOGGER.debug("Unload config_entry: no more entries found")
-
-    _LOGGER.debug("Unload integration platforms")
-
-    # Unload platforms
-    unload_ok = await hass.config_entries.async_unload_platforms(
+    # Unload platforms and cleanup resources
+    if unload_ok := await hass.config_entries.async_unload_platforms(
         config_entry, PLATFORMS
-    )
+    ):
+        try:
+            # Close API connection if exists
+            # coordinator = getattr(config_entry.runtime_data, 'coordinator', None)
+            coordinator = config_entry.runtime_data.coordinator
+            if coordinator.api:
+                coordinator.api.close()
+                _LOGGER.debug("Closed API connection")
 
-    # Remove the config entry from the hass data object.
-    if unload_ok:
-        _LOGGER.debug("Unload integration")
-        hass.data[DOMAIN].pop(config_entry.entry_id)
-        return True  # unloaded
+            # Remove update listener if exists
+            if config_entry.entry_id in hass.data[DOMAIN]:
+                update_listener = config_entry.runtime_data.update_listener
+                if update_listener:
+                    update_listener()
+                _LOGGER.debug("Removed update listener")
+
+                # Remove config entry from hass data
+                hass.data[DOMAIN].pop(config_entry.entry_id)
+                _LOGGER.debug("Removed config entry from hass data")
+        except Exception as ex:
+            _LOGGER.error("Error during unload: %s", str(ex))
+            return False
     else:
-        _LOGGER.debug("Unload config_entry failed: integration not unloaded")
-        return False  # unload failed
+        _LOGGER.debug("Failed to unload platforms")
+
+    _LOGGER.debug("Unload config_entry: completed")
+    return unload_ok
+
+
+async def async_reload_entry(hass: HomeAssistant, config_entry: SinapsiAlfaConfigEntry):
+    """Reload the config entry."""
+    await hass.config_entries.async_schedule_reload(config_entry.entry_id)
 
 
 # Sample migration code in case it's needed
