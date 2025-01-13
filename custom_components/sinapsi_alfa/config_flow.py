@@ -95,6 +95,7 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):
             else:
                 uid = await self.get_unique_id(name, host, port, scan_interval)
                 if uid is not False:
+                    _LOGGER.debug(f"Device unique id: {uid}")
                     # Assign a unique ID to the flow and abort the flow
                     # if another flow with the same unique ID is in progress
                     await self.async_set_unique_id(uid)
