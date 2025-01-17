@@ -32,10 +32,14 @@ class SinapsiAlfaCoordinator(DataUpdateCoordinator):
     def __init__(self, hass: HomeAssistant, config_entry: ConfigEntry) -> None:
         """Initialize data update coordinator."""
 
-        # get scan_interval from user config
-        self.scan_interval = config_entry.data.get(
-            CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
+        # get parameters from user config
+        self.conf_name = config_entry.data.get(CONF_NAME)
+        self.conf_host = config_entry.data.get(CONF_HOST)
+        self.conf_port = int(config_entry.data.get(CONF_PORT))
+        self.scan_interval = int(
+            config_entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
         )
+
         # enforce scan_interval lower bound
         if self.scan_interval < MIN_SCAN_INTERVAL:
             self.scan_interval = MIN_SCAN_INTERVAL
@@ -59,18 +63,15 @@ class SinapsiAlfaCoordinator(DataUpdateCoordinator):
 
         self.api = SinapsiAlfaAPI(
             hass,
-            config_entry.data.get(CONF_NAME),
-            config_entry.data.get(CONF_HOST),
-            config_entry.data.get(CONF_PORT),
+            self.conf_name,
+            self.conf_host,
+            self.conf_port,
             self.scan_interval,
         )
 
-        _LOGGER.debug("Coordinator Config Data: %s", config_entry.data)
+        _LOGGER.debug(f"Coordinator Config Data: {config_entry.data}")
         _LOGGER.debug(
-            "Coordinator API init: Host: %s Port: %s ID: %s ScanInterval: %s",
-            config_entry.data.get(CONF_HOST),
-            config_entry.data.get(CONF_PORT),
-            self.scan_interval,
+            f"Coordinator init - Host: {self.conf_host} Port: {self.conf_port} ScanInterval: {self.scan_interval}"
         )
 
     async def async_update_data(self):

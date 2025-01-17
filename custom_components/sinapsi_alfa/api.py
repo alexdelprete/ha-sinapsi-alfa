@@ -9,6 +9,7 @@ import threading
 
 from getmac import getmac
 from homeassistant.components.sensor import SensorDeviceClass
+from homeassistant.core import HomeAssistant
 from pymodbus.client import ModbusTcpClient
 from pymodbus.constants import Endian
 from pymodbus.exceptions import ConnectionException, ModbusException
@@ -33,13 +34,22 @@ class SinapsiAlfaAPI:
 
     def __init__(
         self,
-        hass,
-        name,
-        host,
-        port,
-        scan_interval,
+        hass: HomeAssistant,
+        name: str,
+        host: str,
+        port: int,
+        scan_interval: int,
     ):
-        """Initialize the Modbus API Client."""
+        """Initialize the Modbus API Client.
+
+        Args:
+            hass: HomeAssistant instance
+            name: Device name
+            host: Device IP address
+            port: Modbus TCP port
+            scan_interval: Update interval in seconds
+
+        """
         self._hass = hass
         self._name = name
         self._host = host
@@ -211,9 +221,7 @@ class SinapsiAlfaAPI:
         try:
             if self.connect():
                 _LOGGER.debug(
-                    "Start Get data (Host: %s - Port: %s)",
-                    self._host,
-                    self._port,
+                    f"Start Get data (Host: {self._host} - Port: {self._port})",
                 )
                 # HA way to call a sync function from async function
                 # https://developers.home-assistant.io/docs/asyncio_working_with_async?#calling-sync-functions-from-async

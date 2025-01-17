@@ -42,7 +42,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: SinapsiAlfaConfig
 
     if hass.data.get(DOMAIN) is None:
         hass.data.setdefault(DOMAIN, {})
-        _LOGGER.info(STARTUP_MESSAGE)
+        _LOGGER.info(f"{STARTUP_MESSAGE}")
     _LOGGER.debug(f"Setup config_entry for {DOMAIN}")
 
     # Initialise the coordinator that manages data updates from your api.
@@ -152,7 +152,7 @@ async def async_unload_entry(
                 hass.data[DOMAIN].pop(config_entry.entry_id)
                 _LOGGER.debug("Removed config entry from hass data")
         except Exception as ex:
-            _LOGGER.error("Error during unload: %s", str(ex))
+            _LOGGER.error(f"Error during unload: {str(ex)}")
             return False
     else:
         _LOGGER.debug("Failed to unload platforms")
