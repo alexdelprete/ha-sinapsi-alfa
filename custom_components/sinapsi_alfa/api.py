@@ -310,6 +310,7 @@ class SinapsiAlfaAPI:
                     if reg_key == "fascia_oraria_attuale":
                         value = f"F{value}"
 
+                    # Store the value in the data dictionary
                     self.data[reg_key] = value
 
                     _LOGGER.debug(f"(read_modbus_alfa) Data: {self.data[reg_key]}")
