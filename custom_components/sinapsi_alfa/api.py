@@ -249,6 +249,7 @@ class SinapsiAlfaAPI:
                 _LOGGER.debug(
                     f"(read_modbus_alfa) Key: {reg_key} Addr: {reg_addr} Type: {reg_type} DevClass: {reg_dev_class}"
                 )
+                # if reg_type is calcolato, calculate the values
                 if reg_type == "calcolato":
                     self.data["potenza_auto_consumata"] = (
                         self.data["potenza_prodotta"] - self.data["potenza_immessa"]
@@ -295,6 +296,7 @@ class SinapsiAlfaAPI:
                     if reg_key == "tempo_residuo_distacco":
                         if value == 65535:
                             value = 0
+
                     # if data_evento is > 4294967294 then no event
                     if reg_key == "data_evento":
                         if value > 4294967294:
@@ -304,11 +306,14 @@ class SinapsiAlfaAPI:
                             value = unix_timestamp_to_iso8601_local_tz(
                                 value + self.data["tempo_residuo_distacco"]
                             )
-                     # Prepending "F" to fascia oraria for consistency        
+
+                    # Prepending "F" to fascia oraria for consistency
                     if reg_key == "fascia_oraria_attuale":
                         value = f"F{value}"
-                    
+
+                    # Store the value in the data dictionary
                     self.data[reg_key] = value
+
                     _LOGGER.debug(f"(read_modbus_alfa) Data: {self.data[reg_key]}")
         except Exception as modbus_error:
             _LOGGER.debug(f"(read_modbus_alfa): failed with error: {modbus_error}")
