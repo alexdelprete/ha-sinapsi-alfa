@@ -304,6 +304,10 @@ class SinapsiAlfaAPI:
                             value = unix_timestamp_to_iso8601_local_tz(
                                 value + self.data["tempo_residuo_distacco"]
                             )
+                     # Prepending "F" to fascia oraria for consistency        
+                    if reg_key == "fascia_oraria_attuale":
+                        value = f"F{value}"
+                    
                     self.data[reg_key] = value
                     _LOGGER.debug(f"(read_modbus_alfa) Data: {self.data[reg_key]}")
         except Exception as modbus_error:
