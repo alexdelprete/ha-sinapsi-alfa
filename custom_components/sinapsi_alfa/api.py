@@ -15,7 +15,7 @@ from pymodbus.constants import Endian
 from pymodbus.exceptions import ConnectionException, ModbusException
 from pymodbus.payload import BinaryPayloadDecoder
 
-from .const import MANUFACTURER, MODEL, SENSOR_ENTITIES
+from .const import DEFAULT_SLAVE_ID, MANUFACTURER, MODEL, SENSOR_ENTITIES
 from .helpers import unix_timestamp_to_iso8601_local_tz
 
 _LOGGER = logging.getLogger(__name__)
@@ -54,6 +54,7 @@ class SinapsiAlfaAPI:
         self._name = name
         self._host = host
         self._port = port
+        self._slave_id = DEFAULT_SLAVE_ID
         self._update_interval = scan_interval
         # Ensure ModBus Timeout is 1s less than scan_interval
         # https://github.com/binsentsu/home-assistant-solaredge-modbus/pull/183
@@ -202,9 +203,9 @@ class SinapsiAlfaAPI:
             _LOGGER.debug("Inverter not ready for Modbus TCP connection")
             raise ConnectionError(f"Inverter not active on {self._host}:{self._port}")
 
-    def read_holding_registers(self, address, count):
+    def read_holding_registers(self, address, count, slave):
         """Read holding registers."""
-        kwargs = {}
+        kwargs = {"slave": slave} if slave else {"slave": self._slave_id}
         try:
             with self._lock:
                 return self._client.read_holding_registers(address, count, **kwargs)
@@ -276,7 +277,7 @@ class SinapsiAlfaAPI:
                     )
                 else:
                     read_data = self.read_holding_registers(
-                        address=reg_addr, count=reg_count
+                        address=reg_addr, count=reg_count, slave=self._slave_id
                     )
                     # No connection errors, we can start scraping registers
                     decoder = BinaryPayloadDecoder.fromRegisters(
