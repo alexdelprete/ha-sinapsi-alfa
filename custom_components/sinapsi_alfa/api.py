@@ -203,12 +203,14 @@ class SinapsiAlfaAPI:
             _LOGGER.debug("Inverter not ready for Modbus TCP connection")
             raise ConnectionError(f"Inverter not active on {self._host}:{self._port}")
 
-    def read_holding_registers(self, address, count, slave):
+    def read_holding_registers(self, address, count):
         """Read holding registers."""
-        kwargs = {"slave": slave} if slave else {"slave": self._slave_id}
+
         try:
             with self._lock:
-                return self._client.read_holding_registers(address, count, **kwargs)
+                return self._client.read_holding_registers(
+                    address=address, count=count, slave=self._slave_id
+                )
         except ConnectionException as connect_error:
             _LOGGER.debug(f"Read Holding Registers connect_error: {connect_error}")
             raise ConnectionError() from connect_error
@@ -277,7 +279,7 @@ class SinapsiAlfaAPI:
                     )
                 else:
                     read_data = self.read_holding_registers(
-                        address=reg_addr, count=reg_count, slave=self._slave_id
+                        address=reg_addr, count=reg_count
                     )
                     # No connection errors, we can start scraping registers
                     decoder = BinaryPayloadDecoder.fromRegisters(
