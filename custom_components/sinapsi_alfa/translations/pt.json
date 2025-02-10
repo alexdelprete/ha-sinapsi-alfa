@@ -1,0 +1,32 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Configuração da Ligação Alfa",
+        "description": "Se precisar de ajuda com a configuração, aceda a: https://github.com/alexdelprete/ha-sinapsi-alfa",
+        "data": {
+          "name": "Nome personalizado do dispositivo (usado como prefixo dos sensores)",
+          "host": "IP ou nome do anfitrião",
+          "port": "Porta TCP",
+          "scan_interval": "Período de sondagem (mín: 30s máx: 600s)"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "O dispositivo já está configurado."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opções da Ligação Alfa",
+        "description": "Definir opções de ligação",
+        "data": {
+          "host": "IP ou nome do anfitrião",
+          "port": "Porta TCP",
+          "scan_interval": "Período de sondagem (mín: 30s máx: 600s)"
+        }
+      }
+    }
+  }
+}
