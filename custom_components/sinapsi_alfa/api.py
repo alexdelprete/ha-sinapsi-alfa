@@ -13,10 +13,12 @@ from homeassistant.core import HomeAssistant
 from pymodbus.client import ModbusTcpClient
 from pymodbus.constants import Endian
 from pymodbus.exceptions import ConnectionException, ModbusException
-from pymodbus.payload import BinaryPayloadDecoder
 
 from .const import DEFAULT_SLAVE_ID, MANUFACTURER, MODEL, SENSOR_ENTITIES
 from .helpers import unix_timestamp_to_iso8601_local_tz
+
+# from pymodbus.payload import BinaryPayloadDecoder
+from .modbuspayload import BinaryPayloadDecoder
 
 _LOGGER = logging.getLogger(__name__)
 
