@@ -42,14 +42,14 @@ class BinaryPayloadBuilder:
         payload = builder.build()
     """
 
-    @classmethod
-    def deprecate(cls):
-        """Log warning."""
-        Log.warning(
-            "BinaryPayloadBuilder is deprecated and will be removed in v3.9.0 !\n"
-            'Please use "client.convert_from_registers()" or "client.convert_to_registers"\n'
-            'See documentation: "https://pymodbus.readthedocs.io/en/latest/source/client.html#pymodbus.client.mixin.ModbusClientMixin.convert_from_registers"'
-        )
+    # @classmethod
+    # def deprecate(cls):
+    #     """Log warning."""
+    #     Log.warning(
+    #         "BinaryPayloadBuilder is deprecated and will be removed in v3.9.0 !\n"
+    #         'Please use "client.convert_from_registers()" or "client.convert_to_registers"\n'
+    #         'See documentation: "https://pymodbus.readthedocs.io/en/latest/source/client.html#pymodbus.client.mixin.ModbusClientMixin.convert_from_registers"'
+    #     )
 
     def __init__(
         self, payload=None, byteorder=Endian.LITTLE, wordorder=Endian.BIG, repack=False
