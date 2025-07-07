@@ -25,6 +25,13 @@ MIN_SCAN_INTERVAL = 30
 CONN_TIMEOUT = 5
 MANUFACTURER = "Sinapsi"
 MODEL = "Alfa"
+
+# API Constants
+DEFAULT_SENSOR_VALUE = 0.0
+MAX_RETRY_ATTEMPTS = 10
+SOCKET_TIMEOUT = 3.0
+INVALID_DISTACCO_VALUE = 65535
+MAX_EVENT_VALUE = 4294967294
 STARTUP_MESSAGE = f"""
 -------------------------------------------------------------------
 {NAME}
