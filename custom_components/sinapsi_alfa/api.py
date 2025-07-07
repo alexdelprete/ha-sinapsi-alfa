@@ -138,6 +138,7 @@ class SinapsiAlfaAPI:
             mac_address = mac_address.replace(":", "").upper()
             _LOGGER.debug(f"Get_Mac_Address (SUCCESS): found mac address {mac_address}")
         else:
+            mac_address = ""
             _LOGGER.debug(
                 f"Get_Mac_Address (ERROR): mac address not found! {mac_address}"
             )
@@ -300,7 +301,7 @@ class SinapsiAlfaAPI:
                         SensorDeviceClass.ENERGY,
                         SensorDeviceClass.POWER,
                     ]:
-                        value = round(float(value / 1000), 2)
+                        value = round(float(value) / 1000, 2)
                     # if not power/energy type, it's an integer
                     else:
                         value = int(value)
