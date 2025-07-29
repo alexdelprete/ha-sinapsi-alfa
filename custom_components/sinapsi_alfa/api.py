@@ -100,8 +100,8 @@ class SinapsiAlfaAPI:
             raise ValueError("Host must be a non-empty string")
         if not isinstance(port, int) or not (1 <= port <= 65535):
             raise ValueError("Port must be an integer between 1 and 65535")
-        if not isinstance(scan_interval, int) or scan_interval < MIN_SCAN_INTERVAL:
-            raise ValueError("Scan interval must be at least 10 seconds")
+        if not isinstance(scan_interval, int):
+            raise ValueError("Scan interval must be an integer")
         if not name or not isinstance(name, str):
             raise ValueError("Name must be a non-empty string")
 
