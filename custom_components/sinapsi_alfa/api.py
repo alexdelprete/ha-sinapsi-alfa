@@ -15,13 +15,12 @@ from pymodbus.constants import Endian
 from pymodbus.exceptions import ConnectionException, ModbusException
 
 from .const import (
-    DEFAULT_SLAVE_ID,
     DEFAULT_SENSOR_VALUE,
+    DEFAULT_SLAVE_ID,
     INVALID_DISTACCO_VALUE,
     MANUFACTURER,
     MAX_EVENT_VALUE,
     MAX_RETRY_ATTEMPTS,
-    MIN_SCAN_INTERVAL,
     MODEL,
     SENSOR_ENTITIES,
     SOCKET_TIMEOUT,
@@ -91,19 +90,7 @@ class SinapsiAlfaAPI:
             port: Modbus TCP port
             scan_interval: Update interval in seconds
 
-        Raises:
-            ValueError: If any parameter is invalid
-
         """
-        # Input validation
-        if not host or not isinstance(host, str):
-            raise ValueError("Host must be a non-empty string")
-        if not isinstance(port, int) or not (1 <= port <= 65535):
-            raise ValueError("Port must be an integer between 1 and 65535")
-        if not isinstance(scan_interval, int):
-            raise ValueError("Scan interval must be an integer")
-        if not name or not isinstance(name, str):
-            raise ValueError("Name must be a non-empty string")
 
         self._hass = hass
         self._name = name

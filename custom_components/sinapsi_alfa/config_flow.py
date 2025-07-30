@@ -124,7 +124,7 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):
                     vol.Required(
                         CONF_PORT,
                         default=DEFAULT_PORT,
-                    ): vol.All(vol.Coerce(int), vol.Range(min=0, max=65535)),
+                    ): vol.All(vol.Coerce(int), vol.Range(min=1, max=65535)),
                     vol.Required(
                         CONF_SCAN_INTERVAL,
                         default=DEFAULT_SCAN_INTERVAL,
