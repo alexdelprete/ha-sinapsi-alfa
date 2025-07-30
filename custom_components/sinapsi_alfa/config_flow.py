@@ -43,11 +43,10 @@ def get_host_from_config(hass: HomeAssistant):
     }
 
 
-class SinapsiAlfaConfigFlow(ConfigFlow):
+class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):
     """Sinapsi Alfa config flow."""
 
     VERSION = 1
-    domain = DOMAIN
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
 
     @staticmethod
