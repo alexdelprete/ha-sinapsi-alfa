@@ -98,9 +98,10 @@ class SinapsiAlfaAPI:
         self._port = port
         self._slave_id = DEFAULT_SLAVE_ID
         self._update_interval = scan_interval
-        # Ensure ModBus Timeout is 1s less than scan_interval
-        # https://github.com/binsentsu/home-assistant-solaredge-modbus/pull/183
-        self._timeout = self._update_interval - 1
+        # Use a reasonable fixed timeout for Modbus operations
+        # The previous logic (scan_interval - 1) caused excessively long timeouts
+        # that interfered with pymodbus retry mechanism
+        self._timeout = min(5.0, self._update_interval / 2)
         self._client = AsyncModbusTcpClient(
             host=self._host, port=self._port, timeout=self._timeout
         )
@@ -187,7 +188,10 @@ class SinapsiAlfaAPI:
                     await asyncio.sleep(delay)
 
         _LOGGER.debug("MAC address not found after all attempts")
-        return ""
+        # Return a fallback unique identifier based on host:port
+        fallback_id = f"{self._host.replace('.', '')}_{self._port}"
+        _LOGGER.debug(f"Using fallback ID: {fallback_id}")
+        return fallback_id
 
     async def check_port(self) -> bool:
         """Check if port is available."""
