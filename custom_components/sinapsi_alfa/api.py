@@ -287,7 +287,7 @@ class SinapsiAlfaAPI:
                 raise SinapsiModbusError(
                     f"Device reported error: {result}",
                     address=address,
-                    operation="read_holding_registers"
+                    operation="read_holding_registers",
                 )
             return result
         except ConnectionException as connect_error:
