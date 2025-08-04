@@ -5,6 +5,7 @@ https://github.com/alexdelprete/ha-sinapsi-alfa
 
 import asyncio
 import logging
+import time
 from typing import Any
 
 from getmac import getmac
@@ -243,9 +244,12 @@ class SinapsiAlfaAPI:
         )
         if await self.check_port():
             _LOGGER.debug("Inverter ready for Modbus TCP connection")
+            start_time = time.time()
             try:
                 async with self._lock:
                     await self._client.connect()
+                connect_duration = time.time() - start_time
+                _LOGGER.debug(f"Connection attempt took {connect_duration:.3f}s")
                 if not self._client.connected:
                     raise SinapsiConnectionError(
                         f"Failed to connect to {self._host}:{self._port} timeout: {self._timeout}",
@@ -255,12 +259,13 @@ class SinapsiAlfaAPI:
                 else:
                     _LOGGER.debug("Modbus TCP Client connected")
                     return True
-            except ModbusException:
+            except Exception as e:
+                _LOGGER.debug(f"Connection failed: {type(e).__name__}: {e}")
                 raise SinapsiConnectionError(
-                    f"Failed to connect to {self._host}:{self._port} timeout: {self._timeout}",
+                    f"Failed to connect to {self._host}:{self._port} timeout: {self._timeout} - {type(e).__name__}: {e}",
                     self._host,
                     self._port,
-                )
+                ) from e
         else:
             _LOGGER.debug("Inverter not ready for Modbus TCP connection")
             raise SinapsiConnectionError(
@@ -274,9 +279,17 @@ class SinapsiAlfaAPI:
 
         try:
             async with self._lock:
-                return await self._client.read_holding_registers(
+                result = await self._client.read_holding_registers(
                     address=address, count=count, slave=self._slave_id
                 )  # type: ignore
+            if result.isError():
+                _LOGGER.debug(f"Modbus error response: {result}")
+                raise SinapsiModbusError(
+                    f"Device reported error: {result}",
+                    address=address,
+                    operation="read_holding_registers"
+                )
+            return result
         except ConnectionException as connect_error:
             _LOGGER.debug(f"Read Holding Registers connect_error: {connect_error}")
             raise SinapsiConnectionError(
