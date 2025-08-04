@@ -11,7 +11,6 @@ from getmac import getmac
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.core import HomeAssistant
 from pymodbus.client import AsyncModbusTcpClient
-from pymodbus.constants import Endian
 from pymodbus.exceptions import ConnectionException, ModbusException
 
 from .const import (
@@ -26,9 +25,8 @@ from .const import (
     SOCKET_TIMEOUT,
 )
 from .helpers import unix_timestamp_to_iso8601_local_tz
-
-# from pymodbus.payload import BinaryPayloadDecoder
-from .modbuspayload import BinaryPayloadDecoder
+from .pymodbus_constants import Endian
+from .pymodbus_payload import BinaryPayloadDecoder
 
 _LOGGER = logging.getLogger(__name__)
 

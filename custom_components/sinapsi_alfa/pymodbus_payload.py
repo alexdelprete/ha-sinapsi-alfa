@@ -20,13 +20,14 @@ from array import array
 # pylint: disable=missing-type-doc
 from struct import pack, unpack
 
-from pymodbus.constants import Endian
 from pymodbus.exceptions import ParameterException
 from pymodbus.logging import Log
 from pymodbus.pdu.pdu import (
     pack_bitstring,
     unpack_bitstring,
 )
+
+from .pymodbus_constants import Endian
 
 
 class BinaryPayloadBuilder:
