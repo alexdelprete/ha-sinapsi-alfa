@@ -16,7 +16,7 @@ from pymodbus.exceptions import ConnectionException, ModbusException
 
 from .const import (
     DEFAULT_SENSOR_VALUE,
-    DEFAULT_SLAVE_ID,
+    DEFAULT_DEVICE_ID,
     INVALID_DISTACCO_VALUE,
     MANUFACTURER,
     MAX_EVENT_VALUE,
@@ -95,7 +95,7 @@ class SinapsiAlfaAPI:
         self._name = name
         self._host = host
         self._port = port
-        self._slave_id = DEFAULT_SLAVE_ID
+        self._device_id = DEFAULT_DEVICE_ID
         self._update_interval = scan_interval
         # Use a reasonable fixed timeout for Modbus operations
         # The previous logic (scan_interval - 1) caused excessively long timeouts
@@ -280,14 +280,14 @@ class SinapsiAlfaAPI:
         try:
             async with self._lock:
                 result = await self._client.read_holding_registers(
-                    address=address, count=count, slave=self._slave_id
+                    address=address, count=count, device_id=self._device_id
                 )  # type: ignore
             if result.isError():
                 _LOGGER.debug(f"Modbus error response: {result}")
                 raise SinapsiModbusError(
                     f"Device reported error: {result}",
                     address=address,
-                    operation="read_holding_registers",
+                    operation="read_holding_registers"
                 )
             return result
         except ConnectionException as connect_error:
