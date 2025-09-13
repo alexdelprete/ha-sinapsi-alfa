@@ -15,8 +15,8 @@ from pymodbus.client import AsyncModbusTcpClient
 from pymodbus.exceptions import ConnectionException, ModbusException
 
 from .const import (
-    DEFAULT_SENSOR_VALUE,
     DEFAULT_DEVICE_ID,
+    DEFAULT_SENSOR_VALUE,
     INVALID_DISTACCO_VALUE,
     MANUFACTURER,
     MAX_EVENT_VALUE,
@@ -162,7 +162,7 @@ class SinapsiAlfaAPI:
                     )
 
                 mac_address = getmac.get_mac_address(
-                    hostname=self._host, network_request=False
+                    hostname=self._host, network_request=True
                 )
 
                 if mac_address:
