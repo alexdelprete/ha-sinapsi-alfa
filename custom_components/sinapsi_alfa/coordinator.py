@@ -77,7 +77,9 @@ class SinapsiAlfaCoordinator(DataUpdateCoordinator):
             self.scan_interval,
         )
 
-        log_debug(_LOGGER, "__init__", "Coordinator Config Data", data=config_entry.data)
+        log_debug(
+            _LOGGER, "__init__", "Coordinator Config Data", data=config_entry.data
+        )
         log_debug(
             _LOGGER,
             "__init__",

@@ -15,7 +15,6 @@ from homeassistant.config_entries import (
 )
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import config_validation as cv
-from homeassistant.helpers.selector import selector
 from pymodbus.exceptions import ConnectionException
 
 from .api import SinapsiAlfaAPI, SinapsiConnectionError, SinapsiModbusError
@@ -67,9 +66,7 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore
 
     async def get_unique_id(self, name, host, port, scan_interval):
         """Return device serial number."""
-        log_debug(
-            _LOGGER, "get_unique_id", "Test connection", host=host, port=port
-        )
+        log_debug(_LOGGER, "get_unique_id", "Test connection", host=host, port=port)
         try:
             log_debug(_LOGGER, "get_unique_id", "Creating API Client")
             self.api = SinapsiAlfaAPI(self.hass, name, host, port, scan_interval)
@@ -78,7 +75,11 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore
             log_debug(_LOGGER, "get_unique_id", "API Client: get data")
             log_debug(_LOGGER, "get_unique_id", "API Client Data", data=self.api_data)
             return self.api.data["sn"]
-        except (ConnectionException, SinapsiConnectionError, SinapsiModbusError) as connerr:
+        except (
+            ConnectionException,
+            SinapsiConnectionError,
+            SinapsiModbusError,
+        ) as connerr:
             log_error(
                 _LOGGER,
                 "get_unique_id",

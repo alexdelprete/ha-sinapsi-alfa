@@ -126,9 +126,12 @@ class SinapsiAlfaAPI:
 
         Raises:
             ValueError: If port is out of range
+
         """
         if not MIN_PORT <= port <= MAX_PORT:
-            raise ValueError(f"Port {port} is out of valid range ({MIN_PORT}-{MAX_PORT})")
+            raise ValueError(
+                f"Port {port} is out of valid range ({MIN_PORT}-{MAX_PORT})"
+            )
 
     def _initialize_data_structure(self) -> None:
         """Initialize the data structure with default values."""
@@ -219,10 +222,14 @@ class SinapsiAlfaAPI:
                     delay = min(2**attempt + random.uniform(0, 1), 10)
                     await asyncio.sleep(delay)
 
-        log_debug(_LOGGER, "get_mac_address", "MAC address not found after all attempts")
+        log_debug(
+            _LOGGER, "get_mac_address", "MAC address not found after all attempts"
+        )
         # Return a fallback unique identifier based on host:port
         fallback_id = f"{self._host.replace('.', '')}_{self._port}"
-        log_debug(_LOGGER, "get_mac_address", "Using fallback ID", fallback_id=fallback_id)
+        log_debug(
+            _LOGGER, "get_mac_address", "Using fallback ID", fallback_id=fallback_id
+        )
         return fallback_id
 
     async def check_port(self) -> bool:
@@ -461,14 +468,21 @@ class SinapsiAlfaAPI:
         reg_type = sensor["modbus_type"]
         reg_count = 1 if reg_type == "uint16" else 2
 
-        log_debug(_LOGGER, "_read_and_process_sensor", f"Reading {reg_key}", address=reg_addr)
+        log_debug(
+            _LOGGER, "_read_and_process_sensor", f"Reading {reg_key}", address=reg_addr
+        )
 
         read_data = await self.read_holding_registers(reg_addr, reg_count)
         raw_value = self._decode_register_value(read_data, reg_type)
         processed_value = self._process_sensor_value(raw_value, sensor)
 
         self.data[reg_key] = processed_value
-        log_debug(_LOGGER, "_read_and_process_sensor", f"Processed {reg_key}", value=processed_value)
+        log_debug(
+            _LOGGER,
+            "_read_and_process_sensor",
+            f"Processed {reg_key}",
+            value=processed_value,
+        )
 
     async def async_get_data(self) -> bool:
         """Read Data Function."""
@@ -500,7 +514,11 @@ class SinapsiAlfaAPI:
                     log_debug(_LOGGER, "async_get_data", "Data validation: invalid")
                     return False
             else:
-                log_debug(_LOGGER, "async_get_data", "Data collection failed: client not connected")
+                log_debug(
+                    _LOGGER,
+                    "async_get_data",
+                    "Data collection failed: client not connected",
+                )
                 self._connection_healthy = False
                 return False
         except ConnectionException as connect_error:
@@ -535,5 +553,7 @@ class SinapsiAlfaAPI:
                     await self._read_and_process_sensor(sensor)
             return True
         except Exception as error:
-            log_error(_LOGGER, "read_modbus_alfa", "Failed to read modbus data", error=error)
+            log_error(
+                _LOGGER, "read_modbus_alfa", "Failed to read modbus data", error=error
+            )
             raise SinapsiModbusError(f"Failed to read modbus data: {error}") from error

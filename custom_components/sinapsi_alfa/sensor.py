@@ -43,9 +43,7 @@ async def async_setup_entry(
     log_debug(
         _LOGGER, "async_setup_entry", "Model", model=coordinator.api.data["model"]
     )
-    log_debug(
-        _LOGGER, "async_setup_entry", "Serial", serial=coordinator.api.data["sn"]
-    )
+    log_debug(_LOGGER, "async_setup_entry", "Serial", serial=coordinator.api.data["sn"])
 
     sensors = []
     for sensor in SENSOR_ENTITIES:
