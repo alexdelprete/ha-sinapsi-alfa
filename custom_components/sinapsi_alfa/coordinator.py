@@ -18,8 +18,10 @@ from .const import (
     CONF_SCAN_INTERVAL,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
+    MAX_SCAN_INTERVAL,
     MIN_SCAN_INTERVAL,
 )
+from .helpers import log_debug
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -40,13 +42,19 @@ class SinapsiAlfaCoordinator(DataUpdateCoordinator):
             config_entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
         )
 
-        # enforce scan_interval lower bound
+        # enforce scan_interval bounds
         if self.scan_interval < MIN_SCAN_INTERVAL:
             self.scan_interval = MIN_SCAN_INTERVAL
+        elif self.scan_interval > MAX_SCAN_INTERVAL:
+            self.scan_interval = MAX_SCAN_INTERVAL
         # set coordinator update interval
         self.update_interval = timedelta(seconds=self.scan_interval)
-        _LOGGER.debug(
-            f"Scan Interval: scan_interval={self.scan_interval} update_interval={self.update_interval}"
+        log_debug(
+            _LOGGER,
+            "__init__",
+            "Scan Interval configured",
+            scan_interval=self.scan_interval,
+            update_interval=self.update_interval,
         )
 
         # set update method and interval for coordinator
@@ -69,22 +77,36 @@ class SinapsiAlfaCoordinator(DataUpdateCoordinator):
             self.scan_interval,
         )
 
-        _LOGGER.debug(f"Coordinator Config Data: {config_entry.data}")
-        _LOGGER.debug(
-            f"Coordinator init - Host: {self.conf_host} Port: {self.conf_port} ScanInterval: {self.scan_interval}"
+        log_debug(_LOGGER, "__init__", "Coordinator Config Data", data=config_entry.data)
+        log_debug(
+            _LOGGER,
+            "__init__",
+            "Coordinator initialized",
+            host=self.conf_host,
+            port=self.conf_port,
+            scan_interval=self.scan_interval,
         )
 
     async def async_update_data(self):
         """Update data method."""
-        _LOGGER.debug(f"Data Coordinator: Update started at {datetime.now()}")
+        log_debug(_LOGGER, "async_update_data", "Update started", time=datetime.now())
         try:
             self.last_update_status = await self.api.async_get_data()
             self.last_update_time = datetime.now()
-            _LOGGER.debug(
-                f"Data Coordinator: Update completed at {self.last_update_time}"
+            log_debug(
+                _LOGGER,
+                "async_update_data",
+                "Update completed",
+                time=self.last_update_time,
             )
-            return self.last_update_status
         except Exception as ex:
             self.last_update_status = False
-            _LOGGER.debug(f"Coordinator Update Error: {ex} at {self.last_update_time}")
-            raise UpdateFailed() from ex
+            log_debug(
+                _LOGGER,
+                "async_update_data",
+                "Update error",
+                error=ex,
+                time=self.last_update_time,
+            )
+            raise UpdateFailed from ex
+        return self.last_update_status

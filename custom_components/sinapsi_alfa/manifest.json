@@ -10,5 +10,5 @@
   "loggers": ["custom_components.sinapsi_alfa"],
   "requirements": ["pymodbus>=3.11.1", "getmac>=0.9.5"],
   "single_config_entry": true,
-  "version": "0.4.2"
+  "version": "0.5.0-beta.1"
 }

@@ -18,6 +18,7 @@ from .const import (
     SENSOR_ENTITIES,
 )
 from .coordinator import SinapsiAlfaCoordinator
+from .helpers import log_debug
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -30,10 +31,21 @@ async def async_setup_entry(
     # This gets the data update coordinator from hass.data as specified in your __init__.py
     coordinator: SinapsiAlfaCoordinator = config_entry.runtime_data.coordinator
 
-    _LOGGER.debug(f"(sensor) Name: {config_entry.data.get(CONF_NAME)}")
-    _LOGGER.debug(f"(sensor) Manufacturer: {coordinator.api.data['manufact']}")
-    _LOGGER.debug(f"(sensor) Model: {coordinator.api.data['model']}")
-    _LOGGER.debug(f"(sensor) Serial#: {coordinator.api.data['sn']}")
+    log_debug(
+        _LOGGER, "async_setup_entry", "Name", name=config_entry.data.get(CONF_NAME)
+    )
+    log_debug(
+        _LOGGER,
+        "async_setup_entry",
+        "Manufacturer",
+        manufacturer=coordinator.api.data["manufact"],
+    )
+    log_debug(
+        _LOGGER, "async_setup_entry", "Model", model=coordinator.api.data["model"]
+    )
+    log_debug(
+        _LOGGER, "async_setup_entry", "Serial", serial=coordinator.api.data["sn"]
+    )
 
     sensors = []
     for sensor in SENSOR_ENTITIES:
@@ -80,9 +92,11 @@ class SinapsiAlfaSensor(CoordinatorEntity, SensorEntity):
         self._state = self._coordinator.api.data[self._key]
         self.async_write_ha_state()
         # write debug log only on first sensor to avoid spamming the log
-        if self.name == "Manufacturer":
-            _LOGGER.debug(
-                "_handle_coordinator_update: sensors state written to state machine"
+        if self.name == "Potenza Prelevata":
+            log_debug(
+                _LOGGER,
+                "_handle_coordinator_update",
+                "Sensors state written to state machine",
             )
 
     # when has_entity_name is True, the resulting entity name will be: {device_name}_{self._name}
@@ -141,6 +155,11 @@ class SinapsiAlfaSensor(CoordinatorEntity, SensorEntity):
     def should_poll(self) -> bool:
         """No need to poll. Coordinator notifies entity of updates."""
         return False
+
+    @property
+    def available(self) -> bool:
+        """Return if entity is available."""
+        return self.coordinator.last_update_success
 
     @property
     def unique_id(self):

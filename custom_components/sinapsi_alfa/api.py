@@ -20,12 +20,14 @@ from .const import (
     INVALID_DISTACCO_VALUE,
     MANUFACTURER,
     MAX_EVENT_VALUE,
+    MAX_PORT,
     MAX_RETRY_ATTEMPTS,
+    MIN_PORT,
     MODEL,
     SENSOR_ENTITIES,
     SOCKET_TIMEOUT,
 )
-from .helpers import unix_timestamp_to_iso8601_local_tz
+from .helpers import log_debug, log_error, unix_timestamp_to_iso8601_local_tz
 from .pymodbus_constants import Endian
 from .pymodbus_payload import BinaryPayloadDecoder
 
@@ -44,7 +46,6 @@ class SinapsiConnectionError(Exception):
             port: Port that failed to connect (optional)
 
         """
-
         self.host = host
         self.port = port
         super().__init__(message)
@@ -108,8 +109,26 @@ class SinapsiAlfaAPI:
         self._uid = ""  # Initialize empty, will be set during first data fetch
         self._sensors = []
         self.data = {}
+        # Connection health tracking
+        self._connection_healthy = False
+        self._last_successful_read = None
         # Initialize ModBus data structure before first read
         self._initialize_data_structure()
+
+        # Validate configuration parameters
+        self._validate_port(self._port)
+
+    def _validate_port(self, port: int) -> None:
+        """Validate port number is within valid range.
+
+        Args:
+            port: Port number to validate
+
+        Raises:
+            ValueError: If port is out of range
+        """
+        if not MIN_PORT <= port <= MAX_PORT:
+            raise ValueError(f"Port {port} is out of valid range ({MIN_PORT}-{MAX_PORT})")
 
     def _initialize_data_structure(self) -> None:
         """Initialize the data structure with default values."""
@@ -157,8 +176,11 @@ class SinapsiAlfaAPI:
                 # Only check port on first attempt or periodically
                 if attempt == 0 or attempt % 3 == 0:
                     port_available = await self.check_port()
-                    _LOGGER.debug(
-                        f"Port check attempt {attempt + 1}: {'SUCCESS' if port_available else 'FAILED'}"
+                    log_debug(
+                        _LOGGER,
+                        "get_mac_address",
+                        f"Port check attempt {attempt + 1}",
+                        result="SUCCESS" if port_available else "FAILED",
                     )
 
                 mac_address = getmac.get_mac_address(
@@ -167,37 +189,53 @@ class SinapsiAlfaAPI:
 
                 if mac_address:
                     mac_address = mac_address.replace(":", "").upper()
-                    _LOGGER.debug(
-                        f"MAC address found on attempt {attempt + 1}: {mac_address}"
+                    log_debug(
+                        _LOGGER,
+                        "get_mac_address",
+                        f"MAC address found on attempt {attempt + 1}",
+                        mac=mac_address,
                     )
                     return mac_address
 
                 # Exponential backoff with jitter for remaining attempts
                 if attempt < MAX_RETRY_ATTEMPTS - 1:
                     delay = min(2**attempt + random.uniform(0, 1), 10)
-                    _LOGGER.debug(
-                        f"MAC retrieval attempt {attempt + 1} failed, retrying in {delay:.1f}s"
+                    log_debug(
+                        _LOGGER,
+                        "get_mac_address",
+                        f"MAC retrieval attempt {attempt + 1} failed, retrying",
+                        delay_s=f"{delay:.1f}",
                     )
                     await asyncio.sleep(delay)
 
             except Exception as e:
-                _LOGGER.debug(f"MAC retrieval attempt {attempt + 1} failed: {e}")
+                log_debug(
+                    _LOGGER,
+                    "get_mac_address",
+                    f"MAC retrieval attempt {attempt + 1} failed",
+                    error=e,
+                )
                 if attempt < MAX_RETRY_ATTEMPTS - 1:
                     delay = min(2**attempt + random.uniform(0, 1), 10)
                     await asyncio.sleep(delay)
 
-        _LOGGER.debug("MAC address not found after all attempts")
+        log_debug(_LOGGER, "get_mac_address", "MAC address not found after all attempts")
         # Return a fallback unique identifier based on host:port
         fallback_id = f"{self._host.replace('.', '')}_{self._port}"
-        _LOGGER.debug(f"Using fallback ID: {fallback_id}")
+        log_debug(_LOGGER, "get_mac_address", "Using fallback ID", fallback_id=fallback_id)
         return fallback_id
 
     async def check_port(self) -> bool:
         """Check if port is available."""
         async with self._lock:
             sock_timeout = SOCKET_TIMEOUT
-            _LOGGER.debug(
-                f"Check_Port: opening socket on {self._host}:{self._port} with a {sock_timeout}s timeout."
+            log_debug(
+                _LOGGER,
+                "check_port",
+                "Opening socket",
+                host=self._host,
+                port=self._port,
+                timeout=f"{sock_timeout}s",
             )
 
             # Use asyncio for non-blocking socket operations
@@ -206,8 +244,12 @@ class SinapsiAlfaAPI:
                 future = asyncio.open_connection(self._host, self._port)
                 reader, writer = await asyncio.wait_for(future, timeout=sock_timeout)
 
-                _LOGGER.debug(
-                    f"Check_Port (SUCCESS): port open on {self._host}:{self._port}"
+                log_debug(
+                    _LOGGER,
+                    "check_port",
+                    "Port available",
+                    host=self._host,
+                    port=self._port,
                 )
 
                 # Clean up the connection
@@ -216,8 +258,13 @@ class SinapsiAlfaAPI:
                 return True
 
             except (TimeoutError, ConnectionRefusedError, OSError) as e:
-                _LOGGER.debug(
-                    f"Check_Port (ERROR): port not available on {self._host}:{self._port} - error: {e}"
+                log_debug(
+                    _LOGGER,
+                    "check_port",
+                    "Port not available",
+                    host=self._host,
+                    port=self._port,
+                    error=e,
                 )
                 return False
 
@@ -225,51 +272,77 @@ class SinapsiAlfaAPI:
         """Disconnect client."""
         try:
             if self._client.connected:
-                _LOGGER.debug("Closing Modbus TCP connection")
+                log_debug(_LOGGER, "close", "Closing Modbus TCP connection")
                 async with self._lock:
                     self._client.close()
+                    self._connection_healthy = False
                     return True
             else:
-                _LOGGER.debug("Modbus TCP connection already closed")
+                log_debug(_LOGGER, "close", "Modbus TCP connection already closed")
         except ConnectionException as connect_error:
-            _LOGGER.debug(f"Close Connection connect_error: {connect_error}")
+            log_error(
+                _LOGGER,
+                "close",
+                "Close connection error",
+                error=connect_error,
+            )
             raise SinapsiConnectionError(
                 f"Connection failed: {connect_error}", self._host, self._port
             ) from connect_error
 
     async def connect(self):
         """Connect client."""
-        _LOGGER.debug(
-            f"API Client connect to IP: {self._host} port: {self._port} timeout: {self._timeout}"
+        log_debug(
+            _LOGGER,
+            "connect",
+            "Connecting to device",
+            host=self._host,
+            port=self._port,
+            timeout=self._timeout,
         )
         if await self.check_port():
-            _LOGGER.debug("Inverter ready for Modbus TCP connection")
+            log_debug(_LOGGER, "connect", "Device ready for Modbus TCP connection")
             start_time = time.time()
             try:
                 async with self._lock:
                     await self._client.connect()
                 connect_duration = time.time() - start_time
-                _LOGGER.debug(f"Connection attempt took {connect_duration:.3f}s")
+                log_debug(
+                    _LOGGER,
+                    "connect",
+                    "Connection attempt completed",
+                    duration_s=f"{connect_duration:.3f}",
+                )
                 if not self._client.connected:
+                    self._connection_healthy = False
                     raise SinapsiConnectionError(
                         f"Failed to connect to {self._host}:{self._port} timeout: {self._timeout}",
                         self._host,
                         self._port,
                     )
                 else:
-                    _LOGGER.debug("Modbus TCP Client connected")
+                    log_debug(_LOGGER, "connect", "Modbus TCP Client connected")
+                    self._connection_healthy = True
                     return True
             except Exception as e:
-                _LOGGER.debug(f"Connection failed: {type(e).__name__}: {e}")
+                self._connection_healthy = False
+                log_error(
+                    _LOGGER,
+                    "connect",
+                    "Connection failed",
+                    error_type=type(e).__name__,
+                    error=e,
+                )
                 raise SinapsiConnectionError(
                     f"Failed to connect to {self._host}:{self._port} timeout: {self._timeout} - {type(e).__name__}: {e}",
                     self._host,
                     self._port,
                 ) from e
         else:
-            _LOGGER.debug("Inverter not ready for Modbus TCP connection")
+            log_debug(_LOGGER, "connect", "Device not ready for Modbus TCP connection")
+            self._connection_healthy = False
             raise SinapsiConnectionError(
-                f"Inverter not active on {self._host}:{self._port}",
+                f"Device not active on {self._host}:{self._port}",
                 self._host,
                 self._port,
             )
@@ -283,7 +356,14 @@ class SinapsiAlfaAPI:
                     address=address, count=count, device_id=self._device_id
                 )  # type: ignore
             if result.isError():
-                _LOGGER.debug(f"Modbus error response: {result}")
+                log_debug(
+                    _LOGGER,
+                    "read_holding_registers",
+                    "Modbus error response",
+                    address=address,
+                    count=count,
+                    result=result,
+                )
                 raise SinapsiModbusError(
                     f"Device reported error: {result}",
                     address=address,
@@ -291,12 +371,25 @@ class SinapsiAlfaAPI:
                 )
             return result
         except ConnectionException as connect_error:
-            _LOGGER.debug(f"Read Holding Registers connect_error: {connect_error}")
+            log_error(
+                _LOGGER,
+                "read_holding_registers",
+                "Connection error",
+                address=address,
+                error=connect_error,
+            )
+            self._connection_healthy = False
             raise SinapsiConnectionError(
                 f"Connection failed: {connect_error}", self._host, self._port
             ) from connect_error
         except ModbusException as modbus_error:
-            _LOGGER.debug(f"Read Holding Registers modbus_error: {modbus_error}")
+            log_error(
+                _LOGGER,
+                "read_holding_registers",
+                "Modbus error",
+                address=address,
+                error=modbus_error,
+            )
             raise SinapsiModbusError(
                 f"Modbus operation failed: {modbus_error}"
             ) from modbus_error
@@ -368,14 +461,14 @@ class SinapsiAlfaAPI:
         reg_type = sensor["modbus_type"]
         reg_count = 1 if reg_type == "uint16" else 2
 
-        _LOGGER.debug(f"Reading {reg_key} at address {reg_addr}")
+        log_debug(_LOGGER, "_read_and_process_sensor", f"Reading {reg_key}", address=reg_addr)
 
         read_data = await self.read_holding_registers(reg_addr, reg_count)
         raw_value = self._decode_register_value(read_data, reg_type)
         processed_value = self._process_sensor_value(raw_value, sensor)
 
         self.data[reg_key] = processed_value
-        _LOGGER.debug(f"Processed {reg_key}: {processed_value}")
+        log_debug(_LOGGER, "_read_and_process_sensor", f"Processed {reg_key}", value=processed_value)
 
     async def async_get_data(self) -> bool:
         """Read Data Function."""
@@ -387,29 +480,47 @@ class SinapsiAlfaAPI:
                     self._uid = await self.get_mac_address()
                     self.data["sn"] = self._uid
 
-                _LOGGER.debug(
-                    f"Start Get data (Host: {self._host} - Port: {self._port})",
+                log_debug(
+                    _LOGGER,
+                    "async_get_data",
+                    "Start data collection",
+                    host=self._host,
+                    port=self._port,
                 )
                 # Now we can call the async method directly
                 result = await self.read_modbus_alfa()
                 await self.close()
-                _LOGGER.debug("End Get data")
+                log_debug(_LOGGER, "async_get_data", "Data collection completed")
                 if result:
-                    _LOGGER.debug("Get Data Result: valid")
+                    log_debug(_LOGGER, "async_get_data", "Data validation: valid")
+                    self._connection_healthy = True
+                    self._last_successful_read = time.time()
                     return True
                 else:
-                    _LOGGER.debug("Get Data Result: invalid")
+                    log_debug(_LOGGER, "async_get_data", "Data validation: invalid")
                     return False
             else:
-                _LOGGER.debug("Get Data failed: client not connected")
+                log_debug(_LOGGER, "async_get_data", "Data collection failed: client not connected")
+                self._connection_healthy = False
                 return False
         except ConnectionException as connect_error:
-            _LOGGER.debug(f"Async Get Data connect_error: {connect_error}")
+            log_error(
+                _LOGGER,
+                "async_get_data",
+                "Connection error during data collection",
+                error=connect_error,
+            )
+            self._connection_healthy = False
             raise SinapsiConnectionError(
                 f"Connection failed: {connect_error}", self._host, self._port
             ) from connect_error
         except ModbusException as modbus_error:
-            _LOGGER.debug(f"Async Get Data modbus_error: {modbus_error}")
+            log_error(
+                _LOGGER,
+                "async_get_data",
+                "Modbus error during data collection",
+                error=modbus_error,
+            )
             raise SinapsiModbusError(
                 f"Modbus operation failed: {modbus_error}"
             ) from modbus_error
@@ -424,5 +535,5 @@ class SinapsiAlfaAPI:
                     await self._read_and_process_sensor(sensor)
             return True
         except Exception as error:
-            _LOGGER.debug(f"read_modbus_alfa failed: {error}")
+            log_error(_LOGGER, "read_modbus_alfa", "Failed to read modbus data", error=error)
             raise SinapsiModbusError(f"Failed to read modbus data: {error}") from error

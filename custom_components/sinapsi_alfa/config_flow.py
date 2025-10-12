@@ -18,7 +18,7 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.selector import selector
 from pymodbus.exceptions import ConnectionException
 
-from .api import SinapsiAlfaAPI
+from .api import SinapsiAlfaAPI, SinapsiConnectionError, SinapsiModbusError
 from .const import (
     CONF_HOST,
     CONF_NAME,
@@ -28,8 +28,12 @@ from .const import (
     DEFAULT_PORT,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
+    MAX_PORT,
+    MAX_SCAN_INTERVAL,
+    MIN_PORT,
+    MIN_SCAN_INTERVAL,
 )
-from .helpers import host_valid
+from .helpers import host_valid, log_debug, log_error
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -62,19 +66,26 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore
         return False
 
     async def get_unique_id(self, name, host, port, scan_interval):
-        """Return true if credentials is valid."""
-        _LOGGER.debug(f"Test connection to {host}:{port}")
+        """Return device serial number."""
+        log_debug(
+            _LOGGER, "get_unique_id", "Test connection", host=host, port=port
+        )
         try:
-            _LOGGER.debug("Creating API Client")
+            log_debug(_LOGGER, "get_unique_id", "Creating API Client")
             self.api = SinapsiAlfaAPI(self.hass, name, host, port, scan_interval)
-            _LOGGER.debug("API Client created: calling get data")
+            log_debug(_LOGGER, "get_unique_id", "API Client created: calling get data")
             self.api_data = await self.api.async_get_data()
-            _LOGGER.debug("API Client: get data")
-            _LOGGER.debug(f"API Client Data: {self.api_data}")
+            log_debug(_LOGGER, "get_unique_id", "API Client: get data")
+            log_debug(_LOGGER, "get_unique_id", "API Client Data", data=self.api_data)
             return self.api.data["sn"]
-        except ConnectionException as connerr:
-            _LOGGER.error(
-                f"Failed to connect to host: {host}:{port} - Exception: {connerr}"
+        except (ConnectionException, SinapsiConnectionError, SinapsiModbusError) as connerr:
+            log_error(
+                _LOGGER,
+                "get_unique_id",
+                "Failed to connect",
+                host=host,
+                port=port,
+                error=connerr,
             )
             return False
 
@@ -95,7 +106,7 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore
             else:
                 uid = await self.get_unique_id(name, host, port, scan_interval)
                 if uid is not False:
-                    _LOGGER.debug(f"Device unique id: {uid}")
+                    log_debug(_LOGGER, "async_step_user", "Device unique id", uid=uid)
                     # Assign a unique ID to the flow and abort the flow
                     # if another flow with the same unique ID is in progress
                     await self.async_set_unique_id(uid)
@@ -105,10 +116,8 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore
                     return self.async_create_entry(
                         title=user_input[CONF_NAME], data=user_input
                     )
-                else:
-                    errors[CONF_HOST] = (
-                        "Connection to device failed (Unique ID not available)"
-                    )
+
+                errors[CONF_HOST] = "Connection to device failed (S/N not retreived)"
 
         return self.async_show_form(
             step_id="user",
@@ -124,20 +133,13 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore
                     vol.Required(
                         CONF_PORT,
                         default=DEFAULT_PORT,
-                    ): vol.All(vol.Coerce(int), vol.Range(min=1, max=65535)),
+                    ): vol.All(vol.Coerce(int), vol.Clamp(min=MIN_PORT, max=MAX_PORT)),
                     vol.Required(
                         CONF_SCAN_INTERVAL,
                         default=DEFAULT_SCAN_INTERVAL,
-                    ): selector(
-                        {
-                            "number": {
-                                "min": 30,
-                                "max": 600,
-                                "step": 10,
-                                "unit_of_measurement": "s",
-                                "mode": "slider",
-                            }
-                        }
+                    ): vol.All(
+                        vol.Coerce(int),
+                        vol.Clamp(min=MIN_SCAN_INTERVAL, max=MAX_SCAN_INTERVAL),
                     ),
                 },
             ),
@@ -161,20 +163,13 @@ class SinapsiAlfaOptionsFlow(OptionsFlow):
                 vol.Required(
                     CONF_PORT,
                     default=config_entry.data.get(CONF_PORT),
-                ): vol.All(vol.Coerce(int), vol.Range(min=0, max=65535)),
+                ): vol.All(vol.Coerce(int), vol.Clamp(min=MIN_PORT, max=MAX_PORT)),
                 vol.Required(
                     CONF_SCAN_INTERVAL,
                     default=config_entry.data.get(CONF_SCAN_INTERVAL),
-                ): selector(
-                    {
-                        "number": {
-                            "min": 30,
-                            "max": 600,
-                            "step": 10,
-                            "unit_of_measurement": "s",
-                            "mode": "slider",
-                        }
-                    }
+                ): vol.All(
+                    vol.Coerce(int),
+                    vol.Clamp(min=MIN_SCAN_INTERVAL, max=MAX_SCAN_INTERVAL),
                 ),
             }
         )

@@ -9,6 +9,7 @@ from homeassistant.const import UnitOfEnergy, UnitOfPower
 # Base component constants
 NAME = "Sinapsi Alfa"
 DOMAIN = "sinapsi_alfa"
+VERSION = "0.5.0-beta.1"
 ATTRIBUTION = "by @alexdelprete"
 ISSUE_URL = "https://github.com/alexdelprete/ha-sinapsi-alfa/issues"
 
@@ -22,9 +23,14 @@ DEFAULT_PORT = 502
 DEFAULT_DEVICE_ID = 1
 DEFAULT_SCAN_INTERVAL = 60
 MIN_SCAN_INTERVAL = 30
+MAX_SCAN_INTERVAL = 600
 CONN_TIMEOUT = 5
 MANUFACTURER = "Sinapsi"
 MODEL = "Alfa"
+
+# Validation constants
+MIN_PORT = 1
+MAX_PORT = 65535
 
 # API Constants
 DEFAULT_SENSOR_VALUE = 0.0
@@ -32,9 +38,10 @@ MAX_RETRY_ATTEMPTS = 10
 SOCKET_TIMEOUT = 3.0
 INVALID_DISTACCO_VALUE = 65535
 MAX_EVENT_VALUE = 4294967294
+
 STARTUP_MESSAGE = f"""
 -------------------------------------------------------------------
-{NAME}
+{NAME} - Version {VERSION}
 {ATTRIBUTION}
 This is a custom integration!
 If you have any issues with this you need to open an issue here:
