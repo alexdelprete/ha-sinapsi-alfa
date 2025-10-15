@@ -4,14 +4,15 @@ __pycache__
 *.egg-info
 */build/*
 */dist/*
-.claude/
 
 
 # misc
 .coverage
 .vscode
+.zed
 coverage.xml
 enforce_branch_protection.sh
+settings.local.json
 
 # Home Assistant configuration
 config/*
