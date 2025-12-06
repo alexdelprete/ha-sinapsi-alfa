@@ -11,8 +11,10 @@ from typing import Any
 from getmac import getmac
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.core import HomeAssistant
-from pymodbus.client import AsyncModbusTcpClient
-from pymodbus.exceptions import ConnectionException, ModbusException
+from modbuslink import AsyncModbusClient, AsyncTcpTransport
+from modbuslink import ConnectionError as ModbusConnectionError
+from modbuslink import ModbusException
+from modbuslink import TimeoutError as ModbusTimeoutError
 
 from .const import (
     DEFAULT_DEVICE_ID,
@@ -28,8 +30,6 @@ from .const import (
     SOCKET_TIMEOUT,
 )
 from .helpers import log_debug, log_error, unix_timestamp_to_iso8601_local_tz
-from .pymodbus_constants import Endian
-from .pymodbus_payload import BinaryPayloadDecoder
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -71,7 +71,7 @@ class SinapsiModbusError(Exception):
 
 
 class SinapsiAlfaAPI:
-    """Thread safe wrapper class for pymodbus."""
+    """Thread safe wrapper class for ModbusLink."""
 
     def __init__(
         self,
@@ -99,12 +99,14 @@ class SinapsiAlfaAPI:
         self._device_id = DEFAULT_DEVICE_ID
         self._update_interval = scan_interval
         # Use a reasonable fixed timeout for Modbus operations
-        # The previous logic (scan_interval - 1) caused excessively long timeouts
-        # that interfered with pymodbus retry mechanism
         self._timeout = min(5.0, self._update_interval / 2)
-        self._client = AsyncModbusTcpClient(
-            host=self._host, port=self._port, timeout=self._timeout
+        # ModbusLink uses separate transport and client objects
+        self._transport = AsyncTcpTransport(
+            host=self._host,
+            port=self._port,
+            timeout=self._timeout,
         )
+        self._client = AsyncModbusClient(self._transport)
         self._lock = asyncio.Lock()
         self._uid = ""  # Initialize empty, will be set during first data fetch
         self._sensors = []
@@ -278,15 +280,15 @@ class SinapsiAlfaAPI:
     async def close(self):
         """Disconnect client."""
         try:
-            if self._client.connected:
+            if self._transport.is_open:
                 log_debug(_LOGGER, "close", "Closing Modbus TCP connection")
                 async with self._lock:
-                    self._client.close()
+                    await self._transport.close()
                     self._connection_healthy = False
                     return True
             else:
                 log_debug(_LOGGER, "close", "Modbus TCP connection already closed")
-        except ConnectionException as connect_error:
+        except (ModbusConnectionError, ModbusTimeoutError) as connect_error:
             log_error(
                 _LOGGER,
                 "close",
@@ -312,7 +314,7 @@ class SinapsiAlfaAPI:
             start_time = time.time()
             try:
                 async with self._lock:
-                    await self._client.connect()
+                    await self._transport.open()
                 connect_duration = time.time() - start_time
                 log_debug(
                     _LOGGER,
@@ -320,7 +322,7 @@ class SinapsiAlfaAPI:
                     "Connection attempt completed",
                     duration_s=f"{connect_duration:.3f}",
                 )
-                if not self._client.connected:
+                if not self._transport.is_open:
                     self._connection_healthy = False
                     raise SinapsiConnectionError(
                         f"Failed to connect to {self._host}:{self._port} timeout: {self._timeout}",
@@ -331,7 +333,7 @@ class SinapsiAlfaAPI:
                     log_debug(_LOGGER, "connect", "Modbus TCP Client connected")
                     self._connection_healthy = True
                     return True
-            except Exception as e:
+            except (ModbusConnectionError, ModbusTimeoutError) as e:
                 self._connection_healthy = False
                 log_error(
                     _LOGGER,
@@ -354,30 +356,21 @@ class SinapsiAlfaAPI:
                 self._port,
             )
 
-    async def read_holding_registers(self, address: int, count: int) -> Any | None:
-        """Read holding registers."""
+    async def read_holding_registers(self, address: int, count: int) -> list[int]:
+        """Read holding registers.
 
+        ModbusLink returns List[int] directly and raises exceptions on errors.
+        """
         try:
             async with self._lock:
                 result = await self._client.read_holding_registers(
-                    address=address, count=count, device_id=self._device_id
-                )  # type: ignore
-            if result.isError():
-                log_debug(
-                    _LOGGER,
-                    "read_holding_registers",
-                    "Modbus error response",
-                    address=address,
-                    count=count,
-                    result=result,
+                    slave_id=self._device_id,
+                    start_address=address,
+                    quantity=count,
                 )
-                raise SinapsiModbusError(
-                    f"Device reported error: {result}",
-                    address=address,
-                    operation="read_holding_registers",
-                )
+            # ModbusLink returns List[int] directly, raises on error
             return result
-        except ConnectionException as connect_error:
+        except (ModbusConnectionError, ModbusTimeoutError) as connect_error:
             log_error(
                 _LOGGER,
                 "read_holding_registers",
@@ -398,19 +391,23 @@ class SinapsiAlfaAPI:
                 error=modbus_error,
             )
             raise SinapsiModbusError(
-                f"Modbus operation failed: {modbus_error}"
+                f"Modbus operation failed: {modbus_error}",
+                address=address,
+                operation="read_holding_registers",
             ) from modbus_error
 
-    def _decode_register_value(self, read_data, reg_type: str) -> float:
-        """Decode register value based on type."""
-        decoder = BinaryPayloadDecoder.fromRegisters(
-            read_data.registers, byteorder=Endian.BIG
-        )
+    def _decode_register_value(self, registers: list[int], reg_type: str) -> float:
+        """Decode register value based on type.
 
+        ModbusLink returns List[int] (16-bit unsigned values).
+        We combine them for 32-bit values using big endian byte order.
+        """
         if reg_type == "uint16":
-            return round(float(decoder.decode_16bit_uint()), 2)
+            return round(float(registers[0]), 2)
         elif reg_type == "uint32":
-            return round(float(decoder.decode_32bit_uint()), 2)
+            # Big endian: high word first, then low word
+            value = (registers[0] << 16) | registers[1]
+            return round(float(value), 2)
         else:
             raise ValueError(f"Unsupported register type: {reg_type}")
 
@@ -472,8 +469,9 @@ class SinapsiAlfaAPI:
             _LOGGER, "_read_and_process_sensor", f"Reading {reg_key}", address=reg_addr
         )
 
-        read_data = await self.read_holding_registers(reg_addr, reg_count)
-        raw_value = self._decode_register_value(read_data, reg_type)
+        # ModbusLink returns List[int] directly
+        registers = await self.read_holding_registers(reg_addr, reg_count)
+        raw_value = self._decode_register_value(registers, reg_type)
         processed_value = self._process_sensor_value(raw_value, sensor)
 
         self.data[reg_key] = processed_value
@@ -521,7 +519,7 @@ class SinapsiAlfaAPI:
                 )
                 self._connection_healthy = False
                 return False
-        except ConnectionException as connect_error:
+        except (ModbusConnectionError, ModbusTimeoutError) as connect_error:
             log_error(
                 _LOGGER,
                 "async_get_data",

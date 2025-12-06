@@ -1,5 +1,15 @@
 # Claude Code Development Guidelines
 
+## Critical Initial Steps
+
+**At every session start, you MUST:**
+
+1. Read this entire CLAUDE.md file for project context
+2. Review recent git commits to understand changes
+3. Run `git status` to see uncommitted work
+
+Skipping these steps causes violations of mandatory workflows, duplicated effort, and broken architectural patterns.
+
 ## Project Overview
 
 This is a Home Assistant custom integration for **Sinapsi Alfa** energy monitoring devices using Modbus TCP protocol. The Alfa device monitors power/energy consumption and photovoltaic production directly from the energy provider's OpenMeter 2.0.
@@ -16,11 +26,12 @@ This integration is based on and aligned with [ha-abb-powerone-pvi-sunspec](http
    - `async_migrate_entry()` - Config migration logic
    - Uses `runtime_data` for storing coordinator and update listener
 
-2. **`api.py`** - Modbus TCP communication layer
+2. **`api.py`** - Modbus TCP communication layer (using ModbusLink)
    - `SinapsiAlfaAPI` class handles all Modbus operations
+   - Uses `AsyncModbusClient` and `AsyncTcpTransport` from ModbusLink
    - Reads device-specific registers (power, energy, time band data)
-   - Implements connection pooling and timeout handling
-   - Custom exception handling for device-specific error codes
+   - Implements connection management and timeout handling
+   - Custom exception handling: `SinapsiConnectionError`, `SinapsiModbusError`
 
 3. **`coordinator.py`** - Data update coordination
    - `SinapsiAlfaCoordinator` manages polling cycles
@@ -43,6 +54,7 @@ This integration is based on and aligned with [ha-abb-powerone-pvi-sunspec](http
 ## Sinapsi-Specific Features
 
 ### Device Constants
+
 ```python
 MANUFACTURER = "Sinapsi"
 MODEL = "Alfa"
@@ -51,7 +63,9 @@ DEFAULT_DEVICE_ID = 1
 ```
 
 ### Modbus Registers
+
 The integration reads from specific Modbus addresses:
+
 - Power readings: addresses 2, 9, 12, 19, 921
 - Energy readings: addresses 5, 15, 924
 - Daily energy by time band: F1-F6 (addresses 30-64)
@@ -59,20 +73,25 @@ The integration reads from specific Modbus addresses:
 - Event data: addresses 780, 782
 
 ### Special Value Handling
+
 ```python
 INVALID_DISTACCO_VALUE = 65535  # Invalid disconnect timer value
 MAX_EVENT_VALUE = 4294967294     # Maximum event timestamp value
 ```
 
 ### Calculated Sensors
+
 The integration provides 4 calculated sensors derived from device readings:
+
 - **Potenza Consumata**: Total power consumed (Prelevata + Prodotta - Immessa)
 - **Potenza Auto Consumata**: Self-consumed PV power (Prodotta - Immessa)
 - **Energia Consumata**: Total energy consumed (Prelevata + Prodotta - Immessa)
 - **Energia Auto Consumata**: Self-consumed PV energy (Prodotta - Immessa)
 
 ### Italian Sensor Names
+
 All sensors use Italian names for the local market:
+
 - "Potenza Prelevata" (Power Drawn)
 - "Potenza Immessa" (Power Fed)
 - "Potenza Prodotta" (Power Produced)
@@ -101,6 +120,14 @@ All sensors use Italian names for the local market:
 - Never use f-strings in logger calls (use `%s` formatting)
 - Always include context parameter (function name)
 - Format: `(function_name) [key=value]: message`
+
+### Logging Best Practices
+
+**DataUpdateCoordinator:** Just raise `UpdateFailed`, don't manually log - HA handles logging automatically.
+
+**ConfigEntryNotReady:** HA logs automatically, don't log manually.
+
+This prevents log spam during extended outages.
 
 ### Async/Await
 
@@ -146,104 +173,80 @@ All sensors use Italian names for the local market:
 - Test reload/unload scenarios
 - Test availability tracking (device offline scenarios)
 
-## Common Patterns
+## Release Management - CRITICAL
 
-### Version Updates
+**Published releases are FROZEN** - Never modify documentation for released versions.
 
-When bumping version for **STABLE releases**, update ALL of these:
+**Master branch = Next Release** - All commits target the next version with version bumped in manifest.json and const.py.
 
-1. **Update `manifest.json`** - `"version": "X.Y.Z"`
-2. **Update `const.py`** - `VERSION = "X.Y.Z"`
-3. **Create COMPREHENSIVE release notes**: `docs/releases/vX.Y.Z.md`
+### Complete Release Workflow
+
+1. Create release notes in `docs/releases/vX.Y.Z.md`
    - **IMPORTANT**: Include ALL changes since last stable release
    - Review all beta release notes if applicable
-   - Review all commits since last stable
+   - Review all commits since last stable: `git log vX.Y.Z..HEAD`
    - Include all sections: What's Changed, Bug Fixes, Features, Breaking Changes, etc.
-   - Use existing v0.5.0.md as template
-4. **Update `CHANGELOG.md`** with version summary
+2. Update `CHANGELOG.md` with version summary
    - Add new version section at top (below Unreleased)
    - Include emoji-enhanced section headers
-   - Link to detailed release notes: `[docs/releases/vX.Y.Z.md](docs/releases/vX.Y.Z.md)`
+   - Link to detailed release notes
    - Add comparison link at bottom
-5. **Commit**: "Bump version to vX.Y.Z"
-6. **Tag**: `git tag -a vX.Y.Z -m "Release vX.Y.Z"`
-7. **Push**: `git push && git push --tags`
-8. **Create GitHub release**: `gh release create vX.Y.Z --latest`
+3. Bump versions in `manifest.json` and `const.py`
+4. Commit changes
+5. Push commits and verify clean state
+6. **STOP - GET APPROVAL** before creating tags/releases
+7. Only create tags/releases when explicitly instructed:
+   - `git tag -a vX.Y.Z -m "Release vX.Y.Z"`
+   - `git push --tags`
+   - `gh release create vX.Y.Z --latest`
+
+**CRITICAL:** Never create git tags or GitHub releases without explicit user instruction.
+
+### After Publishing
+
+1. Immediately bump to next version
+2. Create new release notes file for next version
+3. Mark previous version's documentation as frozen
 
 ### Release Documentation Structure
 
 The project follows industry best practices for release documentation:
 
-#### Two Types of Release Notes
+#### Stable/Official Release Notes (e.g., v0.5.0)
 
-**1. Stable/Official Release Notes (e.g., v0.5.0)**
 - **Scope**: ALL changes since previous stable release
 - **Example**: v0.5.0 includes everything since v0.4.2
-  - All beta improvements
-  - All commits between releases
-  - All dependency updates
 - **Purpose**: Complete picture for users upgrading from last stable
 - **Sections**: Comprehensive - all fixes, features, breaking changes, dependencies
 
-**2. Beta Release Notes (e.g., v0.5.0-beta.1)**
+#### Beta Release Notes (e.g., v0.5.0-beta.1)
+
 - **Scope**: Only incremental changes in this beta
 - **Example**: v0.5.0-beta.2 shows only what's new since beta.1
 - **Purpose**: Help beta testers focus on what to test
 - **Sections**: Incremental - new fixes, new features, testing focus
 
-#### Documentation Files
+### Documentation Files
 
-- **`CHANGELOG.md`** (root) - Quick overview of all releases
-  - Based on [Keep a Changelog](https://keepachangelog.com/) format
-  - Summarized entries for each version
-  - Links to detailed release notes
-  - Comparison links for GitHub diffs
-
-- **`docs/releases/`** - Detailed release notes
-  - One file per version: `vX.Y.Z.md` or `vX.Y.Z-beta.N.md`
-  - Comprehensive technical details for stable releases
-  - Incremental details for beta releases
-  - Upgrade instructions
-  - Testing recommendations
-
-- **`docs/releases/README.md`** - Release directory guide
-  - Explains stable vs. beta documentation approach
-  - Documents release workflow
-  - Provides templates
-
-### Configuration Parameters
-
-- `host` - IP/hostname of Alfa device
-- `port` - TCP port (default: 502)
-- `scan_interval` - Polling frequency (default: 60s, range: 30-600)
-
-### Entity Unique IDs
-
-- Sensors: `{mac_address}_{sensor_key}` (e.g., "AA:BB:CC:DD:EE:FF_potenza_prelevata")
-- Device identifier: `(DOMAIN, mac_address)`
-- MAC address from device is used for all identifiers
-- Changing host/IP does not affect entity IDs or historical data
-
-### Modbus Register Types
-
-- `uint16` - Single 16-bit register (power, time band, timer)
-- `uint32` - Two consecutive registers (energy totals, event date)
-- `calcolato` - Calculated from other sensors (not read from device)
+- **`CHANGELOG.md`** (root) - Quick overview of all releases based on Keep a Changelog format
+- **`docs/releases/`** - Detailed release notes (one file per version)
+- **`docs/releases/README.md`** - Release directory guide and templates
 
 ## Git Workflow
 
 ### Commit Messages
 
-- Use conventional commits style
-- Always include Claude attribution:
+Use conventional commits with Claude attribution:
 
-  ```
-  <commit message>
+```text
+feat(api): implement new feature
 
-  🤖 Generated with [Claude Code](https://claude.com/claude-code)
+[Description]
 
-  Co-Authored-By: Claude <noreply@anthropic.com>
-  ```
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
 
 ### Branch Strategy
 
@@ -251,31 +254,64 @@ The project follows industry best practices for release documentation:
 - Create tags for releases
 - Use pre-release flag for beta versions
 
+## Configuration Parameters
+
+- `host` - IP/hostname of Alfa device
+- `port` - TCP port (default: 502)
+- `scan_interval` - Polling frequency (default: 60s, range: 30-600)
+
+## Entity Unique IDs
+
+- Sensors: `{mac_address}_{sensor_key}` (e.g., "AA:BB:CC:DD:EE:FF_potenza_prelevata")
+- Device identifier: `(DOMAIN, mac_address)`
+- MAC address from device is used for all identifiers
+- Changing host/IP does not affect entity IDs or historical data
+
+## Modbus Register Types
+
+- `uint16` - Single 16-bit register (power, time band, timer)
+- `uint32` - Two consecutive registers (energy totals, event date)
+- `calcolato` - Calculated from other sensors (not read from device)
+
 ## Dependencies
 
 - Home Assistant core (>= 2025.10.0)
-- `pymodbus>=3.11.2` - Modbus TCP client library
+- `modbuslink>=1.2.0` - Modern Modbus TCP client library (native async)
 - `getmac>=0.9.5` - MAC address detection
 - Compatible with Python 3.13+
+
+### Note on ModbusLink
+
+As of v1.0.0, this integration uses [ModbusLink](https://github.com/Miraitowa-la/ModbusLink) instead of pymodbus:
+
+- **Modern async API**: Native asyncio with context manager support
+- **Cleaner code**: No need for separate payload decoder classes
+- **Direct register access**: `read_holding_registers()` returns `List[int]` directly
+- **Built-in error handling**: Exceptions raised automatically on errors
+
+See `docs/analysis/modbuslink-migration-analysis.md` for detailed migration documentation.
 
 ## Key Files to Review
 
 - `const.py` - Constants, sensor definitions, and validation rules
 - `helpers.py` - Shared utilities and logging helpers
-- `api.py` - Modbus communication and device-specific logic
+- `api.py` - ModbusLink communication and device-specific logic
 - `sensor.py` - Sensor entities including calculated sensors
 - `CHANGELOG.md` - Release history overview
 - `docs/releases/` - Detailed release notes
 - `docs/releases/README.md` - Release documentation guidelines
+- `docs/analysis/modbuslink-migration-analysis.md` - ModbusLink migration documentation
 
 ## Sinapsi-Specific Considerations
 
 ### Sensor Count
+
 - **Total**: 24 sensors
   - 20 sensors from Modbus registers
   - 4 calculated sensors
 
 ### Calculated Sensor Formulas
+
 ```python
 # Power calculations
 potenza_consumata = potenza_prelevata + potenza_prodotta - potenza_immessa
@@ -287,67 +323,89 @@ energia_auto_consumata = energia_prodotta - energia_immessa
 ```
 
 ### Time Band Sensors (F1-F6)
+
 - Italian electricity pricing uses 6 time bands (fasce orarie)
 - Daily energy readings per time band (12 sensors total: 6 prelevata + 6 immessa)
 - Current time band sensor shows which band is active
 
 ### Special Values
+
 - Disconnect timer: Show only if not INVALID_DISTACCO_VALUE (65535)
 - Event date: Show only if not MAX_EVENT_VALUE (4294967294)
 
-## Don't Do
+## Markdown Standards
 
-- ❌ Use `hass.data[DOMAIN][entry_id]` - use `runtime_data` instead
-- ❌ Shadow Python builtins
-- ❌ Use f-strings in logging
-- ❌ Forget to update VERSION in both manifest.json AND const.py
-- ❌ Create partial release notes for stable releases (must include ALL changes since last stable)
-- ❌ Change Italian sensor names (they're for local market)
-- ❌ Modify Modbus register addresses without device documentation
-- ❌ Break calculated sensor formulas
-- ❌ Remove special value handling (INVALID_DISTACCO_VALUE, MAX_EVENT_VALUE)
-- ❌ Create documentation files without user request
+Follow markdownlint rules:
+
+- Blank lines around lists and code blocks
+- Language specification for fenced code blocks
+- Blank line after bold headers
+- Unique heading names
+- Line length 120 characters
+
+## Do's and Don'ts
+
+**✅ DO:**
+
+- Read CLAUDE.md at session start
+- Use custom exceptions for error handling
+- Log with proper context (use helpers.py functions)
+- Use `runtime_data` for data storage
+- Handle missing data gracefully
+- Test with actual Alfa devices
+- Preserve Italian sensor names
+- Follow calculated sensor formulas exactly
+- Respect special value handling (INVALID_DISTACCO_VALUE, MAX_EVENT_VALUE)
+- Update both manifest.json AND const.py for version bumps
+- Create comprehensive release notes for stable releases
+- Get approval before creating tags/releases
+
+**❌ NEVER:**
+
+- Use `hass.data[DOMAIN][entry_id]` - use `runtime_data` instead
+- Shadow Python builtins
+- Use f-strings in logging
+- Forget to update VERSION in both manifest.json AND const.py
+- Create partial release notes for stable releases
+- Change Italian sensor names
+- Modify Modbus register addresses without device documentation
+- Break calculated sensor formulas
+- Remove special value handling
+- Create documentation files without user request
+- Mix sync/async code improperly
+- Use blocking calls in async context
+- Close GitHub issues without explicit user instruction
+- Create git tags or GitHub releases without explicit user instruction
 
 ## Differences from ABB PowerOne Integration
 
 While this integration shares architecture with ha-abb-powerone-pvi-sunspec:
 
 ### Different Device
+
 - **Alfa**: Energy monitoring device (consumption + production)
 - **ABB/PowerOne**: Solar inverter only
 
 ### Different Registers
+
 - Alfa uses custom Modbus register map
 - Different addresses and data structures
 
 ### Different Sensors
+
 - Alfa: 24 sensors (with time bands F1-F6, calculated consumption)
 - ABB: Inverter-specific sensors (DC/AC, MPPT)
 
 ### Market-Specific
+
 - Italian sensor names
 - Italian time band structure (F1-F6)
 - Italian energy market features
 
 ### Shared Features
+
 - Code quality standards
 - Logging patterns
 - Error handling approach
 - Release documentation structure
 - Modern HA patterns
-
-## Release Documentation Best Practice
-
-**Critical reminder**: When creating stable release documentation (e.g., v0.6.0):
-1. Review CHANGELOG for all changes since last stable
-2. Check docs/releases/ for all beta notes
-3. Review all commits: `git log v0.5.0..HEAD`
-4. Document EVERYTHING - users may skip all betas
-5. Use v0.5.0.md as comprehensive template
-6. Update both CHANGELOG.md and docs/releases/vX.Y.Z.md
-
-**For beta releases**:
-1. Document only incremental changes
-2. Reference previous beta for context
-3. Focus on testing areas
-4. Use v0.5.0-beta.1.md as template

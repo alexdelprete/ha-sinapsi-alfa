@@ -9,7 +9,7 @@ from homeassistant.const import UnitOfEnergy, UnitOfPower
 # Base component constants
 NAME = "Sinapsi Alfa"
 DOMAIN = "sinapsi_alfa"
-VERSION = "0.5.0"
+VERSION = "1.0.0-beta.1"
 ATTRIBUTION = "by @alexdelprete"
 ISSUE_URL = "https://github.com/alexdelprete/ha-sinapsi-alfa/issues"
 

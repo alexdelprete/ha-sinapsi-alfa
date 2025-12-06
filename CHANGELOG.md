@@ -9,6 +9,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 No unreleased changes at this time.
 
+## [1.0.0-beta.1] - 2025-12-06
+
+**Major architectural change** - Migration from pymodbus to ModbusLink library.
+
+### 🔄 Breaking Changes
+
+- **Modbus Library Migration** - Switched from `pymodbus>=3.11.2` to `modbuslink>=1.2.0`
+- **Removed deprecated files** - `pymodbus_constants.py` and `pymodbus_payload.py` deleted
+
+### ✨ Improvements
+
+- **Modern async API** - Native asyncio with `AsyncModbusClient` and `AsyncTcpTransport`
+- **Cleaner codebase** - Removed 663 lines of deprecated pymodbus payload decoder code
+- **Simplified register decoding** - Direct `List[int]` return from read operations
+- **Better exception handling** - Structured `ModbusConnectionError`, `ModbusTimeoutError`, `ModbusException`
+
+### ⚠️ Beta Notice
+
+ModbusLink is in **Alpha status** (Development Status 3). This release requires extensive testing.
+
+**Full Release Notes:** [docs/releases/v1.0.0-beta.1.md](docs/releases/v1.0.0-beta.1.md)
+
+**Full Changelog:** https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v0.5.0...v1.0.0-beta.1
+
+---
+
 ## [0.5.0] - 2025-10-15
 
 Official stable release with Python 3.13 support, Home Assistant 2025.10 compatibility, comprehensive code quality improvements, and critical bug fixes.
@@ -115,6 +141,7 @@ Stable release with pymodbus 3.11.1 compatibility and improved MAC address detec
 
 ---
 
+[1.0.0-beta.1]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.0.0-beta.1
 [0.5.0]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v0.5.0
 [0.5.0-beta.1]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v0.5.0-beta.1
 [0.4.2]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v0.4.2
