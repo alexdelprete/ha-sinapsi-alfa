@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-No unreleased changes at this time.
+Development version for v1.0.0-beta.2 - continuing ModbusLink beta testing.
+
+See [v1.0.0-beta.2 release notes](docs/releases/v1.0.0-beta.2.md) for details.
 
 ## [1.0.0-beta.1] - 2025-12-06
 
