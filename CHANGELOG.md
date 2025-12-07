@@ -7,9 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Development version for v1.0.0-beta.4 - continuing ModbusLink beta testing.
+Development version for v1.0.0-beta.5 - continuing ModbusLink beta testing.
 
-See [v1.0.0-beta.4 release notes](docs/releases/v1.0.0-beta.4.md) for details.
+See [v1.0.0-beta.5 release notes](docs/releases/v1.0.0-beta.5.md) for details.
+
+## [1.0.0-beta.4] - 2025-12-07
+
+**Protocol fix** - Sequential batch reads to avoid Transaction ID mismatches.
+
+### 🐛 Bug Fixes
+
+- **Fixed Transaction ID mismatch** - Replaced parallel `asyncio.gather()` with sequential batch reads (Modbus TCP can't handle concurrent requests on single connection)
+
+### ⚠️ Beta Notice
+
+ModbusLink is in **Alpha status** (Development Status 3). This release requires extensive testing.
+
+**Full Release Notes:** [docs/releases/v1.0.0-beta.4.md](docs/releases/v1.0.0-beta.4.md)
+
+**Full Changelog:** https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.0.0-beta.3...v1.0.0-beta.4
+
+---
 
 ## [1.0.0-beta.3] - 2025-12-07
 
@@ -192,6 +210,7 @@ Stable release with pymodbus 3.11.1 compatibility and improved MAC address detec
 
 ---
 
+[1.0.0-beta.4]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.0.0-beta.4
 [1.0.0-beta.3]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.0.0-beta.3
 [1.0.0-beta.2]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.0.0-beta.2
 [1.0.0-beta.1]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.0.0-beta.1
