@@ -8,7 +8,7 @@ import logging
 import random
 import socket
 import time
-from typing import Any, cast
+from typing import Any
 
 from getmac import getmac
 from homeassistant.components.sensor import SensorDeviceClass
@@ -521,20 +521,6 @@ class SinapsiAlfaAPI:
 
         return value
 
-    def _check_batch_errors(self, batches: list[list[int] | BaseException]) -> None:
-        """Check batch results for errors and re-raise if found.
-
-        Args:
-            batches: List of batch results, may contain exceptions
-
-        Raises:
-            BaseException: First exception found in batch results
-
-        """
-        for result in batches:
-            if isinstance(result, BaseException):
-                raise result
-
     def _calculate_derived_values(self) -> None:
         """Calculate derived values from base measurements."""
         self.data["potenza_auto_consumata"] = (
@@ -607,10 +593,10 @@ class SinapsiAlfaAPI:
             ) from connect_error
 
     async def read_modbus_alfa(self) -> bool:
-        """Read all Modbus registers using batch operations with async concurrency.
+        """Read all Modbus registers using sequential batch operations.
 
         Reads registers in 5 batches instead of 20 individual reads (~75% fewer requests).
-        Uses asyncio.gather() for parallel batch reads.
+        Batches are read sequentially to avoid Transaction ID mismatch errors.
 
         Returns:
             True if all reads succeeded
@@ -620,17 +606,11 @@ class SinapsiAlfaAPI:
 
         """
         try:
-            # Read all batches in parallel
-            batch_tasks = [
-                self._read_batch(start, count) for start, count in REGISTER_BATCHES
-            ]
-            batches = await asyncio.gather(*batch_tasks, return_exceptions=True)
-
-            # Check for errors in any batch and re-raise
-            self._check_batch_errors(batches)
-
-            # Cast to list[list[int]] after error check (we know no exceptions remain)
-            validated_batches = cast(list[list[int]], batches)
+            # Read all batches sequentially (parallel causes Transaction ID mismatches)
+            batches: list[list[int]] = []
+            for start, count in REGISTER_BATCHES:
+                result = await self._read_batch(start, count)
+                batches.append(result)
 
             # Extract and process all sensor values
             for sensor in SENSOR_ENTITIES:
@@ -638,7 +618,7 @@ class SinapsiAlfaAPI:
                     continue  # Skip calculated sensors
 
                 key = sensor["key"]
-                raw_value = self._extract_sensor_value(validated_batches, key)
+                raw_value = self._extract_sensor_value(batches, key)
                 processed_value = self._process_sensor_value(raw_value, sensor)
                 self.data[key] = processed_value
 
