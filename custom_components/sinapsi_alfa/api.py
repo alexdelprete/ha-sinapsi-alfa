@@ -622,6 +622,15 @@ class SinapsiAlfaAPI:
                 processed_value = self._process_sensor_value(raw_value, sensor)
                 self.data[key] = processed_value
 
+                log_debug(
+                    _LOGGER,
+                    "read_modbus_alfa",
+                    "Sensor processed",
+                    sensor=key,
+                    address=sensor["modbus_addr"],
+                    value=processed_value,
+                )
+
             # Calculate derived values
             self._calculate_derived_values()
         except Exception as error:

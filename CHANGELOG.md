@@ -7,9 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Development version for v1.0.0-beta.5 - continuing ModbusLink beta testing.
+Development version for v1.0.1 - maintenance and improvements.
 
-See [v1.0.0-beta.5 release notes](docs/releases/v1.0.0-beta.5.md) for details.
+## [1.0.0] - 2025-12-07
+
+**Major release** - ModbusLink migration with 7x performance improvement.
+
+### 🚀 Performance Improvements
+
+- **7x faster data collection** - 3.8s → 0.5s per update cycle
+- **75% fewer Modbus requests** - 5 batch reads instead of 20 individual reads
+- **Batch register reads** - Groups consecutive registers for efficiency
+
+### 🔄 Breaking Changes
+
+- **ModbusLink Migration** - Replaced pymodbus with ModbusLink library
+- **Removed deprecated files** - `pymodbus_constants.py` and `pymodbus_payload.py` deleted
+
+### 🐛 Bug Fixes
+
+- **Fixed IPv4/IPv6 connection timeout** - Forces IPv4 to avoid dual-stack issues
+- **Fixed Transaction ID mismatch** - Sequential batch reads for protocol compliance
+
+### ✨ Code Improvements
+
+- **Modern async API** - Native asyncio with context manager support
+- **Enhanced debug logging** - Sensor values logged during data collection
+- **Layered error handling** - Retry transient errors, fail fast on protocol errors
+- **Cleaner codebase** - Removed 663 lines of deprecated pymodbus code
+
+### ⚠️ Requirements
+
+- Home Assistant 2025.10.0 or newer
+- Python 3.13.2 or newer
+
+**Full Release Notes:** [docs/releases/v1.0.0.md](docs/releases/v1.0.0.md)
+
+**Full Changelog:** https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v0.5.0...v1.0.0
+
+---
 
 ## [1.0.0-beta.4] - 2025-12-07
 
@@ -210,6 +246,7 @@ Stable release with pymodbus 3.11.1 compatibility and improved MAC address detec
 
 ---
 
+[1.0.0]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.0.0
 [1.0.0-beta.4]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.0.0-beta.4
 [1.0.0-beta.3]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.0.0-beta.3
 [1.0.0-beta.2]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.0.0-beta.2
