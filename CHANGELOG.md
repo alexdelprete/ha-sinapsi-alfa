@@ -7,9 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Development version for v1.0.0-beta.3 - continuing ModbusLink beta testing.
+Development version for v1.0.0-beta.4 - continuing ModbusLink beta testing.
 
-See [v1.0.0-beta.3 release notes](docs/releases/v1.0.0-beta.3.md) for details.
+See [v1.0.0-beta.4 release notes](docs/releases/v1.0.0-beta.4.md) for details.
+
+## [1.0.0-beta.3] - 2025-12-07
+
+**Connection fix** - Force IPv4 to avoid dual-stack timeout issues.
+
+### 🐛 Bug Fixes
+
+- **Fixed connection timeout** - `check_port()` now forces IPv4 (`socket.AF_INET`) to avoid timeouts when device only supports IPv4 but DNS returns IPv6 first
+
+### ⚠️ Beta Notice
+
+ModbusLink is in **Alpha status** (Development Status 3). This release requires extensive testing.
+
+**Full Release Notes:** [docs/releases/v1.0.0-beta.3.md](docs/releases/v1.0.0-beta.3.md)
+
+**Full Changelog:** https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.0.0-beta.2...v1.0.0-beta.3
+
+---
 
 ## [1.0.0-beta.2] - 2025-12-07
 
@@ -174,6 +192,7 @@ Stable release with pymodbus 3.11.1 compatibility and improved MAC address detec
 
 ---
 
+[1.0.0-beta.3]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.0.0-beta.3
 [1.0.0-beta.2]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.0.0-beta.2
 [1.0.0-beta.1]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.0.0-beta.1
 [0.5.0]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v0.5.0

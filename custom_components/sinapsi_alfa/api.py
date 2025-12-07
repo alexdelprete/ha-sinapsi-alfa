@@ -6,6 +6,7 @@ https://github.com/alexdelprete/ha-sinapsi-alfa
 import asyncio
 import logging
 import random
+import socket
 import time
 from typing import Any, cast
 
@@ -294,9 +295,17 @@ class SinapsiAlfaAPI:
 
         # Use asyncio for non-blocking socket operations
         try:
-            # Create connection with timeout
-            future = asyncio.open_connection(self._host, self._port)
-            reader, writer = await asyncio.wait_for(future, timeout=sock_timeout)
+            # Force IPv4 (AF_INET) to avoid dual-stack timeout issues
+            # Some devices only support IPv4, and dual-stack DNS can cause
+            # timeouts when IPv6 is tried first but not supported
+            reader, writer = await asyncio.wait_for(
+                asyncio.open_connection(
+                    self._host,
+                    self._port,
+                    family=socket.AF_INET,
+                ),
+                timeout=sock_timeout,
+            )
 
             log_debug(
                 _LOGGER,
