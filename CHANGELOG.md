@@ -7,9 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Development version for v1.0.0-beta.2 - continuing ModbusLink beta testing.
+Development version for v1.0.0-beta.3 - continuing ModbusLink beta testing.
 
-See [v1.0.0-beta.2 release notes](docs/releases/v1.0.0-beta.2.md) for details.
+See [v1.0.0-beta.3 release notes](docs/releases/v1.0.0-beta.3.md) for details.
+
+## [1.0.0-beta.2] - 2025-12-07
+
+**Performance optimization** - ModbusLink best practices implementation.
+
+### 🚀 Performance Improvements
+
+- **Batch register reads** - 5 batches instead of 20 individual reads (~75% reduction)
+- **Parallel batch reads** - Uses `asyncio.gather()` for concurrent execution (~4x faster)
+- **Removed unnecessary lock** - `self._lock` removed since coordinator already serializes
+
+### ✨ Code Improvements
+
+- **Context manager usage** - `async with self._client:` for automatic connection handling
+- **Layered error handling** - Retry transient errors, fail fast on protocol errors
+- **Dynamic sensor mapping** - `SENSOR_MAP` built from `SENSOR_ENTITIES` + `REGISTER_BATCHES`
+
+### 🧹 Code Quality
+
+- Fixed ruff linting issues across all source files
+- Fixed Pylance type errors with proper `BaseException` handling
+
+### ⚠️ Beta Notice
+
+ModbusLink is in **Alpha status** (Development Status 3). This release requires extensive testing.
+
+**Full Release Notes:** [docs/releases/v1.0.0-beta.2.md](docs/releases/v1.0.0-beta.2.md)
+
+**Full Changelog:** https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.0.0-beta.1...v1.0.0-beta.2
+
+---
 
 ## [1.0.0-beta.1] - 2025-12-06
 
@@ -143,6 +174,7 @@ Stable release with pymodbus 3.11.1 compatibility and improved MAC address detec
 
 ---
 
+[1.0.0-beta.2]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.0.0-beta.2
 [1.0.0-beta.1]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.0.0-beta.1
 [0.5.0]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v0.5.0
 [0.5.0-beta.1]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v0.5.0-beta.1

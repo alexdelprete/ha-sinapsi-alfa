@@ -5,15 +5,22 @@ https://github.com/alexdelprete/ha-sinapsi-alfa
 
 import asyncio
 import logging
+import random
 import time
-from typing import Any
+from typing import Any, cast
 
 from getmac import getmac
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.core import HomeAssistant
-from modbuslink import AsyncModbusClient, AsyncTcpTransport
+from modbuslink import (
+    AsyncModbusClient,
+    AsyncTcpTransport,
+    CRCError,
+    InvalidResponseError,
+    ModbusException,
+    ModbusLinkError,
+)
 from modbuslink import ConnectionError as ModbusConnectionError
-from modbuslink import ModbusException
 from modbuslink import TimeoutError as ModbusTimeoutError
 
 from .const import (
@@ -26,12 +33,53 @@ from .const import (
     MAX_RETRY_ATTEMPTS,
     MIN_PORT,
     MODEL,
+    REGISTER_BATCHES,
     SENSOR_ENTITIES,
     SOCKET_TIMEOUT,
 )
-from .helpers import log_debug, log_error, unix_timestamp_to_iso8601_local_tz
+from .helpers import (
+    log_debug,
+    log_error,
+    log_warning,
+    unix_timestamp_to_iso8601_local_tz,
+)
 
 _LOGGER = logging.getLogger(__name__)
+
+# Batch read constants
+BATCH_MAX_RETRIES = 3
+BATCH_RETRY_DELAY_CONNECTION = 1.0  # seconds
+BATCH_RETRY_DELAY_TIMEOUT = 2.0  # seconds
+
+
+def _build_sensor_map() -> dict[str, tuple[int, int, str]]:
+    """Build sensor-to-batch mapping from SENSOR_ENTITIES and REGISTER_BATCHES.
+
+    Returns dict: sensor_key -> (batch_index, offset, modbus_type)
+    Offset is calculated as: modbus_addr - batch_start_address
+    """
+    sensor_map: dict[str, tuple[int, int, str]] = {}
+
+    for sensor in SENSOR_ENTITIES:
+        if sensor["modbus_type"] == "calcolato":
+            continue  # Skip calculated sensors
+
+        addr = sensor["modbus_addr"]
+        key = sensor["key"]
+        modbus_type = sensor["modbus_type"]
+
+        # Find which batch contains this address
+        for batch_id, (start, count) in enumerate(REGISTER_BATCHES):
+            if start <= addr < start + count:
+                offset = addr - start
+                sensor_map[key] = (batch_id, offset, modbus_type)
+                break
+
+    return sensor_map
+
+
+# Build mapping at module load time (once)
+SENSOR_MAP = _build_sensor_map()
 
 
 class SinapsiConnectionError(Exception):
@@ -107,7 +155,6 @@ class SinapsiAlfaAPI:
             timeout=self._timeout,
         )
         self._client = AsyncModbusClient(self._transport)
-        self._lock = asyncio.Lock()
         self._uid = ""  # Initialize empty, will be set during first data fetch
         self._sensors = []
         self.data = {}
@@ -174,8 +221,6 @@ class SinapsiAlfaAPI:
 
     async def get_mac_address(self) -> str:
         """Get mac address from ip/hostname with improved retry logic."""
-        import random  # Import here to avoid top-level import
-
         for attempt in range(MAX_RETRY_ATTEMPTS):
             try:
                 # Only check port on first attempt or periodically
@@ -213,7 +258,8 @@ class SinapsiAlfaAPI:
                     )
                     await asyncio.sleep(delay)
 
-            except Exception as e:
+            except OSError as e:
+                # OSError covers network-related errors from getmac
                 log_debug(
                     _LOGGER,
                     "get_mac_address",
@@ -236,180 +282,204 @@ class SinapsiAlfaAPI:
 
     async def check_port(self) -> bool:
         """Check if port is available."""
-        async with self._lock:
-            sock_timeout = SOCKET_TIMEOUT
+        sock_timeout = SOCKET_TIMEOUT
+        log_debug(
+            _LOGGER,
+            "check_port",
+            "Opening socket",
+            host=self._host,
+            port=self._port,
+            timeout=f"{sock_timeout}s",
+        )
+
+        # Use asyncio for non-blocking socket operations
+        try:
+            # Create connection with timeout
+            future = asyncio.open_connection(self._host, self._port)
+            reader, writer = await asyncio.wait_for(future, timeout=sock_timeout)
+
             log_debug(
                 _LOGGER,
                 "check_port",
-                "Opening socket",
+                "Port available",
                 host=self._host,
                 port=self._port,
-                timeout=f"{sock_timeout}s",
             )
 
-            # Use asyncio for non-blocking socket operations
-            try:
-                # Create connection with timeout
-                future = asyncio.open_connection(self._host, self._port)
-                reader, writer = await asyncio.wait_for(future, timeout=sock_timeout)
-
-                log_debug(
-                    _LOGGER,
-                    "check_port",
-                    "Port available",
-                    host=self._host,
-                    port=self._port,
-                )
-
-                # Clean up the connection
-                writer.close()
-                await writer.wait_closed()
-                return True
-
-            except (TimeoutError, ConnectionRefusedError, OSError) as e:
-                log_debug(
-                    _LOGGER,
-                    "check_port",
-                    "Port not available",
-                    host=self._host,
-                    port=self._port,
-                    error=e,
-                )
-                return False
-
-    async def close(self):
-        """Disconnect client."""
-        try:
-            if self._transport.is_open:
-                log_debug(_LOGGER, "close", "Closing Modbus TCP connection")
-                async with self._lock:
-                    await self._transport.close()
-                    self._connection_healthy = False
-                    return True
-            else:
-                log_debug(_LOGGER, "close", "Modbus TCP connection already closed")
-        except (ModbusConnectionError, ModbusTimeoutError) as connect_error:
-            log_error(
+            # Clean up the connection
+            writer.close()
+            await writer.wait_closed()
+        except (TimeoutError, ConnectionRefusedError, OSError) as e:
+            log_debug(
                 _LOGGER,
-                "close",
-                "Close connection error",
-                error=connect_error,
+                "check_port",
+                "Port not available",
+                host=self._host,
+                port=self._port,
+                error=e,
             )
-            raise SinapsiConnectionError(
-                f"Connection failed: {connect_error}", self._host, self._port
-            ) from connect_error
-
-    async def connect(self):
-        """Connect client."""
-        log_debug(
-            _LOGGER,
-            "connect",
-            "Connecting to device",
-            host=self._host,
-            port=self._port,
-            timeout=self._timeout,
-        )
-        if await self.check_port():
-            log_debug(_LOGGER, "connect", "Device ready for Modbus TCP connection")
-            start_time = time.time()
-            try:
-                async with self._lock:
-                    await self._transport.open()
-                connect_duration = time.time() - start_time
-                log_debug(
-                    _LOGGER,
-                    "connect",
-                    "Connection attempt completed",
-                    duration_s=f"{connect_duration:.3f}",
-                )
-                if not self._transport.is_open:
-                    self._connection_healthy = False
-                    raise SinapsiConnectionError(
-                        f"Failed to connect to {self._host}:{self._port} timeout: {self._timeout}",
-                        self._host,
-                        self._port,
-                    )
-                else:
-                    log_debug(_LOGGER, "connect", "Modbus TCP Client connected")
-                    self._connection_healthy = True
-                    return True
-            except (ModbusConnectionError, ModbusTimeoutError) as e:
-                self._connection_healthy = False
-                log_error(
-                    _LOGGER,
-                    "connect",
-                    "Connection failed",
-                    error_type=type(e).__name__,
-                    error=e,
-                )
-                raise SinapsiConnectionError(
-                    f"Failed to connect to {self._host}:{self._port} timeout: {self._timeout} - {type(e).__name__}: {e}",
-                    self._host,
-                    self._port,
-                ) from e
+            return False
         else:
-            log_debug(_LOGGER, "connect", "Device not ready for Modbus TCP connection")
-            self._connection_healthy = False
-            raise SinapsiConnectionError(
-                f"Device not active on {self._host}:{self._port}",
-                self._host,
-                self._port,
-            )
+            return True
 
-    async def read_holding_registers(self, address: int, count: int) -> list[int]:
-        """Read holding registers.
+    async def _read_batch(self, start_address: int, count: int) -> list[int]:
+        """Read a batch of consecutive registers with layered error handling.
 
-        ModbusLink returns List[int] directly and raises exceptions on errors.
+        Implements retry logic for transient errors (connection, timeout)
+        while failing fast on protocol/data errors per ModbusLink best practices.
+
+        Args:
+            start_address: Starting register address
+            count: Number of registers to read
+
+        Returns:
+            List of register values
+
+        Raises:
+            SinapsiConnectionError: After all retries exhausted for transient errors
+            SinapsiModbusError: For non-retriable protocol/data errors
+
         """
-        try:
-            async with self._lock:
-                result = await self._client.read_holding_registers(
+        last_error: Exception | None = None
+
+        for attempt in range(BATCH_MAX_RETRIES):
+            try:
+                return await self._client.read_holding_registers(
                     slave_id=self._device_id,
-                    start_address=address,
+                    start_address=start_address,
                     quantity=count,
                 )
-            # ModbusLink returns List[int] directly, raises on error
-            return result
-        except (ModbusConnectionError, ModbusTimeoutError) as connect_error:
-            log_error(
-                _LOGGER,
-                "read_holding_registers",
-                "Connection error",
-                address=address,
-                error=connect_error,
-            )
-            self._connection_healthy = False
-            raise SinapsiConnectionError(
-                f"Connection failed: {connect_error}", self._host, self._port
-            ) from connect_error
-        except ModbusException as modbus_error:
-            log_error(
-                _LOGGER,
-                "read_holding_registers",
-                "Modbus error",
-                address=address,
-                error=modbus_error,
-            )
-            raise SinapsiModbusError(
-                f"Modbus operation failed: {modbus_error}",
-                address=address,
-                operation="read_holding_registers",
-            ) from modbus_error
 
-    def _decode_register_value(self, registers: list[int], reg_type: str) -> float:
-        """Decode register value based on type.
+            except ModbusConnectionError as e:
+                # Transient - retry with backoff
+                last_error = e
+                if attempt < BATCH_MAX_RETRIES - 1:
+                    log_warning(
+                        _LOGGER,
+                        "_read_batch",
+                        "Connection error, retrying",
+                        attempt=attempt + 1,
+                        address=start_address,
+                    )
+                    await asyncio.sleep(BATCH_RETRY_DELAY_CONNECTION)
+                continue
 
-        ModbusLink returns List[int] (16-bit unsigned values).
-        We combine them for 32-bit values using big endian byte order.
+            except ModbusTimeoutError as e:
+                # Transient - retry with longer backoff
+                last_error = e
+                if attempt < BATCH_MAX_RETRIES - 1:
+                    log_warning(
+                        _LOGGER,
+                        "_read_batch",
+                        "Timeout error, retrying",
+                        attempt=attempt + 1,
+                        address=start_address,
+                    )
+                    await asyncio.sleep(BATCH_RETRY_DELAY_TIMEOUT)
+                continue
+
+            except (CRCError, InvalidResponseError) as e:
+                # Data/protocol errors are not retriable - fail immediately
+                log_error(
+                    _LOGGER,
+                    "_read_batch",
+                    "Data/protocol error",
+                    address=start_address,
+                    error=e,
+                )
+                self._connection_healthy = False
+                raise SinapsiModbusError(
+                    f"Data error at address {start_address}: {e}",
+                    start_address,
+                    "read_batch",
+                ) from e
+
+            except ModbusException as e:
+                # Modbus protocol errors - fail immediately
+                log_error(
+                    _LOGGER,
+                    "_read_batch",
+                    "Modbus protocol error",
+                    address=start_address,
+                    error=e,
+                )
+                raise SinapsiModbusError(
+                    f"Modbus error at address {start_address}: {e}",
+                    start_address,
+                    "read_batch",
+                ) from e
+
+            except ModbusLinkError as e:
+                # Catch-all for any other ModbusLink errors
+                log_error(
+                    _LOGGER,
+                    "_read_batch",
+                    "Unexpected ModbusLink error",
+                    address=start_address,
+                    error=e,
+                )
+                raise SinapsiModbusError(
+                    f"ModbusLink error at address {start_address}: {e}",
+                    start_address,
+                    "read_batch",
+                ) from e
+
+        # All retries exhausted
+        self._connection_healthy = False
+        raise SinapsiConnectionError(
+            f"Batch read failed after {BATCH_MAX_RETRIES} attempts: {last_error}",
+            self._host,
+            self._port,
+        ) from last_error
+
+    def _extract_uint16(self, registers: list[int], offset: int) -> int:
+        """Extract uint16 value from register batch.
+
+        Args:
+            registers: List of register values from batch read
+            offset: Offset within the batch
+
+        Returns:
+            16-bit unsigned integer value
+
         """
+        return registers[offset]
+
+    def _extract_uint32(self, registers: list[int], offset: int) -> int:
+        """Extract uint32 value (big-endian) from register batch.
+
+        Args:
+            registers: List of register values from batch read
+            offset: Offset within the batch (points to high word)
+
+        Returns:
+            32-bit unsigned integer value
+
+        """
+        return (registers[offset] << 16) | registers[offset + 1]
+
+    def _extract_sensor_value(self, batches: list[list[int]], sensor_key: str) -> float:
+        """Extract sensor value from batch results.
+
+        Args:
+            batches: List of batch results from parallel reads
+            sensor_key: Sensor key to look up in SENSOR_MAP
+
+        Returns:
+            Raw sensor value as float
+
+        Raises:
+            ValueError: If sensor has unknown register type
+
+        """
+        batch_idx, offset, reg_type = SENSOR_MAP[sensor_key]
+        registers = batches[batch_idx]
+
         if reg_type == "uint16":
-            return round(float(registers[0]), 2)
-        elif reg_type == "uint32":
-            # Big endian: high word first, then low word
-            value = (registers[0] << 16) | registers[1]
-            return round(float(value), 2)
-        else:
-            raise ValueError(f"Unsupported register type: {reg_type}")
+            return float(self._extract_uint16(registers, offset))
+        if reg_type == "uint32":
+            return float(self._extract_uint32(registers, offset))
+        raise ValueError(f"Unknown register type: {reg_type}")
 
     def _process_sensor_value(self, value: float, sensor: dict[str, Any]) -> Any:
         """Process sensor value with unit conversion and special handling."""
@@ -433,15 +503,28 @@ class SinapsiAlfaAPI:
         if reg_key == "data_evento":
             if value > MAX_EVENT_VALUE:
                 return "None"
-            else:
-                return unix_timestamp_to_iso8601_local_tz(
-                    value + self.data["tempo_residuo_distacco"]
-                )
+            return unix_timestamp_to_iso8601_local_tz(
+                value + self.data["tempo_residuo_distacco"]
+            )
 
         if reg_key == "fascia_oraria_attuale":
             return f"F{value}"
 
         return value
+
+    def _check_batch_errors(self, batches: list[list[int] | BaseException]) -> None:
+        """Check batch results for errors and re-raise if found.
+
+        Args:
+            batches: List of batch results, may contain exceptions
+
+        Raises:
+            BaseException: First exception found in batch results
+
+        """
+        for result in batches:
+            if isinstance(result, BaseException):
+                raise result
 
     def _calculate_derived_values(self) -> None:
         """Calculate derived values from base measurements."""
@@ -458,100 +541,104 @@ class SinapsiAlfaAPI:
             self.data["energia_auto_consumata"] + self.data["energia_prelevata"]
         )
 
-    async def _read_and_process_sensor(self, sensor: dict[str, Any]) -> None:
-        """Read and process a single sensor."""
-        reg_key = sensor["key"]
-        reg_addr = sensor["modbus_addr"]
-        reg_type = sensor["modbus_type"]
-        reg_count = 1 if reg_type == "uint16" else 2
-
-        log_debug(
-            _LOGGER, "_read_and_process_sensor", f"Reading {reg_key}", address=reg_addr
-        )
-
-        # ModbusLink returns List[int] directly
-        registers = await self.read_holding_registers(reg_addr, reg_count)
-        raw_value = self._decode_register_value(registers, reg_type)
-        processed_value = self._process_sensor_value(raw_value, sensor)
-
-        self.data[reg_key] = processed_value
-        log_debug(
-            _LOGGER,
-            "_read_and_process_sensor",
-            f"Processed {reg_key}",
-            value=processed_value,
-        )
-
     async def async_get_data(self) -> bool:
-        """Read Data Function."""
+        """Read data using client context manager.
 
+        Uses ModbusLink's context manager for automatic connection handling.
+        The context manager opens the transport on entry and closes on exit.
+
+        Returns:
+            True if data collection succeeded
+
+        Raises:
+            SinapsiConnectionError: If device is not reachable or connection fails
+            SinapsiModbusError: If Modbus operations fail
+
+        """
         try:
-            if await self.connect():
+            # Pre-check if device is reachable
+            if not await self.check_port():
+                self._connection_healthy = False
+                raise SinapsiConnectionError(
+                    f"Device not active on {self._host}:{self._port}",
+                    self._host,
+                    self._port,
+                )
+
+            log_debug(
+                _LOGGER,
+                "async_get_data",
+                "Start data collection",
+                host=self._host,
+                port=self._port,
+            )
+
+            # Context manager on CLIENT (opens/closes transport automatically)
+            async with self._client:
                 # Set MAC address if not already set
                 if not self._uid:
                     self._uid = await self.get_mac_address()
                     self.data["sn"] = self._uid
 
-                log_debug(
-                    _LOGGER,
-                    "async_get_data",
-                    "Start data collection",
-                    host=self._host,
-                    port=self._port,
-                )
-                # Now we can call the async method directly
                 result = await self.read_modbus_alfa()
-                await self.close()
-                log_debug(_LOGGER, "async_get_data", "Data collection completed")
+
                 if result:
-                    log_debug(_LOGGER, "async_get_data", "Data validation: valid")
+                    log_debug(_LOGGER, "async_get_data", "Data collection completed")
                     self._connection_healthy = True
                     self._last_successful_read = time.time()
                     return True
-                else:
-                    log_debug(_LOGGER, "async_get_data", "Data validation: invalid")
-                    return False
-            else:
-                log_debug(
-                    _LOGGER,
-                    "async_get_data",
-                    "Data collection failed: client not connected",
-                )
-                self._connection_healthy = False
+
+                log_debug(_LOGGER, "async_get_data", "Data validation: invalid")
                 return False
+
         except (ModbusConnectionError, ModbusTimeoutError) as connect_error:
-            log_error(
-                _LOGGER,
-                "async_get_data",
-                "Connection error during data collection",
-                error=connect_error,
-            )
             self._connection_healthy = False
             raise SinapsiConnectionError(
                 f"Connection failed: {connect_error}", self._host, self._port
             ) from connect_error
-        except ModbusException as modbus_error:
-            log_error(
-                _LOGGER,
-                "async_get_data",
-                "Modbus error during data collection",
-                error=modbus_error,
-            )
-            raise SinapsiModbusError(
-                f"Modbus operation failed: {modbus_error}"
-            ) from modbus_error
 
     async def read_modbus_alfa(self) -> bool:
-        """Read Alfa modbus registers."""
+        """Read all Modbus registers using batch operations with async concurrency.
+
+        Reads registers in 5 batches instead of 20 individual reads (~75% fewer requests).
+        Uses asyncio.gather() for parallel batch reads.
+
+        Returns:
+            True if all reads succeeded
+
+        Raises:
+            SinapsiModbusError: If any batch read fails
+
+        """
         try:
+            # Read all batches in parallel
+            batch_tasks = [
+                self._read_batch(start, count) for start, count in REGISTER_BATCHES
+            ]
+            batches = await asyncio.gather(*batch_tasks, return_exceptions=True)
+
+            # Check for errors in any batch and re-raise
+            self._check_batch_errors(batches)
+
+            # Cast to list[list[int]] after error check (we know no exceptions remain)
+            validated_batches = cast(list[list[int]], batches)
+
+            # Extract and process all sensor values
             for sensor in SENSOR_ENTITIES:
                 if sensor["modbus_type"] == "calcolato":
-                    self._calculate_derived_values()
-                else:
-                    await self._read_and_process_sensor(sensor)
-            return True
+                    continue  # Skip calculated sensors
+
+                key = sensor["key"]
+                raw_value = self._extract_sensor_value(validated_batches, key)
+                processed_value = self._process_sensor_value(raw_value, sensor)
+                self.data[key] = processed_value
+
+            # Calculate derived values
+            self._calculate_derived_values()
         except Exception as error:
             log_error(
                 _LOGGER, "read_modbus_alfa", "Failed to read modbus data", error=error
             )
             raise SinapsiModbusError(f"Failed to read modbus data: {error}") from error
+        else:
+            return True

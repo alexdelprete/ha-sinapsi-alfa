@@ -45,20 +45,19 @@ async def async_setup_entry(
     )
     log_debug(_LOGGER, "async_setup_entry", "Serial", serial=coordinator.api.data["sn"])
 
-    sensors = []
-    for sensor in SENSOR_ENTITIES:
-        if coordinator.api.data[sensor["key"]] is not None:
-            sensors.append(
-                SinapsiAlfaSensor(
-                    coordinator,
-                    sensor["name"],
-                    sensor["key"],
-                    sensor["icon"],
-                    sensor["device_class"],
-                    sensor["state_class"],
-                    sensor["unit"],
-                )
-            )
+    sensors = [
+        SinapsiAlfaSensor(
+            coordinator,
+            sensor["name"],
+            sensor["key"],
+            sensor["icon"],
+            sensor["device_class"],
+            sensor["state_class"],
+            sensor["unit"],
+        )
+        for sensor in SENSOR_ENTITIES
+        if coordinator.api.data[sensor["key"]] is not None
+    ]
 
     async_add_entities(sensors)
 
@@ -133,16 +132,14 @@ class SinapsiAlfaSensor(CoordinatorEntity, SensorEntity):
         """Return the sensor entity_category."""
         if self._state_class is None:
             return EntityCategory.DIAGNOSTIC
-        else:
-            return None
+        return None
 
     @property
     def native_value(self):
         """Return the state of the sensor."""
         if self._key in self._coordinator.api.data:
             return self._coordinator.api.data[self._key]
-        else:
-            return None
+        return None
 
     @property
     def state_attributes(self) -> dict[str, Any] | None:

@@ -46,7 +46,7 @@ def get_host_from_config(hass: HomeAssistant):
     }
 
 
-class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore
+class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg]
     """Sinapsi Alfa config flow."""
 
     VERSION = 1
