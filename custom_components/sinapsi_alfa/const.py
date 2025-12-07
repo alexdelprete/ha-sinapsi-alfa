@@ -43,11 +43,11 @@ MAX_EVENT_VALUE = 4294967294
 # Groups consecutive registers to minimize Modbus requests
 # 5 batches instead of 20 individual reads = ~75% reduction in requests
 REGISTER_BATCHES: list[tuple[int, int]] = [
-    (2, 18),    # Batch 0: Power/energy basics (addr 2-19)
-    (30, 36),   # Batch 1: Daily energy F1-F6 (addr 30-65)
-    (203, 1),   # Batch 2: Time band (addr 203)
-    (780, 3),   # Batch 3: Event data (addr 780-782)
-    (921, 5),   # Batch 4: Production (addr 921-925)
+    (2, 18),  # Batch 0: Power/energy basics (addr 2-19)
+    (30, 36),  # Batch 1: Daily energy F1-F6 (addr 30-65)
+    (203, 1),  # Batch 2: Time band (addr 203)
+    (780, 3),  # Batch 3: Event data (addr 780-782)
+    (921, 5),  # Batch 4: Production (addr 921-925)
 ]
 
 STARTUP_MESSAGE = f"""
