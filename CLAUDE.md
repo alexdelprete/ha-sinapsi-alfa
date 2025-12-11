@@ -346,14 +346,15 @@ energia_auto_consumata = energia_prodotta - energia_immessa
 
 ## Markdown Standards
 
-Follow markdownlint rules:
+Follow markdownlint rules (configured in `.markdownlint.json`):
 
 - Blank lines around lists and code blocks
 - Language specification for fenced code blocks
 - Blank line after bold headers
-- Unique heading names
-- Line length 120 characters
+- Unique heading names (MD024: siblings_only for CHANGELOG format)
+- Line length 120 characters (MD013)
 - No bare URLs (MD034) - always use `[text](url)` format
+- Consistent bold style using `**` (MD050: asterisk)
 
 ## Do's and Don'ts
 
