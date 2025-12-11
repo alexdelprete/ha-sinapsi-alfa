@@ -59,7 +59,7 @@ Thanks to Marco Lusini ([@met67](https://github.com/met67)) for reporting.
 
 **Full Release Notes:** [docs/releases/v1.0.0.md](docs/releases/v1.0.0.md)
 
-**Full Changelog:** https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v0.5.0...v1.0.0
+**Full Changelog:** [v0.5.0...v1.0.0](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v0.5.0...v1.0.0)
 
 ---
 
@@ -77,7 +77,7 @@ ModbusLink is in **Alpha status** (Development Status 3). This release requires 
 
 **Full Release Notes:** [docs/releases/v1.0.0-beta.4.md](docs/releases/v1.0.0-beta.4.md)
 
-**Full Changelog:** https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.0.0-beta.3...v1.0.0-beta.4
+**Full Changelog:** [v1.0.0-beta.3...v1.0.0-beta.4](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.0.0-beta.3...v1.0.0-beta.4)
 
 ---
 
@@ -95,7 +95,7 @@ ModbusLink is in **Alpha status** (Development Status 3). This release requires 
 
 **Full Release Notes:** [docs/releases/v1.0.0-beta.3.md](docs/releases/v1.0.0-beta.3.md)
 
-**Full Changelog:** https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.0.0-beta.2...v1.0.0-beta.3
+**Full Changelog:** [v1.0.0-beta.2...v1.0.0-beta.3](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.0.0-beta.2...v1.0.0-beta.3)
 
 ---
 
@@ -126,7 +126,7 @@ ModbusLink is in **Alpha status** (Development Status 3). This release requires 
 
 **Full Release Notes:** [docs/releases/v1.0.0-beta.2.md](docs/releases/v1.0.0-beta.2.md)
 
-**Full Changelog:** https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.0.0-beta.1...v1.0.0-beta.2
+**Full Changelog:** [v1.0.0-beta.1...v1.0.0-beta.2](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.0.0-beta.1...v1.0.0-beta.2)
 
 ---
 
@@ -152,7 +152,7 @@ ModbusLink is in **Alpha status** (Development Status 3). This release requires 
 
 **Full Release Notes:** [docs/releases/v1.0.0-beta.1.md](docs/releases/v1.0.0-beta.1.md)
 
-**Full Changelog:** https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v0.5.0...v1.0.0-beta.1
+**Full Changelog:** [v0.5.0...v1.0.0-beta.1](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v0.5.0...v1.0.0-beta.1)
 
 ---
 
@@ -193,7 +193,7 @@ Official stable release with Python 3.13 support, Home Assistant 2025.10 compati
 
 **Full Release Notes:** [docs/releases/v0.5.0.md](docs/releases/v0.5.0.md)
 
-**Full Changelog:** https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v0.4.2...v0.5.0
+**Full Changelog:** [v0.4.2...v0.5.0](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v0.4.2...v0.5.0)
 
 ---
 
@@ -226,7 +226,7 @@ All Sinapsi-specific features remain unchanged: Modbus addresses, Italian sensor
 
 **Full Release Notes:** [docs/releases/v0.5.0-beta.1.md](docs/releases/v0.5.0-beta.1.md)
 
-**Full Changelog:** https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v0.4.2...v0.5.0-beta.1
+**Full Changelog:** [v0.4.2...v0.5.0-beta.1](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v0.4.2...v0.5.0-beta.1)
 
 ---
 
@@ -258,7 +258,7 @@ Stable release with pymodbus 3.11.1 compatibility and improved MAC address detec
 
 **Full Release Notes:** [docs/releases/v0.4.2.md](docs/releases/v0.4.2.md)
 
-**Full Changelog:** https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v0.4.1...v0.4.2
+**Full Changelog:** [v0.4.1...v0.4.2](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v0.4.1...v0.4.2)
 
 ---
 

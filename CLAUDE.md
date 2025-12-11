@@ -353,6 +353,7 @@ Follow markdownlint rules:
 - Blank line after bold headers
 - Unique heading names
 - Line length 120 characters
+- No bare URLs (MD034) - always use `[text](url)` format
 
 ## Do's and Don'ts
 
