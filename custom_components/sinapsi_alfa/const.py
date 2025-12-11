@@ -9,7 +9,7 @@ from homeassistant.const import UnitOfEnergy, UnitOfPower
 # Base component constants
 NAME = "Sinapsi Alfa"
 DOMAIN = "sinapsi_alfa"
-VERSION = "1.0.0"
+VERSION = "1.0.1"
 ATTRIBUTION = "by @alexdelprete"
 ISSUE_URL = "https://github.com/alexdelprete/ha-sinapsi-alfa/issues"
 
@@ -65,7 +65,7 @@ SENSOR_ENTITIES = [
     {
         "name": "Potenza Prelevata",
         "key": "potenza_prelevata",
-        "icon": "mdi:transmission-tower-import",
+        "icon": "mdi:transmission-tower-export",
         "device_class": SensorDeviceClass.POWER,
         "state_class": SensorStateClass.MEASUREMENT,
         "unit": UnitOfPower.KILO_WATT,
@@ -75,7 +75,7 @@ SENSOR_ENTITIES = [
     {
         "name": "Potenza Prelevata Media 15m",
         "key": "potenza_prelevata_media_15m",
-        "icon": "mdi:transmission-tower-import",
+        "icon": "mdi:transmission-tower-export",
         "device_class": SensorDeviceClass.POWER,
         "state_class": SensorStateClass.MEASUREMENT,
         "unit": UnitOfPower.KILO_WATT,
@@ -85,7 +85,7 @@ SENSOR_ENTITIES = [
     {
         "name": "Potenza Immessa",
         "key": "potenza_immessa",
-        "icon": "mdi:transmission-tower-export",
+        "icon": "mdi:transmission-tower-import",
         "device_class": SensorDeviceClass.POWER,
         "state_class": SensorStateClass.MEASUREMENT,
         "unit": UnitOfPower.KILO_WATT,
@@ -95,7 +95,7 @@ SENSOR_ENTITIES = [
     {
         "name": "Potenza Immessa Media 15m",
         "key": "potenza_immessa_media_15m",
-        "icon": "mdi:transmission-tower-export",
+        "icon": "mdi:transmission-tower-import",
         "device_class": SensorDeviceClass.POWER,
         "state_class": SensorStateClass.MEASUREMENT,
         "unit": UnitOfPower.KILO_WATT,
@@ -115,7 +115,7 @@ SENSOR_ENTITIES = [
     {
         "name": "Energia Prelevata",
         "key": "energia_prelevata",
-        "icon": "mdi:transmission-tower-import",
+        "icon": "mdi:transmission-tower-export",
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,
         "unit": UnitOfEnergy.KILO_WATT_HOUR,
@@ -125,7 +125,7 @@ SENSOR_ENTITIES = [
     {
         "name": "Energia Immessa",
         "key": "energia_immessa",
-        "icon": "mdi:transmission-tower-export",
+        "icon": "mdi:transmission-tower-import",
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,
         "unit": UnitOfEnergy.KILO_WATT_HOUR,
@@ -145,7 +145,7 @@ SENSOR_ENTITIES = [
     {
         "name": "Energia Prelevata Giornaliera F1",
         "key": "energia_prelevata_giornaliera_f1",
-        "icon": "mdi:transmission-tower-import",
+        "icon": "mdi:transmission-tower-export",
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,
         "unit": UnitOfEnergy.KILO_WATT_HOUR,
@@ -155,7 +155,7 @@ SENSOR_ENTITIES = [
     {
         "name": "Energia Prelevata Giornaliera F2",
         "key": "energia_prelevata_giornaliera_f2",
-        "icon": "mdi:transmission-tower-import",
+        "icon": "mdi:transmission-tower-export",
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,
         "unit": UnitOfEnergy.KILO_WATT_HOUR,
@@ -165,7 +165,7 @@ SENSOR_ENTITIES = [
     {
         "name": "Energia Prelevata Giornaliera F3",
         "key": "energia_prelevata_giornaliera_f3",
-        "icon": "mdi:transmission-tower-import",
+        "icon": "mdi:transmission-tower-export",
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,
         "unit": UnitOfEnergy.KILO_WATT_HOUR,
@@ -175,7 +175,7 @@ SENSOR_ENTITIES = [
     {
         "name": "Energia Prelevata Giornaliera F4",
         "key": "energia_prelevata_giornaliera_f4",
-        "icon": "mdi:transmission-tower-import",
+        "icon": "mdi:transmission-tower-export",
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,
         "unit": UnitOfEnergy.KILO_WATT_HOUR,
@@ -185,7 +185,7 @@ SENSOR_ENTITIES = [
     {
         "name": "Energia Prelevata Giornaliera F5",
         "key": "energia_prelevata_giornaliera_f5",
-        "icon": "mdi:transmission-tower-import",
+        "icon": "mdi:transmission-tower-export",
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,
         "unit": UnitOfEnergy.KILO_WATT_HOUR,
@@ -195,7 +195,7 @@ SENSOR_ENTITIES = [
     {
         "name": "Energia Prelevata Giornaliera F6",
         "key": "energia_prelevata_giornaliera_f6",
-        "icon": "mdi:transmission-tower-import",
+        "icon": "mdi:transmission-tower-export",
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,
         "unit": UnitOfEnergy.KILO_WATT_HOUR,
@@ -205,7 +205,7 @@ SENSOR_ENTITIES = [
     {
         "name": "Energia Immessa Giornaliera F1",
         "key": "energia_immessa_giornaliera_f1",
-        "icon": "mdi:transmission-tower-export",
+        "icon": "mdi:transmission-tower-import",
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,
         "unit": UnitOfEnergy.KILO_WATT_HOUR,
@@ -215,7 +215,7 @@ SENSOR_ENTITIES = [
     {
         "name": "Energia Immessa Giornaliera F2",
         "key": "energia_immessa_giornaliera_f2",
-        "icon": "mdi:transmission-tower-export",
+        "icon": "mdi:transmission-tower-import",
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,
         "unit": UnitOfEnergy.KILO_WATT_HOUR,
@@ -225,7 +225,7 @@ SENSOR_ENTITIES = [
     {
         "name": "Energia Immessa Giornaliera F3",
         "key": "energia_immessa_giornaliera_f3",
-        "icon": "mdi:transmission-tower-export",
+        "icon": "mdi:transmission-tower-import",
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,
         "unit": UnitOfEnergy.KILO_WATT_HOUR,
@@ -235,7 +235,7 @@ SENSOR_ENTITIES = [
     {
         "name": "Energia Immessa Giornaliera F4",
         "key": "energia_immessa_giornaliera_f4",
-        "icon": "mdi:transmission-tower-export",
+        "icon": "mdi:transmission-tower-import",
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,
         "unit": UnitOfEnergy.KILO_WATT_HOUR,
@@ -245,7 +245,7 @@ SENSOR_ENTITIES = [
     {
         "name": "Energia Immessa Giornaliera F5",
         "key": "energia_immessa_giornaliera_f5",
-        "icon": "mdi:transmission-tower-export",
+        "icon": "mdi:transmission-tower-import",
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,
         "unit": UnitOfEnergy.KILO_WATT_HOUR,
@@ -255,7 +255,7 @@ SENSOR_ENTITIES = [
     {
         "name": "Energia Immessa Giornaliera F6",
         "key": "energia_immessa_giornaliera_f6",
-        "icon": "mdi:transmission-tower-export",
+        "icon": "mdi:transmission-tower-import",
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,
         "unit": UnitOfEnergy.KILO_WATT_HOUR,

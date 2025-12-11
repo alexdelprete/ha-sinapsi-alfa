@@ -7,7 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Development version for v1.0.1 - maintenance and improvements.
+Development version for v1.0.2 - maintenance and improvements.
+
+## [1.0.1] - 2025-12-11
+
+**Patch release** - Fixes inverted import/export sensor icons.
+
+### 🐛 Bug Fixes
+
+- **Fixed inverted import/export icons** - Swapped `transmission-tower-import` and `transmission-tower-export` icons to match grid perspective (Fixes #178)
+
+Thanks to Marco Lusini ([@met67](https://github.com/met67)) for reporting.
+
+**Full Release Notes:** [docs/releases/v1.0.1.md](docs/releases/v1.0.1.md)
+
+**Full Changelog:** [v1.0.0...v1.0.1](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.0.0...v1.0.1)
+
+---
 
 ## [1.0.0] - 2025-12-07
 
@@ -246,6 +262,7 @@ Stable release with pymodbus 3.11.1 compatibility and improved MAC address detec
 
 ---
 
+[1.0.1]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.0.1
 [1.0.0]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.0.0
 [1.0.0-beta.4]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.0.0-beta.4
 [1.0.0-beta.3]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.0.0-beta.3

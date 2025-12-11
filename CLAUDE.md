@@ -175,6 +175,9 @@ This prevents log spam during extended outages.
 
 ## Release Management - CRITICAL
 
+> **⛔ STOP: NEVER create git tags or GitHub releases without explicit user command.**
+> This is a hard rule. Always stop after commit/push and wait for user instruction.
+
 **Published releases are FROZEN** - Never modify documentation for released versions.
 
 **Master branch = Next Release** - All commits target the next version with version bumped in manifest.json and const.py.
@@ -201,6 +204,14 @@ This prevents log spam during extended outages.
    - `gh release create vX.Y.Z --latest`
 
 **CRITICAL:** Never create git tags or GitHub releases without explicit user instruction.
+
+### Issue References in Release Notes
+
+When a release fixes a specific GitHub issue:
+
+- Reference the issue number in release notes (e.g., "Fixes #178")
+- Thank the user who opened the issue by name and GitHub handle
+- **NEVER close the issue** - the user will do it manually
 
 ### After Publishing
 
