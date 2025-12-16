@@ -356,6 +356,13 @@ Follow markdownlint rules (configured in `.markdownlint.json`):
 - No bare URLs (MD034) - always use `[text](url)` format
 - Consistent bold style using `**` (MD050: asterisk)
 
+**Disabled rules** (common patterns in GitHub READMEs):
+
+- MD013: Line length (URLs and images often exceed limits)
+- MD025: Single h1 (multiple `#` sections common in READMEs)
+- MD001: Heading increment (flexible heading hierarchy)
+- MD036: Emphasis as heading (italic disclaimers common)
+
 ## Do's and Don'ts
 
 **✅ DO:**

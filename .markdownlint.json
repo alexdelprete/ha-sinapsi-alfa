@@ -5,9 +5,10 @@
   "MD050": {
     "style": "asterisk"
   },
-  "MD013": {
-    "line_length": 120
-  },
+  "MD013": false,
+  "MD025": false,
+  "MD001": false,
   "MD033": false,
+  "MD036": false,
   "MD041": false
 }

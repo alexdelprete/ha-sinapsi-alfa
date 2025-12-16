@@ -45,7 +45,7 @@ Download the source code archive from the release page. Unpack the archive and c
 
 # Configuration
 
-Configuration is done via config flow right after adding the integration. After the first configuration you can change parameters (except device name) at runtime through the integration page configuration, without the need to restart HA. 
+Configuration is done via config flow right after adding the integration. After the first configuration you can change parameters (except device name) at runtime through the integration page configuration, without the need to restart HA.
 
 - **custom name**: custom name for the device, that will be used as prefix for sensors created by the component
 - **ip/hostname**: IP/hostname of the inverter - this is used as unique_id, if you change it and reinstall you will lose historical data, that's why I advice to use hostname, so you can change IP without losing historical data
@@ -55,7 +55,45 @@ Configuration is done via config flow right after adding the integration. After 
 <img style="border: 5px solid #767676;border-radius: 10px;max-width: 500px;width: 50%;box-sizing: border-box;" src="https://github.com/alexdelprete/ha-sinapsi-alfa/blob/9cdc7bf681db4ad83700ddaf8d7e745a8769e684/gfxfiles/alfaconfig.png" alt="Config">
 
 # Sensor view
+
 <img style="border: 5px solid #767676;border-radius: 10px;max-width: 500px;width: 75%;box-sizing: border-box;" src="https://github.com/alexdelprete/ha-sinapsi-alfa/blob/9cdc7bf681db4ad83700ddaf8d7e745a8769e684/gfxfiles/alfasensors.gif" alt="Config">
+
+# Troubleshooting
+
+## Enable Debug Logging
+
+If you're experiencing issues, enable debug logging to help diagnose the problem. Add this to your `configuration.yaml`:
+
+```yaml
+logger:
+  default: info
+  logs:
+    custom_components.sinapsi_alfa: debug
+```
+
+After adding this, restart Home Assistant for the changes to take effect.
+
+## View and Download Logs
+
+1. Go to **Settings** > **System** > **Logs**
+2. Click **Load Full Logs** to see all log entries
+3. Use the search box to filter for `sinapsi_alfa`
+4. Click **Download Full Log** to save the complete log file
+
+Alternatively, you can access logs directly from the file system at:
+
+- `config/home-assistant.log` (current log)
+- `config/home-assistant.log.1` (previous log)
+
+## Reporting Issues
+
+When [opening an issue](https://github.com/alexdelprete/ha-sinapsi-alfa/issues), please include:
+
+1. **Home Assistant version** (Settings > About)
+2. **Integration version** (Settings > Devices & Services > Alfa by Sinapsi)
+3. **Debug logs** with timestamps showing the error
+4. **Network setup** (local network, VPN, firewall, etc.)
+5. **Steps to reproduce** the issue
 
 # Coffee
 
