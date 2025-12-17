@@ -8,7 +8,8 @@
           "name": "Custom Name of the device (used for sensors' prefix)",
           "host": "IP or hostname",
           "port": "TCP port",
-          "scan_interval": "Polling Period (min: 30s max: 600s)"
+          "scan_interval": "Polling Period (min: 30s max: 600s)",
+          "timeout": "Connection Timeout in seconds (min: 5s max: 60s)"
         }
       }
     },
@@ -24,7 +25,8 @@
         "data": {
           "host": "IP or hostname",
           "port": "TCP port",
-          "scan_interval": "Polling Period (min: 30s max: 600s)"
+          "scan_interval": "Polling Period (min: 30s max: 600s)",
+          "timeout": "Connection Timeout in seconds (min: 5s max: 60s)"
         }
       }
     }

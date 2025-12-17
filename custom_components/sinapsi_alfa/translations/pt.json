@@ -8,7 +8,8 @@
           "name": "Nome personalizado do dispositivo (usado como prefixo dos sensores)",
           "host": "IP ou nome do anfitrião",
           "port": "Porta TCP",
-          "scan_interval": "Período de sondagem (mín: 30s máx: 600s)"
+          "scan_interval": "Período de sondagem (mín: 30s máx: 600s)",
+          "timeout": "Tempo limite de ligação em segundos (mín: 5s máx: 60s)"
         }
       }
     },
@@ -24,7 +25,8 @@
         "data": {
           "host": "IP ou nome do anfitrião",
           "port": "Porta TCP",
-          "scan_interval": "Período de sondagem (mín: 30s máx: 600s)"
+          "scan_interval": "Período de sondagem (mín: 30s máx: 600s)",
+          "timeout": "Tempo limite de ligação em segundos (mín: 5s máx: 60s)"
         }
       }
     }
