@@ -15,7 +15,6 @@ from homeassistant.config_entries import (
 )
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import config_validation as cv
-from pymodbus.exceptions import ConnectionException
 
 from .api import SinapsiAlfaAPI, SinapsiConnectionError, SinapsiModbusError
 from .const import (
@@ -23,14 +22,18 @@ from .const import (
     CONF_NAME,
     CONF_PORT,
     CONF_SCAN_INTERVAL,
+    CONF_TIMEOUT,
     DEFAULT_NAME,
     DEFAULT_PORT,
     DEFAULT_SCAN_INTERVAL,
+    DEFAULT_TIMEOUT,
     DOMAIN,
     MAX_PORT,
     MAX_SCAN_INTERVAL,
+    MAX_TIMEOUT,
     MIN_PORT,
     MIN_SCAN_INTERVAL,
+    MIN_TIMEOUT,
 )
 from .helpers import host_valid, log_debug, log_error
 
@@ -64,19 +67,20 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg
             return True
         return False
 
-    async def get_unique_id(self, name, host, port, scan_interval):
+    async def get_unique_id(self, name, host, port, scan_interval, timeout):
         """Return device serial number."""
         log_debug(_LOGGER, "get_unique_id", "Test connection", host=host, port=port)
         try:
             log_debug(_LOGGER, "get_unique_id", "Creating API Client")
-            self.api = SinapsiAlfaAPI(self.hass, name, host, port, scan_interval)
+            self.api = SinapsiAlfaAPI(
+                self.hass, name, host, port, scan_interval, timeout
+            )
             log_debug(_LOGGER, "get_unique_id", "API Client created: calling get data")
             self.api_data = await self.api.async_get_data()
             log_debug(_LOGGER, "get_unique_id", "API Client: get data")
             log_debug(_LOGGER, "get_unique_id", "API Client Data", data=self.api_data)
             return self.api.data["sn"]
         except (
-            ConnectionException,
             SinapsiConnectionError,
             SinapsiModbusError,
         ) as connerr:
@@ -99,13 +103,14 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg
             host = user_input[CONF_HOST]
             port = user_input[CONF_PORT]
             scan_interval = user_input[CONF_SCAN_INTERVAL]
+            timeout = user_input[CONF_TIMEOUT]
 
             if self._host_in_configuration_exists(host):
                 errors[CONF_HOST] = "Device Already Configured"
             elif not host_valid(user_input[CONF_HOST]):
                 errors[CONF_HOST] = "Invalid Host IP"
             else:
-                uid = await self.get_unique_id(name, host, port, scan_interval)
+                uid = await self.get_unique_id(name, host, port, scan_interval, timeout)
                 if uid is not False:
                     log_debug(_LOGGER, "async_step_user", "Device unique id", uid=uid)
                     # Assign a unique ID to the flow and abort the flow
@@ -142,6 +147,13 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg
                         vol.Coerce(int),
                         vol.Clamp(min=MIN_SCAN_INTERVAL, max=MAX_SCAN_INTERVAL),
                     ),
+                    vol.Required(
+                        CONF_TIMEOUT,
+                        default=DEFAULT_TIMEOUT,
+                    ): vol.All(
+                        vol.Coerce(int),
+                        vol.Clamp(min=MIN_TIMEOUT, max=MAX_TIMEOUT),
+                    ),
                 },
             ),
             errors=errors,
@@ -171,6 +183,13 @@ class SinapsiAlfaOptionsFlow(OptionsFlow):
                 ): vol.All(
                     vol.Coerce(int),
                     vol.Clamp(min=MIN_SCAN_INTERVAL, max=MAX_SCAN_INTERVAL),
+                ),
+                vol.Required(
+                    CONF_TIMEOUT,
+                    default=config_entry.data.get(CONF_TIMEOUT, DEFAULT_TIMEOUT),
+                ): vol.All(
+                    vol.Coerce(int),
+                    vol.Clamp(min=MIN_TIMEOUT, max=MAX_TIMEOUT),
                 ),
             }
         )

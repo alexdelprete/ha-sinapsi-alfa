@@ -9,7 +9,7 @@ from homeassistant.const import UnitOfEnergy, UnitOfPower
 # Base component constants
 NAME = "Sinapsi Alfa"
 DOMAIN = "sinapsi_alfa"
-VERSION = "1.0.1"
+VERSION = "1.1.0"
 ATTRIBUTION = "by @alexdelprete"
 ISSUE_URL = "https://github.com/alexdelprete/ha-sinapsi-alfa/issues"
 
@@ -18,13 +18,16 @@ CONF_NAME = "name"
 CONF_HOST = "host"
 CONF_PORT = "port"
 CONF_SCAN_INTERVAL = "scan_interval"
+CONF_TIMEOUT = "timeout"
 DEFAULT_NAME = "Alfa"
 DEFAULT_PORT = 502
 DEFAULT_DEVICE_ID = 1
 DEFAULT_SCAN_INTERVAL = 60
 MIN_SCAN_INTERVAL = 30
 MAX_SCAN_INTERVAL = 600
-CONN_TIMEOUT = 5
+DEFAULT_TIMEOUT = 10
+MIN_TIMEOUT = 5
+MAX_TIMEOUT = 60
 MANUFACTURER = "Sinapsi"
 MODEL = "Alfa"
 
@@ -35,7 +38,6 @@ MAX_PORT = 65535
 # API Constants
 DEFAULT_SENSOR_VALUE = 0.0
 MAX_RETRY_ATTEMPTS = 10
-SOCKET_TIMEOUT = 3.0
 INVALID_DISTACCO_VALUE = 65535
 MAX_EVENT_VALUE = 4294967294
 

@@ -16,7 +16,9 @@ from .const import (
     CONF_NAME,
     CONF_PORT,
     CONF_SCAN_INTERVAL,
+    CONF_TIMEOUT,
     DEFAULT_SCAN_INTERVAL,
+    DEFAULT_TIMEOUT,
     DOMAIN,
     MAX_SCAN_INTERVAL,
     MIN_SCAN_INTERVAL,
@@ -41,6 +43,7 @@ class SinapsiAlfaCoordinator(DataUpdateCoordinator):
         self.scan_interval = int(
             config_entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
         )
+        self.timeout = int(config_entry.data.get(CONF_TIMEOUT, DEFAULT_TIMEOUT))
 
         # enforce scan_interval bounds
         if self.scan_interval < MIN_SCAN_INTERVAL:
@@ -55,6 +58,12 @@ class SinapsiAlfaCoordinator(DataUpdateCoordinator):
             "Scan Interval configured",
             scan_interval=self.scan_interval,
             update_interval=self.update_interval,
+        )
+        log_debug(
+            _LOGGER,
+            "__init__",
+            "Timeout configured",
+            timeout=self.timeout,
         )
 
         # set update method and interval for coordinator
@@ -75,6 +84,7 @@ class SinapsiAlfaCoordinator(DataUpdateCoordinator):
             self.conf_host,
             self.conf_port,
             self.scan_interval,
+            self.timeout,
         )
 
         log_debug(

@@ -27,6 +27,7 @@ from modbuslink import TimeoutError as ModbusTimeoutError
 from .const import (
     DEFAULT_DEVICE_ID,
     DEFAULT_SENSOR_VALUE,
+    DEFAULT_TIMEOUT,
     INVALID_DISTACCO_VALUE,
     MANUFACTURER,
     MAX_EVENT_VALUE,
@@ -36,7 +37,6 @@ from .const import (
     MODEL,
     REGISTER_BATCHES,
     SENSOR_ENTITIES,
-    SOCKET_TIMEOUT,
 )
 from .helpers import (
     log_debug,
@@ -129,6 +129,7 @@ class SinapsiAlfaAPI:
         host: str,
         port: int,
         scan_interval: int,
+        timeout: int = DEFAULT_TIMEOUT,
     ):
         """Initialize the Modbus API Client.
 
@@ -138,6 +139,7 @@ class SinapsiAlfaAPI:
             host: Device IP address
             port: Modbus TCP port
             scan_interval: Update interval in seconds
+            timeout: Connection timeout in seconds (default: 10)
 
         """
 
@@ -147,8 +149,8 @@ class SinapsiAlfaAPI:
         self._port = port
         self._device_id = DEFAULT_DEVICE_ID
         self._update_interval = scan_interval
-        # Use a reasonable fixed timeout for Modbus operations
-        self._timeout = min(5.0, self._update_interval / 2)
+        # User-configurable timeout for Modbus operations
+        self._timeout = float(timeout)
         # ModbusLink uses separate transport and client objects
         self._transport = AsyncTcpTransport(
             host=self._host,
@@ -283,7 +285,8 @@ class SinapsiAlfaAPI:
 
     async def check_port(self) -> bool:
         """Check if port is available."""
-        sock_timeout = SOCKET_TIMEOUT
+        # Use configured timeout for socket check
+        sock_timeout = self._timeout
         log_debug(
             _LOGGER,
             "check_port",

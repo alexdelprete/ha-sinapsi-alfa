@@ -270,6 +270,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 - `host` - IP/hostname of Alfa device
 - `port` - TCP port (default: 502)
 - `scan_interval` - Polling frequency (default: 60s, range: 30-600)
+- `timeout` - Connection timeout in seconds (default: 10s, range: 5-60)
 
 ## Entity Unique IDs
 
@@ -299,6 +300,9 @@ As of v1.0.0, this integration uses [ModbusLink](https://github.com/Miraitowa-la
 - **Cleaner code**: No need for separate payload decoder classes
 - **Direct register access**: `read_holding_registers()` returns `List[int]` directly
 - **Built-in error handling**: Exceptions raised automatically on errors
+
+**Documentation Tip**: ModbusLink docs are best viewed in the repository:
+[https://github.com/Miraitowa-la/ModbusLink/tree/master/docs/en](https://github.com/Miraitowa-la/ModbusLink/tree/master/docs/en)
 
 See `docs/analysis/modbuslink-migration-analysis.md` for detailed migration documentation.
 
