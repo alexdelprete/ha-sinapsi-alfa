@@ -7,7 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Development version for v1.0.2 - maintenance and improvements.
+Development version for v1.1.1 - maintenance and improvements.
+
+## [1.1.0] - 2025-12-17
+
+**Minor release** - User-configurable connection timeout for VPN/high-latency networks.
+
+### ✨ New Features
+
+- **User-configurable timeout** - New `timeout` parameter (5-60 seconds) in config flow and options (Addresses #180)
+- **Increased default timeout** - Changed from 3-5s to 10s for better compatibility with typical networks
+
+### 📝 Documentation
+
+- Added ModbusLink documentation hint to CLAUDE.md
+- Updated configuration parameters documentation
+
+Thanks to Lorenzo Canale ([@lorenzocanalelc](https://github.com/lorenzocanalelc)) for reporting the VPN connection issue.
+
+**Full Release Notes:** [docs/releases/v1.1.0.md](docs/releases/v1.1.0.md)
+
+**Full Changelog:** [v1.0.1...v1.1.0](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.0.1...v1.1.0)
+
+---
 
 ## [1.0.1] - 2025-12-11
 
@@ -262,6 +284,7 @@ Stable release with pymodbus 3.11.1 compatibility and improved MAC address detec
 
 ---
 
+[1.1.0]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.0
 [1.0.1]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.0.1
 [1.0.0]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.0.0
 [1.0.0-beta.4]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.0.0-beta.4
