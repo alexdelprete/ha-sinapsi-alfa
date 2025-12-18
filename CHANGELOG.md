@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Development version for next release.
 
+## [1.1.3] - 2025-12-18
+
+**Patch release** - Fixes Connection Timeout slider description display issue.
+
+### 🐛 Bug Fixes
+
+- **Fixed Connection Timeout description display** - Removed `data_description` for slider fields (doesn't render properly in HA UI), moved range info back to field label
+
+**Full Release Notes:** [docs/releases/v1.1.3.md](docs/releases/v1.1.3.md)
+
+**Full Changelog:** [v1.1.2...v1.1.3](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.1.2...v1.1.3)
+
+---
+
 ## [1.1.2] - 2025-12-18
 
 **Patch release** - Fixes UI translation issues in configuration flow.
@@ -325,6 +339,7 @@ Stable release with pymodbus 3.11.1 compatibility and improved MAC address detec
 
 ---
 
+[1.1.3]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.3
 [1.1.2]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.2
 [1.1.1]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.1
 [1.1.0]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.0
