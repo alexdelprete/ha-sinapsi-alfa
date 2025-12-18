@@ -18,8 +18,10 @@ from modbuslink import (
     AsyncTcpTransport,
     CRCError,
     InvalidResponseError,
+    Language,
     ModbusException,
     ModbusLinkError,
+    ModbusLogger,
 )
 from modbuslink import ConnectionError as ModbusConnectionError
 from modbuslink import TimeoutError as ModbusTimeoutError
@@ -44,6 +46,9 @@ from .helpers import (
     log_warning,
     unix_timestamp_to_iso8601_local_tz,
 )
+
+# Configure ModbusLink to use English logging (fixes mixed Chinese/English messages)
+ModbusLogger.setup_logging(language=Language.EN)
 
 _LOGGER = logging.getLogger(__name__)
 

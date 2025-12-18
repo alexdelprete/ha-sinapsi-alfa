@@ -9,6 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Development version for next release.
 
+## [1.1.5] - 2025-12-18
+
+**Minor release** - Updates ModbusLink to v1.3.2 with English logging support.
+
+### ✨ Improvements
+
+- **English-only logging** - Configure ModbusLink to use English logging (fixes mixed Chinese/English log messages)
+- **Updated ModbusLink dependency** - Bumped from `>=1.2.0` to `>=1.3.2`
+
+Thanks to the ModbusLink developer ([@Miraitowa-la](https://github.com/Miraitowa-la)) for the quick fix!
+
+**Full Release Notes:** [docs/releases/v1.1.5.md](docs/releases/v1.1.5.md)
+
+**Full Changelog:** [v1.1.4...v1.1.5](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.1.4...v1.1.5)
+
+---
+
 ## [1.1.4] - 2025-12-18
 
 **Patch release** - Changes Connection Timeout from slider to number input field.
@@ -354,6 +371,7 @@ Stable release with pymodbus 3.11.1 compatibility and improved MAC address detec
 
 ---
 
+[1.1.5]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.5
 [1.1.4]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.4
 [1.1.3]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.3
 [1.1.2]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.2
