@@ -9,6 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Development version for next release.
 
+## [1.1.4] - 2025-12-18
+
+**Patch release** - Changes Connection Timeout from slider to number input field.
+
+### 🐛 Bug Fixes
+
+- **Changed Connection Timeout to number input** - Replaced slider with text input field for better UX (matches Polling Period style)
+- **Added timeout bounds enforcement** - Coordinator now enforces 5-60s range like scan_interval
+
+**Full Release Notes:** [docs/releases/v1.1.4.md](docs/releases/v1.1.4.md)
+
+**Full Changelog:** [v1.1.3...v1.1.4](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.1.3...v1.1.4)
+
+---
+
 ## [1.1.3] - 2025-12-18
 
 **Patch release** - Fixes Connection Timeout slider description display issue.
@@ -339,6 +354,7 @@ Stable release with pymodbus 3.11.1 compatibility and improved MAC address detec
 
 ---
 
+[1.1.4]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.4
 [1.1.3]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.3
 [1.1.2]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.2
 [1.1.1]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.1

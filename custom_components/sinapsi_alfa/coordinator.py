@@ -23,7 +23,9 @@ from .const import (
     DEFAULT_TIMEOUT,
     DOMAIN,
     MAX_SCAN_INTERVAL,
+    MAX_TIMEOUT,
     MIN_SCAN_INTERVAL,
+    MIN_TIMEOUT,
 )
 from .helpers import log_debug
 
@@ -57,6 +59,12 @@ class SinapsiAlfaCoordinator(DataUpdateCoordinator):
             self.scan_interval = MAX_SCAN_INTERVAL
         # set coordinator update interval
         self.update_interval = timedelta(seconds=self.scan_interval)
+
+        # enforce timeout bounds
+        if self.timeout < MIN_TIMEOUT:
+            self.timeout = MIN_TIMEOUT
+        elif self.timeout > MAX_TIMEOUT:
+            self.timeout = MAX_TIMEOUT
         log_debug(
             _LOGGER,
             "__init__",

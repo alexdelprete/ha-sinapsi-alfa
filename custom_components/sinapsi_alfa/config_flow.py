@@ -32,10 +32,8 @@ from .const import (
     DOMAIN,
     MAX_PORT,
     MAX_SCAN_INTERVAL,
-    MAX_TIMEOUT,
     MIN_PORT,
     MIN_SCAN_INTERVAL,
-    MIN_TIMEOUT,
 )
 from .helpers import host_valid, log_debug, log_error
 
@@ -159,10 +157,7 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg
                     vol.Required(
                         CONF_TIMEOUT,
                         default=DEFAULT_TIMEOUT,
-                    ): vol.All(
-                        vol.Coerce(int),
-                        vol.Clamp(min=MIN_TIMEOUT, max=MAX_TIMEOUT),
-                    ),
+                    ): cv.positive_int,
                     vol.Optional(
                         CONF_SKIP_MAC_DETECTION,
                         default=DEFAULT_SKIP_MAC_DETECTION,
@@ -200,10 +195,7 @@ class SinapsiAlfaOptionsFlow(OptionsFlow):
                 vol.Required(
                     CONF_TIMEOUT,
                     default=config_entry.data.get(CONF_TIMEOUT, DEFAULT_TIMEOUT),
-                ): vol.All(
-                    vol.Coerce(int),
-                    vol.Clamp(min=MIN_TIMEOUT, max=MAX_TIMEOUT),
-                ),
+                ): cv.positive_int,
                 vol.Optional(
                     CONF_SKIP_MAC_DETECTION,
                     default=config_entry.data.get(
