@@ -22,10 +22,12 @@ from .const import (
     CONF_NAME,
     CONF_PORT,
     CONF_SCAN_INTERVAL,
+    CONF_SKIP_MAC_DETECTION,
     CONF_TIMEOUT,
     DEFAULT_NAME,
     DEFAULT_PORT,
     DEFAULT_SCAN_INTERVAL,
+    DEFAULT_SKIP_MAC_DETECTION,
     DEFAULT_TIMEOUT,
     DOMAIN,
     MAX_PORT,
@@ -67,13 +69,15 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg
             return True
         return False
 
-    async def get_unique_id(self, name, host, port, scan_interval, timeout):
+    async def get_unique_id(
+        self, name, host, port, scan_interval, timeout, skip_mac_detection
+    ):
         """Return device serial number."""
         log_debug(_LOGGER, "get_unique_id", "Test connection", host=host, port=port)
         try:
             log_debug(_LOGGER, "get_unique_id", "Creating API Client")
             self.api = SinapsiAlfaAPI(
-                self.hass, name, host, port, scan_interval, timeout
+                self.hass, name, host, port, scan_interval, timeout, skip_mac_detection
             )
             log_debug(_LOGGER, "get_unique_id", "API Client created: calling get data")
             self.api_data = await self.api.async_get_data()
@@ -104,13 +108,18 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg
             port = user_input[CONF_PORT]
             scan_interval = user_input[CONF_SCAN_INTERVAL]
             timeout = user_input[CONF_TIMEOUT]
+            skip_mac_detection = user_input.get(
+                CONF_SKIP_MAC_DETECTION, DEFAULT_SKIP_MAC_DETECTION
+            )
 
             if self._host_in_configuration_exists(host):
                 errors[CONF_HOST] = "Device Already Configured"
             elif not host_valid(user_input[CONF_HOST]):
                 errors[CONF_HOST] = "Invalid Host IP"
             else:
-                uid = await self.get_unique_id(name, host, port, scan_interval, timeout)
+                uid = await self.get_unique_id(
+                    name, host, port, scan_interval, timeout, skip_mac_detection
+                )
                 if uid is not False:
                     log_debug(_LOGGER, "async_step_user", "Device unique id", uid=uid)
                     # Assign a unique ID to the flow and abort the flow
@@ -154,6 +163,10 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg
                         vol.Coerce(int),
                         vol.Clamp(min=MIN_TIMEOUT, max=MAX_TIMEOUT),
                     ),
+                    vol.Optional(
+                        CONF_SKIP_MAC_DETECTION,
+                        default=DEFAULT_SKIP_MAC_DETECTION,
+                    ): cv.boolean,
                 },
             ),
             errors=errors,
@@ -191,6 +204,12 @@ class SinapsiAlfaOptionsFlow(OptionsFlow):
                     vol.Coerce(int),
                     vol.Clamp(min=MIN_TIMEOUT, max=MAX_TIMEOUT),
                 ),
+                vol.Optional(
+                    CONF_SKIP_MAC_DETECTION,
+                    default=config_entry.data.get(
+                        CONF_SKIP_MAC_DETECTION, DEFAULT_SKIP_MAC_DETECTION
+                    ),
+                ): cv.boolean,
             }
         )
 

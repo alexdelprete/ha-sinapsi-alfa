@@ -16,8 +16,10 @@ from .const import (
     CONF_NAME,
     CONF_PORT,
     CONF_SCAN_INTERVAL,
+    CONF_SKIP_MAC_DETECTION,
     CONF_TIMEOUT,
     DEFAULT_SCAN_INTERVAL,
+    DEFAULT_SKIP_MAC_DETECTION,
     DEFAULT_TIMEOUT,
     DOMAIN,
     MAX_SCAN_INTERVAL,
@@ -44,6 +46,9 @@ class SinapsiAlfaCoordinator(DataUpdateCoordinator):
             config_entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
         )
         self.timeout = int(config_entry.data.get(CONF_TIMEOUT, DEFAULT_TIMEOUT))
+        self.skip_mac_detection = config_entry.data.get(
+            CONF_SKIP_MAC_DETECTION, DEFAULT_SKIP_MAC_DETECTION
+        )
 
         # enforce scan_interval bounds
         if self.scan_interval < MIN_SCAN_INTERVAL:
@@ -85,6 +90,7 @@ class SinapsiAlfaCoordinator(DataUpdateCoordinator):
             self.conf_port,
             self.scan_interval,
             self.timeout,
+            self.skip_mac_detection,
         )
 
         log_debug(

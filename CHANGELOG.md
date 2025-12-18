@@ -7,7 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Development version for v1.1.1 - maintenance and improvements.
+Development version for next release.
+
+## [1.1.1] - 2025-12-18
+
+**Patch release** - Fixes VPN connection timeout and adds Skip MAC Detection option.
+
+### 🐛 Bug Fixes
+
+- **Fixed VPN connection timeout** - MAC retrieval now happens before Modbus connection, preventing connection death during long network operations (Fixes #180)
+- **Reduced MAC retry attempts** - Changed from 10 to 5 for faster fallback on high-latency networks
+
+### ✨ New Features
+
+- **Skip MAC Detection option** - New configuration option for VPN users to bypass MAC address retrieval and eliminate startup delay
+
+Thanks to Lorenzo Canale ([@lorenzocanalelc](https://github.com/lorenzocanalelc)) for the detailed debug logs that helped identify the root cause.
+
+**Full Release Notes:** [docs/releases/v1.1.1.md](docs/releases/v1.1.1.md)
+
+**Full Changelog:** [v1.1.0...v1.1.1](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.1.0...v1.1.1)
+
+---
 
 ## [1.1.0] - 2025-12-17
 
@@ -284,6 +305,7 @@ Stable release with pymodbus 3.11.1 compatibility and improved MAC address detec
 
 ---
 
+[1.1.1]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.1
 [1.1.0]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.0
 [1.0.1]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.0.1
 [1.0.0]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.0.0

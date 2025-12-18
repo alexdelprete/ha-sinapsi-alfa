@@ -130,6 +130,7 @@ class SinapsiAlfaAPI:
         port: int,
         scan_interval: int,
         timeout: int = DEFAULT_TIMEOUT,
+        skip_mac_detection: bool = False,
     ):
         """Initialize the Modbus API Client.
 
@@ -140,6 +141,7 @@ class SinapsiAlfaAPI:
             port: Modbus TCP port
             scan_interval: Update interval in seconds
             timeout: Connection timeout in seconds (default: 10)
+            skip_mac_detection: Skip MAC detection for VPN connections (default: False)
 
         """
 
@@ -151,6 +153,8 @@ class SinapsiAlfaAPI:
         self._update_interval = scan_interval
         # User-configurable timeout for Modbus operations
         self._timeout = float(timeout)
+        # Skip MAC detection for VPN connections
+        self._skip_mac_detection = skip_mac_detection
         # ModbusLink uses separate transport and client objects
         self._transport = AsyncTcpTransport(
             host=self._host,
@@ -563,6 +567,22 @@ class SinapsiAlfaAPI:
                     self._port,
                 )
 
+            # Get MAC address BEFORE opening Modbus connection (only first time)
+            # This prevents connection timeout during MAC retrieval on VPN/slow networks
+            if not self._uid:
+                if self._skip_mac_detection:
+                    # Skip MAC retrieval - use host-based ID directly (faster for VPN)
+                    self._uid = f"{self._host.replace('.', '')}_{self._port}"
+                    log_debug(
+                        _LOGGER,
+                        "async_get_data",
+                        "Using host-based ID (MAC detection skipped)",
+                        uid=self._uid,
+                    )
+                else:
+                    self._uid = await self.get_mac_address()
+                self.data["sn"] = self._uid
+
             log_debug(
                 _LOGGER,
                 "async_get_data",
@@ -573,11 +593,6 @@ class SinapsiAlfaAPI:
 
             # Context manager on CLIENT (opens/closes transport automatically)
             async with self._client:
-                # Set MAC address if not already set
-                if not self._uid:
-                    self._uid = await self.get_mac_address()
-                    self.data["sn"] = self._uid
-
                 result = await self.read_modbus_alfa()
 
                 if result:
