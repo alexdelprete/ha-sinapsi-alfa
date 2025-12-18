@@ -288,7 +288,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 ## Dependencies
 
 - Home Assistant core (>= 2025.10.0)
-- `modbuslink>=1.2.0` - Modern Modbus TCP client library (native async)
+- `modbuslink>=1.3.2` - Modern Modbus TCP client library (native async)
 - `getmac>=0.9.5` - MAC address detection
 - Compatible with Python 3.13+
 
@@ -300,11 +300,26 @@ As of v1.0.0, this integration uses [ModbusLink](https://github.com/Miraitowa-la
 - **Cleaner code**: No need for separate payload decoder classes
 - **Direct register access**: `read_holding_registers()` returns `List[int]` directly
 - **Built-in error handling**: Exceptions raised automatically on errors
+- **Configurable logging language**: Use `ModbusLogger.setup_logging(language=Language.EN)` for English-only logs
 
 **Documentation Tip**: ModbusLink docs are best viewed in the repository:
 [https://github.com/Miraitowa-la/ModbusLink/tree/master/docs/en](https://github.com/Miraitowa-la/ModbusLink/tree/master/docs/en)
 
 See `docs/analysis/modbuslink-migration-analysis.md` for detailed migration documentation.
+
+### Upstream Issues to Watch
+
+Monitor these ModbusLink issues for potential improvements:
+
+| Issue | Type | Impact | Action When Fixed |
+|-------|------|--------|-------------------|
+| [#3](https://github.com/Miraitowa-la/ModbusLink/issues/3) | Enhancement | Medium | Replace manual `_extract_uint16()`/`_extract_uint32()` in api.py with native `read_uint32()` etc. |
+| [#4](https://github.com/Miraitowa-la/ModbusLink/issues/4) | Bug | High | Test parallel batch reads with `asyncio.gather()` in `read_modbus_alfa()` for performance improvement |
+
+**Current workarounds:**
+
+- Issue #3: Manual extraction methods in `api.py:451-475`
+- Issue #4: Sequential batch reads in `api.py:627-631` (comment: "parallel causes Transaction ID mismatches")
 
 ## Key Files to Review
 
