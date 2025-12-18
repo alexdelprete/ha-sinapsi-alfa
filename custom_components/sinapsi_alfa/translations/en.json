@@ -9,7 +9,12 @@
           "host": "IP or hostname",
           "port": "TCP port",
           "scan_interval": "Polling Period (min: 30s max: 600s)",
-          "timeout": "Connection Timeout in seconds (min: 5s max: 60s)"
+          "timeout": "Connection Timeout",
+          "skip_mac_detection": "Skip MAC Detection"
+        },
+        "data_description": {
+          "timeout": "Timeout in seconds for Modbus connection (min: 5s, max: 60s). Increase for VPN/WAN connections.",
+          "skip_mac_detection": "Enable for VPN connections. Uses host-based device ID instead of MAC address (faster startup)."
         }
       }
     },
@@ -26,7 +31,12 @@
           "host": "IP or hostname",
           "port": "TCP port",
           "scan_interval": "Polling Period (min: 30s max: 600s)",
-          "timeout": "Connection Timeout in seconds (min: 5s max: 60s)"
+          "timeout": "Connection Timeout",
+          "skip_mac_detection": "Skip MAC Detection"
+        },
+        "data_description": {
+          "timeout": "Timeout in seconds for Modbus connection (min: 5s, max: 60s). Increase for VPN/WAN connections.",
+          "skip_mac_detection": "Enable for VPN connections. Uses host-based device ID instead of MAC address (faster startup)."
         }
       }
     }

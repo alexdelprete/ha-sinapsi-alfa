@@ -9,7 +9,12 @@
           "host": "IP ou nome do anfitrião",
           "port": "Porta TCP",
           "scan_interval": "Período de sondagem (mín: 30s máx: 600s)",
-          "timeout": "Tempo limite de ligação em segundos (mín: 5s máx: 60s)"
+          "timeout": "Tempo Limite de Ligação",
+          "skip_mac_detection": "Ignorar Deteção MAC"
+        },
+        "data_description": {
+          "timeout": "Tempo limite em segundos para ligação Modbus (mín: 5s, máx: 60s). Aumente para ligações VPN/WAN.",
+          "skip_mac_detection": "Ativar para ligações VPN. Usa ID baseado no anfitrião em vez do endereço MAC (arranque mais rápido)."
         }
       }
     },
@@ -26,7 +31,12 @@
           "host": "IP ou nome do anfitrião",
           "port": "Porta TCP",
           "scan_interval": "Período de sondagem (mín: 30s máx: 600s)",
-          "timeout": "Tempo limite de ligação em segundos (mín: 5s máx: 60s)"
+          "timeout": "Tempo Limite de Ligação",
+          "skip_mac_detection": "Ignorar Deteção MAC"
+        },
+        "data_description": {
+          "timeout": "Tempo limite em segundos para ligação Modbus (mín: 5s, máx: 60s). Aumente para ligações VPN/WAN.",
+          "skip_mac_detection": "Ativar para ligações VPN. Usa ID baseado no anfitrião em vez do endereço MAC (arranque mais rápido)."
         }
       }
     }

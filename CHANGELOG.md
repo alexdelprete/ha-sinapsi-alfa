@@ -9,6 +9,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Development version for next release.
 
+## [1.1.2] - 2025-12-18
+
+**Patch release** - Fixes UI translation issues in configuration flow.
+
+### 🐛 Bug Fixes
+
+- **Fixed missing translation for Skip MAC Detection** - Checkbox now shows proper label instead of variable name
+- **Improved Connection Timeout field** - Shortened label with detailed description below for better spacing
+
+### 📝 Documentation
+
+- Added `data_description` sections to translation files for enhanced field descriptions
+- Updated Portuguese translations for new fields
+
+**Full Release Notes:** [docs/releases/v1.1.2.md](docs/releases/v1.1.2.md)
+
+**Full Changelog:** [v1.1.1...v1.1.2](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.1.1...v1.1.2)
+
+---
+
 ## [1.1.1] - 2025-12-18
 
 **Patch release** - Fixes VPN connection timeout and adds Skip MAC Detection option.
@@ -305,6 +325,7 @@ Stable release with pymodbus 3.11.1 compatibility and improved MAC address detec
 
 ---
 
+[1.1.2]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.2
 [1.1.1]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.1
 [1.1.0]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.0
 [1.0.1]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.0.1
