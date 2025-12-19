@@ -288,7 +288,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 ## Dependencies
 
 - Home Assistant core (>= 2025.10.0)
-- `modbuslink>=1.3.2` - Modern Modbus TCP client library (native async)
+- `modbuslink>=1.3.1` - Modern Modbus TCP client library (native async)
 - `getmac>=0.9.5` - MAC address detection
 - Compatible with Python 3.13+
 
