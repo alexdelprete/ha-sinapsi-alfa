@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Development version for next release.
 
+## [1.1.7] - 2025-12-19
+
+**Patch release** - Fixes ModbusLink import path for Language and ModbusLogger.
+
+### 🐛 Bug Fixes
+
+- **Fixed ModbusLink import path** - Import `Language` and `ModbusLogger` from `modbuslink.utils.logging` (not exported from main package)
+
+**Full Release Notes:** [docs/releases/v1.1.7.md](docs/releases/v1.1.7.md)
+
+**Full Changelog:** [v1.1.6...v1.1.7](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.1.6...v1.1.7)
+
+---
+
 ## [1.1.6] - 2025-12-19
 
 **Patch release** - Fixes critical ModbusLink version requirement bug.
@@ -385,6 +399,7 @@ Stable release with pymodbus 3.11.1 compatibility and improved MAC address detec
 
 ---
 
+[1.1.7]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.7
 [1.1.6]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.6
 [1.1.5]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.5
 [1.1.4]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.4

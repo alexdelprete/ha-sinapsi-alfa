@@ -18,13 +18,12 @@ from modbuslink import (
     AsyncTcpTransport,
     CRCError,
     InvalidResponseError,
-    Language,
     ModbusException,
     ModbusLinkError,
-    ModbusLogger,
 )
 from modbuslink import ConnectionError as ModbusConnectionError
 from modbuslink import TimeoutError as ModbusTimeoutError
+from modbuslink.utils.logging import Language, ModbusLogger
 
 from .const import (
     DEFAULT_DEVICE_ID,
