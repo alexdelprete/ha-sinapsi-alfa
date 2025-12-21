@@ -192,6 +192,7 @@ This prevents log spam during extended outages.
 - Only bump to a NEW version number AFTER the current version is released
 
 **Example workflow:**
+
 1. Current version is 1.1.8 (unreleased, after v1.1.7 was released)
 2. User asks for fix A → Add fix A to v1.1.8, commit, push
 3. User asks for fix B → Add fix B to v1.1.8 (same version!), commit, push
@@ -210,14 +211,18 @@ This prevents log spam during extended outages.
    - Include emoji-enhanced section headers
    - Link to detailed release notes
    - Add comparison link at bottom
-3. Commit changes
-4. Push commits and verify clean state
-5. **STOP - GET APPROVAL** before creating tags/releases
-6. Only create tags/releases when explicitly instructed:
+3. **Run linting checks on entire codebase**
+   - Python: `ruff check custom_components/sinapsi_alfa/`
+   - Markdown: `markdownlint "**/*.md"` (if available)
+   - Fix any errors before proceeding
+4. Commit changes
+5. Push commits and verify clean state
+6. **STOP - GET APPROVAL** before creating tags/releases
+7. Only create tags/releases when explicitly instructed:
    - `git tag -a vX.Y.Z -m "Release vX.Y.Z"`
    - `git push --tags`
    - `gh release create vX.Y.Z --latest`
-7. **After release**: Bump versions in `manifest.json` and `const.py` to next version
+8. **After release**: Bump versions in `manifest.json` and `const.py` to next version
 
 **CRITICAL:** Never create git tags or GitHub releases without explicit user instruction.
 
@@ -327,15 +332,8 @@ See `docs/analysis/modbuslink-migration-analysis.md` for detailed migration docu
 
 Monitor these ModbusLink issues for potential improvements:
 
-| Issue | Type | Impact | Action When Fixed |
-|-------|------|--------|-------------------|
-| [#3](https://github.com/Miraitowa-la/ModbusLink/issues/3) | Enhancement | Medium | Replace manual `_extract_uint16()`/`_extract_uint32()` in api.py with native `read_uint32()` etc. |
-| [#4](https://github.com/Miraitowa-la/ModbusLink/issues/4) | Bug | High | Test parallel batch reads with `asyncio.gather()` in `read_modbus_alfa()` for performance improvement |
-
-**Current workarounds:**
-
-- Issue #3: Manual extraction methods in `api.py:451-475`
-- Issue #4: Sequential batch reads in `api.py:627-631` (comment: "parallel causes Transaction ID mismatches")
+- **[#3](https://github.com/Miraitowa-la/ModbusLink/issues/3)** (Enhancement, Medium) - Replace manual `_extract_uint16()`/`_extract_uint32()` in `api.py:451-475` with native methods when available
+- **[#4](https://github.com/Miraitowa-la/ModbusLink/issues/4)** (Bug, High) - Test parallel batch reads with `asyncio.gather()` in `api.py:627-631` for performance (currently sequential due to Transaction ID mismatches)
 
 ## Key Files to Review
 
