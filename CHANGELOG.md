@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Development version for next release.
 
+## [1.1.8] - 2025-12-21
+
+**Patch release** - Fixes integration reload issue.
+
+### 🐛 Bug Fixes
+
+- **Fixed integration reload** - Added missing `close()` method to API class, allowing integration to reload without requiring Home Assistant restart
+
+**Full Release Notes:** [docs/releases/v1.1.8.md](docs/releases/v1.1.8.md)
+
+**Full Changelog:** [v1.1.7...v1.1.8](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.1.7...v1.1.8)
+
+---
+
 ## [1.1.7] - 2025-12-19
 
 **Patch release** - Fixes ModbusLink import path for Language and ModbusLogger.
@@ -399,6 +413,7 @@ Stable release with pymodbus 3.11.1 compatibility and improved MAC address detec
 
 ---
 
+[1.1.8]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.8
 [1.1.7]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.7
 [1.1.6]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.6
 [1.1.5]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.5

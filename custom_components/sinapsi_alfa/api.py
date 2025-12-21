@@ -230,6 +230,21 @@ class SinapsiAlfaAPI:
         """Return the unique id."""
         return self._uid
 
+    async def close(self) -> None:
+        """Close the Modbus connection and clean up resources.
+
+        Note: When using context manager pattern (async with self._client),
+        the connection is already closed after each poll cycle. This method
+        ensures clean shutdown during integration unload.
+        """
+        log_debug(_LOGGER, "close", "Closing API connection")
+        try:
+            await self._transport.close()
+        except Exception as e:
+            log_warning(_LOGGER, "close", "Error closing transport", error=e)
+        self._connection_healthy = False
+        log_debug(_LOGGER, "close", "API connection closed")
+
     async def get_mac_address(self) -> str:
         """Get mac address from ip/hostname with improved retry logic."""
         for attempt in range(MAX_RETRY_ATTEMPTS):
