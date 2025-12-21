@@ -182,9 +182,25 @@ This prevents log spam during extended outages.
 
 **Master branch = Next Release** - All commits target the next version with version bumped in manifest.json and const.py.
 
+### Version Bumping Rules
+
+> **⚠️ IMPORTANT: Do NOT bump version during a session. All changes go into the CURRENT unreleased version.**
+
+- The version in `manifest.json` and `const.py` represents the NEXT release being prepared
+- **NEVER bump version until user commands "tag and release"**
+- Multiple features/fixes can be added to the same unreleased version
+- Only bump to a NEW version number AFTER the current version is released
+
+**Example workflow:**
+1. Current version is 1.1.8 (unreleased, after v1.1.7 was released)
+2. User asks for fix A → Add fix A to v1.1.8, commit, push
+3. User asks for fix B → Add fix B to v1.1.8 (same version!), commit, push
+4. User says "tag and release" → Create v1.1.8 tag and release
+5. After release: Bump version to 1.1.9 for next development cycle
+
 ### Complete Release Workflow
 
-1. Create release notes in `docs/releases/vX.Y.Z.md`
+1. Create/update release notes in `docs/releases/vX.Y.Z.md`
    - **IMPORTANT**: Include ALL changes since last stable release
    - Review all beta release notes if applicable
    - Review all commits since last stable: `git log vX.Y.Z..HEAD`
@@ -194,14 +210,14 @@ This prevents log spam during extended outages.
    - Include emoji-enhanced section headers
    - Link to detailed release notes
    - Add comparison link at bottom
-3. Bump versions in `manifest.json` and `const.py`
-4. Commit changes
-5. Push commits and verify clean state
-6. **STOP - GET APPROVAL** before creating tags/releases
-7. Only create tags/releases when explicitly instructed:
+3. Commit changes
+4. Push commits and verify clean state
+5. **STOP - GET APPROVAL** before creating tags/releases
+6. Only create tags/releases when explicitly instructed:
    - `git tag -a vX.Y.Z -m "Release vX.Y.Z"`
    - `git push --tags`
    - `gh release create vX.Y.Z --latest`
+7. **After release**: Bump versions in `manifest.json` and `const.py` to next version
 
 **CRITICAL:** Never create git tags or GitHub releases without explicit user instruction.
 
