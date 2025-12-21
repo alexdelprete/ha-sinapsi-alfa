@@ -55,6 +55,7 @@ _LOGGER = logging.getLogger(__name__)
 BATCH_MAX_RETRIES = 3
 BATCH_RETRY_DELAY_CONNECTION = 1.0  # seconds
 BATCH_RETRY_DELAY_TIMEOUT = 2.0  # seconds
+BATCH_RETRY_DELAY_PROTOCOL = 3.0  # seconds - longer delay for protocol errors
 
 
 def _build_sensor_map() -> dict[str, tuple[int, int, str]]:
@@ -245,6 +246,26 @@ class SinapsiAlfaAPI:
         self._connection_healthy = False
         log_debug(_LOGGER, "close", "API connection closed")
 
+    async def _reset_connection(self) -> None:
+        """Reset the Modbus connection to clear stale responses.
+
+        Used when protocol errors occur (Transaction ID mismatch, CRC errors)
+        to clear any buffered/stale responses and start fresh.
+        """
+        log_debug(_LOGGER, "_reset_connection", "Resetting connection")
+        try:
+            await self._transport.close()
+        except Exception:
+            pass  # Ignore close errors
+        # Small delay to ensure clean state
+        await asyncio.sleep(0.5)
+        try:
+            await self._transport.open()
+            log_debug(_LOGGER, "_reset_connection", "Connection reset successful")
+        except Exception as e:
+            log_warning(_LOGGER, "_reset_connection", "Reconnect failed", error=e)
+            raise
+
     async def get_mac_address(self) -> str:
         """Get mac address from ip/hostname with improved retry logic."""
         for attempt in range(MAX_RETRY_ATTEMPTS):
@@ -413,21 +434,35 @@ class SinapsiAlfaAPI:
                     await asyncio.sleep(BATCH_RETRY_DELAY_TIMEOUT)
                 continue
 
-            except (CRCError, InvalidResponseError) as e:
-                # Data/protocol errors are not retriable - fail immediately
-                log_error(
-                    _LOGGER,
-                    "_read_batch",
-                    "Data/protocol error",
-                    address=start_address,
-                    error=e,
-                )
-                self._connection_healthy = False
-                raise SinapsiModbusError(
-                    f"Data error at address {start_address}: {e}",
-                    start_address,
-                    "read_batch",
-                ) from e
+            except InvalidResponseError as e:
+                # Transaction ID mismatch - retriable with connection reset
+                last_error = e
+                if attempt < BATCH_MAX_RETRIES - 1:
+                    log_warning(
+                        _LOGGER,
+                        "_read_batch",
+                        "Protocol error (Transaction ID mismatch), resetting connection",
+                        attempt=attempt + 1,
+                        address=start_address,
+                    )
+                    await self._reset_connection()
+                    await asyncio.sleep(BATCH_RETRY_DELAY_PROTOCOL)
+                continue
+
+            except CRCError as e:
+                # CRC errors - retriable with connection reset
+                last_error = e
+                if attempt < BATCH_MAX_RETRIES - 1:
+                    log_warning(
+                        _LOGGER,
+                        "_read_batch",
+                        "CRC error, resetting connection",
+                        attempt=attempt + 1,
+                        address=start_address,
+                    )
+                    await self._reset_connection()
+                    await asyncio.sleep(BATCH_RETRY_DELAY_PROTOCOL)
+                continue
 
             except ModbusException as e:
                 # Modbus protocol errors - fail immediately

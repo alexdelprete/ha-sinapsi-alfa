@@ -9,6 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Development version for next release.
 
+## [1.1.9] - 2025-12-21
+
+**Patch release** - Improves error recovery for Transaction ID mismatch and CRC errors.
+
+### 🐛 Bug Fixes
+
+- **Improved protocol error recovery** - Transaction ID mismatch and CRC errors now trigger connection reset and retry instead of immediate failure
+- **Added connection reset method** - New `_reset_connection()` clears stale responses by closing and reopening the transport
+
+**Full Release Notes:** [docs/releases/v1.1.9.md](docs/releases/v1.1.9.md)
+
+**Full Changelog:** [v1.1.8...v1.1.9](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.1.8...v1.1.9)
+
+---
+
 ## [1.1.8] - 2025-12-21
 
 **Patch release** - Fixes integration reload issue.
@@ -413,6 +428,7 @@ Stable release with pymodbus 3.11.1 compatibility and improved MAC address detec
 
 ---
 
+[1.1.9]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.9
 [1.1.8]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.8
 [1.1.7]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.7
 [1.1.6]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.6
