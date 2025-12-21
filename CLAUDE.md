@@ -173,6 +173,19 @@ This prevents log spam during extended outages.
 - Test reload/unload scenarios
 - Test availability tracking (device offline scenarios)
 
+### Pre-Push Linting (MANDATORY)
+
+> **⚠️ ALWAYS run linting before ANY git push action.**
+
+Before pushing any commits, run these checks and fix all errors:
+
+```bash
+ruff check custom_components/sinapsi_alfa/
+markdownlint "**/*.md"
+```
+
+This applies to ALL pushes, not just releases.
+
 ## Release Management - CRITICAL
 
 > **⛔ STOP: NEVER create git tags or GitHub releases without explicit user command.**
