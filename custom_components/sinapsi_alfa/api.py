@@ -4,6 +4,7 @@ https://github.com/alexdelprete/ha-sinapsi-alfa
 """
 
 import asyncio
+import contextlib
 import logging
 import random
 import socket
@@ -239,10 +240,8 @@ class SinapsiAlfaAPI:
         ensures clean shutdown during integration unload.
         """
         log_debug(_LOGGER, "close", "Closing API connection")
-        try:
+        with contextlib.suppress(OSError):
             await self._transport.close()
-        except Exception as e:
-            log_warning(_LOGGER, "close", "Error closing transport", error=e)
         self._connection_healthy = False
         log_debug(_LOGGER, "close", "API connection closed")
 
@@ -253,16 +252,14 @@ class SinapsiAlfaAPI:
         to clear any buffered/stale responses and start fresh.
         """
         log_debug(_LOGGER, "_reset_connection", "Resetting connection")
-        try:
+        with contextlib.suppress(OSError):
             await self._transport.close()
-        except Exception:
-            pass  # Ignore close errors
         # Small delay to ensure clean state
         await asyncio.sleep(0.5)
         try:
             await self._transport.open()
             log_debug(_LOGGER, "_reset_connection", "Connection reset successful")
-        except Exception as e:
+        except OSError as e:
             log_warning(_LOGGER, "_reset_connection", "Reconnect failed", error=e)
             raise
 
