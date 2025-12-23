@@ -57,6 +57,7 @@ BATCH_MAX_RETRIES = 3
 BATCH_RETRY_DELAY_CONNECTION = 1.0  # seconds
 BATCH_RETRY_DELAY_TIMEOUT = 2.0  # seconds
 BATCH_RETRY_DELAY_PROTOCOL = 3.0  # seconds - longer delay for protocol errors
+MAX_PROTOCOL_ERRORS_PER_CYCLE = 3  # Abort cycle early if too many protocol errors
 
 
 def _build_sensor_map() -> dict[str, tuple[int, int, str]]:
@@ -174,6 +175,8 @@ class SinapsiAlfaAPI:
         # Connection health tracking
         self._connection_healthy = False
         self._last_successful_read = None
+        # Protocol error tracking for early abort
+        self._protocol_errors_this_cycle = 0
         # Initialize ModBus data structure before first read
         self._initialize_data_structure()
 
@@ -254,8 +257,8 @@ class SinapsiAlfaAPI:
         log_debug(_LOGGER, "_reset_connection", "Resetting connection")
         with contextlib.suppress(OSError):
             await self._transport.close()
-        # Small delay to ensure clean state
-        await asyncio.sleep(0.5)
+        # Delay to ensure TCP buffers clear and stale responses are discarded
+        await asyncio.sleep(1.0)
         try:
             await self._transport.open()
             log_debug(_LOGGER, "_reset_connection", "Connection reset successful")
@@ -434,6 +437,7 @@ class SinapsiAlfaAPI:
             except InvalidResponseError as e:
                 # Transaction ID mismatch - retriable with connection reset
                 last_error = e
+                self._protocol_errors_this_cycle += 1
                 if attempt < BATCH_MAX_RETRIES - 1:
                     log_warning(
                         _LOGGER,
@@ -441,6 +445,7 @@ class SinapsiAlfaAPI:
                         "Protocol error (Transaction ID mismatch), resetting connection",
                         attempt=attempt + 1,
                         address=start_address,
+                        protocol_errors=self._protocol_errors_this_cycle,
                     )
                     await self._reset_connection()
                     await asyncio.sleep(BATCH_RETRY_DELAY_PROTOCOL)
@@ -449,6 +454,7 @@ class SinapsiAlfaAPI:
             except CRCError as e:
                 # CRC errors - retriable with connection reset
                 last_error = e
+                self._protocol_errors_this_cycle += 1
                 if attempt < BATCH_MAX_RETRIES - 1:
                     log_warning(
                         _LOGGER,
@@ -456,6 +462,7 @@ class SinapsiAlfaAPI:
                         "CRC error, resetting connection",
                         attempt=attempt + 1,
                         address=start_address,
+                        protocol_errors=self._protocol_errors_this_cycle,
                     )
                     await self._reset_connection()
                     await asyncio.sleep(BATCH_RETRY_DELAY_PROTOCOL)
@@ -661,6 +668,26 @@ class SinapsiAlfaAPI:
                 f"Connection failed: {connect_error}", self._host, self._port
             ) from connect_error
 
+    def _check_protocol_error_limit(self) -> None:
+        """Check if protocol errors exceed limit and abort early if so.
+
+        Raises:
+            SinapsiModbusError: If too many protocol errors occurred this cycle
+
+        """
+        if self._protocol_errors_this_cycle >= MAX_PROTOCOL_ERRORS_PER_CYCLE:
+            log_warning(
+                _LOGGER,
+                "read_modbus_alfa",
+                "Aborting cycle early due to repeated protocol errors",
+                protocol_errors=self._protocol_errors_this_cycle,
+                max_allowed=MAX_PROTOCOL_ERRORS_PER_CYCLE,
+            )
+            raise SinapsiModbusError(
+                f"Too many protocol errors ({self._protocol_errors_this_cycle}), "
+                "aborting to avoid cascade delays"
+            )
+
     async def read_modbus_alfa(self) -> bool:
         """Read all Modbus registers using sequential batch operations.
 
@@ -674,10 +701,15 @@ class SinapsiAlfaAPI:
             SinapsiModbusError: If any batch read fails
 
         """
+        # Reset protocol error counter for this cycle
+        self._protocol_errors_this_cycle = 0
+
         try:
             # Read all batches sequentially (parallel causes Transaction ID mismatches)
             batches: list[list[int]] = []
             for start, count in REGISTER_BATCHES:
+                # Check for early abort if too many protocol errors
+                self._check_protocol_error_limit()
                 result = await self._read_batch(start, count)
                 batches.append(result)
 

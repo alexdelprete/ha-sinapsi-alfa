@@ -7,7 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Development version for next release.
+**Patch release** - Improves protocol error recovery to reduce recovery time.
+
+### 🐛 Bug Fixes
+
+- **Faster protocol error recovery** - Increased reset delay from 0.5s to 1.0s to better clear TCP buffers
+- **Early abort on cascade errors** - If 3+ protocol errors occur in a single update cycle, abort early instead of retrying all batches (reduces worst-case recovery from ~3 minutes to under 1 minute)
+
+**Full Release Notes:** [docs/releases/v1.1.9.md](docs/releases/v1.1.9.md)
 
 ## [1.1.8] - 2025-12-21
 
