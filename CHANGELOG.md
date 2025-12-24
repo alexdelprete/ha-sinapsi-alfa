@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.1.9] - 2025-12-24
 
 **Patch release** - Improves protocol error recovery to reduce recovery time.
 
@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Early abort on cascade errors** - If 3+ protocol errors occur in a single update cycle, abort early instead of retrying all batches (reduces worst-case recovery from ~3 minutes to under 1 minute)
 
 **Full Release Notes:** [docs/releases/v1.1.9.md](docs/releases/v1.1.9.md)
+
+**Full Changelog:** [v1.1.8...v1.1.9](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.1.8...v1.1.9)
 
 ## [1.1.8] - 2025-12-21
 
@@ -422,6 +424,7 @@ Stable release with pymodbus 3.11.1 compatibility and improved MAC address detec
 
 ---
 
+[1.1.9]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.9
 [1.1.8]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.8
 [1.1.7]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.7
 [1.1.6]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.6
