@@ -19,12 +19,13 @@ from modbuslink import (
     AsyncTcpTransport,
     CRCError,
     InvalidResponseError,
+    Language,
     ModbusException,
     ModbusLinkError,
+    set_language,
 )
 from modbuslink import ConnectionError as ModbusConnectionError
 from modbuslink import TimeoutError as ModbusTimeoutError
-from modbuslink.utils.logging import Language, ModbusLogger
 
 from .const import (
     DEFAULT_DEVICE_ID,
@@ -47,8 +48,8 @@ from .helpers import (
     unix_timestamp_to_iso8601_local_tz,
 )
 
-# Configure ModbusLink to use English logging (fixes mixed Chinese/English messages)
-ModbusLogger.setup_logging(language=Language.EN)
+# Configure ModbusLink to use English for logs AND errors
+set_language(Language.EN)
 
 _LOGGER = logging.getLogger(__name__)
 

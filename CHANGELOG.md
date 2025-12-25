@@ -7,7 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-TBD
+**Patch release** - Updates ModbusLink to 1.3.2 for English-only error messages.
+
+### ✨ Improvements
+
+- **English-only errors** - Exception messages are now fully in English (ModbusLink 1.3.2)
+- **Updated ModbusLink dependency** - Bumped from `>=1.3.1` to `>=1.3.2`
+
+**Full Release Notes:** [docs/releases/v1.1.10.md](docs/releases/v1.1.10.md)
 
 ## [1.1.9] - 2025-12-24
 
