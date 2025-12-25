@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.1.10] - 2025-12-25
 
 **Patch release** - Updates ModbusLink to 1.3.2 for English-only error messages.
 
@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Updated ModbusLink dependency** - Bumped from `>=1.3.1` to `>=1.3.2`
 
 **Full Release Notes:** [docs/releases/v1.1.10.md](docs/releases/v1.1.10.md)
+
+**Full Changelog:** [v1.1.9...v1.1.10](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.1.9...v1.1.10)
 
 ## [1.1.9] - 2025-12-24
 
@@ -435,6 +437,7 @@ Stable release with pymodbus 3.11.1 compatibility and improved MAC address detec
 
 ---
 
+[1.1.10]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.10
 [1.1.9]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.9
 [1.1.8]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.8
 [1.1.7]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.7
