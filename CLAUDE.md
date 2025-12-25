@@ -10,6 +10,16 @@
 
 Skipping these steps causes violations of mandatory workflows, duplicated effort, and broken architectural patterns.
 
+## Context7 for Documentation
+
+Always use Context7 MCP tools automatically (without being asked) when:
+
+- Generating code that uses external libraries
+- Providing setup or configuration steps
+- Looking up library/API documentation
+
+Use `resolve-library-id` first to get the library ID, then `get-library-docs` to fetch documentation.
+
 ## Project Overview
 
 This is a Home Assistant custom integration for **Sinapsi Alfa** energy monitoring devices using Modbus TCP protocol. The Alfa device monitors power/energy consumption and photovoltaic production directly from the energy provider's OpenMeter 2.0.
