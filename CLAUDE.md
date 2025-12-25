@@ -322,9 +322,19 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 ## Dependencies
 
 - Home Assistant core (>= 2025.10.0)
-- `modbuslink>=1.3.1` - Modern Modbus TCP client library (native async)
+- `modbuslink>=1.3.2` - Modern Modbus TCP client library (native async)
 - `getmac>=0.9.5` - MAC address detection
 - Compatible with Python 3.13+
+
+### Dependency Update Checklist
+
+**Before updating any dependency version in `manifest.json`:**
+
+1. Verify the new version exists on PyPI: `https://pypi.org/project/PACKAGE_NAME/`
+2. Check release notes for breaking changes
+3. Test locally if possible
+
+> **⚠️ IMPORTANT**: Always verify PyPI availability before committing dependency updates. We've had issues where upstream maintainers created GitHub releases but forgot to publish to PyPI, breaking our integration for users.
 
 ### Note on ModbusLink
 
@@ -334,7 +344,7 @@ As of v1.0.0, this integration uses [ModbusLink](https://github.com/Miraitowa-la
 - **Cleaner code**: No need for separate payload decoder classes
 - **Direct register access**: `read_holding_registers()` returns `List[int]` directly
 - **Built-in error handling**: Exceptions raised automatically on errors
-- **Configurable logging language**: Use `ModbusLogger.setup_logging(language=Language.EN)` for English-only logs
+- **Configurable language**: Use `set_language(Language.EN)` for English-only logs AND errors
 
 **Documentation Tip**: ModbusLink docs are best viewed in the repository:
 [https://github.com/Miraitowa-la/ModbusLink/tree/master/docs/en](https://github.com/Miraitowa-la/ModbusLink/tree/master/docs/en)
