@@ -62,7 +62,7 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg
     @callback
     def async_get_options_flow(config_entry: ConfigEntry):
         """Initiate Options Flow Instance."""
-        return SinapsiAlfaOptionsFlow(config_entry)
+        return SinapsiAlfaOptionsFlow()
 
     def _host_in_configuration_exists(self, host) -> bool:
         """Return True if host exists in configuration."""
