@@ -9,6 +9,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 TBD
 
+## [1.1.11] - 2025-12-27
+
+**Stable release** - Config entry migration and options flow improvements.
+
+### ⚠️ Breaking Changes
+
+- **Config Entry v2** - Migration from v1 to v2 (automatic)
+
+### ✨ Improvements
+
+- **OptionsFlowWithReload** - Options changes now auto-reload integration
+- **Better type hints** - Improved code quality in config flow
+- **Cleaner code** - Removed legacy migration code, improved method naming
+
+### 🐛 Bug Fixes
+
+- **Options Flow** - Fixed initialization error
+
+**Full Release Notes:** [docs/releases/v1.1.11.md](docs/releases/v1.1.11.md)
+
+**Full Changelog:** [v1.1.10...v1.1.11](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.1.10...v1.1.11)
+
 ## [1.1.11-beta.2] - 2025-12-27
 
 **Beta release** - Fixes options flow error from beta.1.
