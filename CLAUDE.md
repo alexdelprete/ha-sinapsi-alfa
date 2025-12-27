@@ -247,7 +247,7 @@ This applies to ALL pushes, not just releases.
 | 1 | Edit/Write | Create/update release notes in `docs/releases/vX.Y.Z.md` |
 | 2 | Edit | Update `CHANGELOG.md` with version summary |
 | 3 | Bash | Run linting: `ruff check` + `markdownlint` |
-| 4 | `/commit` skill | Stage and commit with proper format |
+| 4 | `commit-commands:commit` skill | Stage and commit with proper format |
 | 5 | git CLI | `git push` |
 | 6 | **⏸️ STOP** | Wait for user "tag and release" command |
 | 7 | git CLI | `git tag -a vX.Y.Z -m "Release vX.Y.Z"` |
@@ -267,7 +267,7 @@ This applies to ALL pushes, not just releases.
 | Tool | Used For |
 |------|----------|
 | Edit/Write | Code and documentation changes |
-| `/commit` skill | Stage + commit with proper format and attribution |
+| `commit-commands:commit` skill | Stage + commit with proper format and attribution |
 | git CLI | `push`, `tag`, `push --tags` (local repo operations) |
 | gh CLI | `release create` with notes from file |
 | GitHub Actions | Auto-adds ZIP asset after release published |
