@@ -5,36 +5,49 @@
         "title": "Alfa Connection Configuration",
         "description": "If you need help with the configuration go to: https://github.com/alexdelprete/ha-sinapsi-alfa",
         "data": {
-          "name": "Custom Name of the device (used for sensors' prefix)",
+          "name": "Device name (used for sensors' prefix)",
           "host": "IP or hostname",
           "port": "TCP port",
-          "scan_interval": "Polling Period (min: 30s max: 600s)",
-          "timeout": "Connection Timeout (min: 5s max: 60s)",
-          "skip_mac_detection": "Skip MAC Detection"
+          "scan_interval": "Polling interval (min: 30s max: 600s)",
+          "timeout": "Connection timeout (min: 5s max: 60s)",
+          "skip_mac_detection": "Skip MAC detection"
+        },
+        "data_description": {
+          "skip_mac_detection": "Enable for VPN connections. Uses host-based device ID instead of MAC address (faster startup)."
+        }
+      },
+      "reconfigure": {
+        "title": "Reconfigure Alfa Connection",
+        "description": "Update device connection settings",
+        "data": {
+          "name": "Device name (used for sensors' prefix)",
+          "host": "IP or hostname",
+          "port": "TCP port",
+          "skip_mac_detection": "Skip MAC detection"
         },
         "data_description": {
           "skip_mac_detection": "Enable for VPN connections. Uses host-based device ID instead of MAC address (faster startup)."
         }
       }
     },
+    "error": {
+      "already_configured": "Device is already configured",
+      "invalid_host": "Invalid host address",
+      "cannot_connect": "Cannot connect to device"
+    },
     "abort": {
-      "already_configured": "Device is already configured"
+      "already_configured": "Device is already configured",
+      "reconfigure_successful": "Reconfiguration successful"
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Alfa Connection Options",
-        "description": "Set Connection Options",
+        "title": "Alfa Runtime Options",
+        "description": "Adjust polling and timeout settings",
         "data": {
-          "host": "IP or hostname",
-          "port": "TCP port",
-          "scan_interval": "Polling Period (min: 30s max: 600s)",
-          "timeout": "Connection Timeout (min: 5s max: 60s)",
-          "skip_mac_detection": "Skip MAC Detection"
-        },
-        "data_description": {
-          "skip_mac_detection": "Enable for VPN connections. Uses host-based device ID instead of MAC address (faster startup)."
+          "scan_interval": "Polling interval (min: 30s max: 600s)",
+          "timeout": "Connection timeout (min: 5s max: 60s)"
         }
       }
     }

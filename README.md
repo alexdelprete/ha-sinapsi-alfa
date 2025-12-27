@@ -21,8 +21,9 @@ So finally here we are with the first official version of the HA custom integrat
 
 - Installation/Configuration through Config Flow UI
 - Sensor entities for all data provided by the device
-- Configuration options: Name, hostname, tcp port, polling period
-- Reconfigure options (except device name) also at runtime: no restart needed.
+- **Options flow**: Adjust polling interval and connection timeout at runtime
+- **Reconfigure flow**: Change device name, host, port, and skip MAC detection settings
+- All changes apply immediately without Home Assistant restart
 
 # Installation through HACS
 
@@ -45,14 +46,40 @@ Download the source code archive from the release page. Unpack the archive and c
 
 # Configuration
 
-Configuration is done via config flow right after adding the integration. After the first configuration you can change parameters (except device name) at runtime through the integration page configuration, without the need to restart HA.
+Configuration is done via config flow right after adding the integration.
 
-- **custom name**: custom name for the device, that will be used as prefix for sensors created by the component
-- **ip/hostname**: IP/hostname of the inverter - this is used as unique_id, if you change it and reinstall you will lose historical data, that's why I advice to use hostname, so you can change IP without losing historical data
-- **tcp port**: TCP port of the device. tcp/502 is the only known working port, but I preferred to leave it configurable
-- **polling period**: frequency, in seconds, to read the registers and update the sensors
+## Initial Setup
+
+During initial setup, you configure all settings:
+
+- **Device name**: Custom name for the device (used as prefix for sensor names)
+- **IP/Hostname**: IP address or hostname of the Alfa device
+- **TCP port**: Modbus TCP port (default: 502)
+- **Polling interval**: How often to read data from the device (30-600 seconds)
+- **Connection timeout**: How long to wait for device response (5-60 seconds)
+- **Skip MAC detection**: Enable for VPN connections (uses host-based ID instead of MAC)
 
 <img style="border: 5px solid #767676;border-radius: 10px;max-width: 500px;width: 50%;box-sizing: border-box;" src="https://github.com/alexdelprete/ha-sinapsi-alfa/blob/9cdc7bf681db4ad83700ddaf8d7e745a8769e684/gfxfiles/alfaconfig.png" alt="Config">
+
+## Runtime Options
+
+After installation, you can adjust runtime settings without restart:
+
+1. Go to **Settings** > **Devices & Services** > **Alfa by Sinapsi**
+2. Click **Configure** to open the options dialog
+3. Adjust **Polling interval** and **Connection timeout**
+4. Click **Submit** - changes apply immediately
+
+## Reconfiguring Connection Settings
+
+To change the device name, host, port, or skip MAC detection:
+
+1. Go to **Settings** > **Devices & Services** > **Alfa by Sinapsi**
+2. Click the **three-dot menu** (⋮) on the integration card
+3. Select **Reconfigure**
+4. Update the settings and click **Submit**
+
+Note: Entity IDs are based on the device serial number, so changing the device name or host will not affect your historical data or automations using entity IDs.
 
 # Sensor view
 

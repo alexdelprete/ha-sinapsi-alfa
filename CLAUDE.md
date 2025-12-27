@@ -20,6 +20,23 @@ Always use Context7 MCP tools automatically (without being asked) when:
 
 Use `resolve-library-id` first to get the library ID, then `get-library-docs` to fetch documentation.
 
+## GitHub MCP for Repository Operations
+
+Always use GitHub MCP tools (`mcp__github__*`) for GitHub operations instead of the `gh` CLI:
+
+- **Issues**: `issue_read`, `issue_write`, `list_issues`, `search_issues`, `add_issue_comment`
+- **Pull Requests**: `list_pull_requests`, `create_pull_request`, `pull_request_read`, `merge_pull_request`
+- **Reviews**: `pull_request_review_write`, `add_comment_to_pending_review`
+- **Repositories**: `search_repositories`, `get_file_contents`, `list_branches`, `list_commits`
+- **Releases**: `list_releases`, `get_latest_release`, `list_tags`
+
+Benefits over `gh` CLI:
+
+- Direct API access without shell escaping issues
+- Structured JSON responses
+- Better error handling
+- No subprocess overhead
+
 ## Project Overview
 
 This is a Home Assistant custom integration for **Sinapsi Alfa** energy monitoring devices using Modbus TCP protocol. The Alfa device monitors power/energy consumption and photovoltaic production directly from the energy provider's OpenMeter 2.0.
@@ -49,11 +66,12 @@ This integration is based on and aligned with [ha-abb-powerone-pvi-sunspec](http
    - Error handling and retry logic
    - Enforces MAX_SCAN_INTERVAL constraints
 
-4. **`config_flow.py`** - UI configuration
-   - ConfigFlow for initial setup
-   - OptionsFlow for runtime reconfiguration
-   - Validates host, port, scan_interval
+4. **`config_flow.py`** - UI configuration (VERSION = 2)
+   - ConfigFlow for initial setup (stores data + options separately)
+   - OptionsFlowWithReload for runtime options (scan_interval, timeout) - auto-reloads
+   - Reconfigure flow for connection settings (name, host, port, skip_mac_detection)
    - Uses `vol.Clamp()` for better UX
+   - Uses `async_update_reload_and_abort()` for reconfigure
 
 5. **`sensor.py`** - Entity platform
    - Creates 24 sensor entities from coordinator data
@@ -224,28 +242,36 @@ This applies to ALL pushes, not just releases.
 
 ### Complete Release Workflow
 
-1. Create/update release notes in `docs/releases/vX.Y.Z.md`
-   - **IMPORTANT**: Include ALL changes since last stable release
-   - Review all beta release notes if applicable
-   - Review all commits since last stable: `git log vX.Y.Z..HEAD`
-   - Include all sections: What's Changed, Bug Fixes, Features, Breaking Changes, etc.
-2. Update `CHANGELOG.md` with version summary
-   - Add new version section at top (below Unreleased)
-   - Include emoji-enhanced section headers
-   - Link to detailed release notes
-   - Add comparison link at bottom
-3. **Run linting checks on entire codebase**
-   - Python: `ruff check custom_components/sinapsi_alfa/`
-   - Markdown: `markdownlint "**/*.md"` (if available)
-   - Fix any errors before proceeding
-4. Commit changes
-5. Push commits and verify clean state
-6. **STOP - GET APPROVAL** before creating tags/releases
-7. Only create tags/releases when explicitly instructed:
-   - `git tag -a vX.Y.Z -m "Release vX.Y.Z"`
-   - `git push --tags`
-   - `gh release create vX.Y.Z --latest`
-8. **After release**: Bump versions in `manifest.json` and `const.py` to next version
+| Step | Tool | Action |
+|------|------|--------|
+| 1 | Edit/Write | Create/update release notes in `docs/releases/vX.Y.Z.md` |
+| 2 | Edit | Update `CHANGELOG.md` with version summary |
+| 3 | Bash | Run linting: `ruff check` + `markdownlint` |
+| 4 | `/commit` skill | Stage and commit with proper format |
+| 5 | git CLI | `git push` |
+| 6 | **⏸️ STOP** | Wait for user "tag and release" command |
+| 7 | git CLI | `git tag -a vX.Y.Z -m "Release vX.Y.Z"` |
+| 8 | git CLI | `git push --tags` |
+| 9 | gh CLI | `gh release create vX.Y.Z --title "vX.Y.Z" --notes-file docs/releases/vX.Y.Z.md` |
+| 10 | GitHub Actions | Auto-uploads `sinapsi_alfa.zip` asset |
+| 11 | Edit | Bump versions in `manifest.json` and `const.py` to next version |
+
+**Release notes content:**
+
+- Include ALL changes since last stable release
+- Review commits: `git log vX.Y.Z..HEAD`
+- Include sections: What's Changed, Bug Fixes, Features, Breaking Changes
+
+**Tools summary:**
+
+| Tool | Used For |
+|------|----------|
+| Edit/Write | Code and documentation changes |
+| `/commit` skill | Stage + commit with proper format and attribution |
+| git CLI | `push`, `tag`, `push --tags` (local repo operations) |
+| gh CLI | `release create` with notes from file |
+| GitHub Actions | Auto-adds ZIP asset after release published |
+| GitHub MCP | Read issues/PRs/releases, create issues, manage PRs |
 
 **CRITICAL:** Never create git tags or GitHub releases without explicit user instruction.
 
@@ -311,10 +337,23 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 
 ## Configuration Parameters
 
+Following HA best practices, configuration is split between `data` (initial config) and `options` (runtime tuning):
+
+### Stored in `config_entry.data` (changed via Reconfigure flow)
+
+- `name` - Device name (used for sensor prefix)
 - `host` - IP/hostname of Alfa device
 - `port` - TCP port (default: 502)
+- `skip_mac_detection` - Use host-based ID instead of MAC (default: false)
+
+### Stored in `config_entry.options` (changed via Options flow)
+
 - `scan_interval` - Polling frequency (default: 60s, range: 30-600)
 - `timeout` - Connection timeout in seconds (default: 10s, range: 5-60)
+
+### Config Entry Migration
+
+Version 1 → 2 migration moves `scan_interval` and `timeout` from `data` to `options`. The `async_migrate_entry()` function in `__init__.py` handles this automatically for existing installations.
 
 ## Entity Unique IDs
 

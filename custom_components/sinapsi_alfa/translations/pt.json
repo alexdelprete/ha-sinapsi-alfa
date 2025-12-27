@@ -5,36 +5,49 @@
         "title": "Configuração da Ligação Alfa",
         "description": "Se precisar de ajuda com a configuração, aceda a: https://github.com/alexdelprete/ha-sinapsi-alfa",
         "data": {
-          "name": "Nome personalizado do dispositivo (usado como prefixo dos sensores)",
+          "name": "Nome do dispositivo (usado como prefixo dos sensores)",
           "host": "IP ou nome do anfitrião",
           "port": "Porta TCP",
-          "scan_interval": "Período de sondagem (mín: 30s máx: 600s)",
-          "timeout": "Tempo Limite de Ligação (mín: 5s máx: 60s)",
-          "skip_mac_detection": "Ignorar Deteção MAC"
+          "scan_interval": "Intervalo de sondagem (mín: 30s máx: 600s)",
+          "timeout": "Tempo limite de ligação (mín: 5s máx: 60s)",
+          "skip_mac_detection": "Ignorar deteção MAC"
+        },
+        "data_description": {
+          "skip_mac_detection": "Ativar para ligações VPN. Usa ID baseado no anfitrião em vez do endereço MAC (arranque mais rápido)."
+        }
+      },
+      "reconfigure": {
+        "title": "Reconfigurar Ligação Alfa",
+        "description": "Atualizar definições de ligação do dispositivo",
+        "data": {
+          "name": "Nome do dispositivo (usado como prefixo dos sensores)",
+          "host": "IP ou nome do anfitrião",
+          "port": "Porta TCP",
+          "skip_mac_detection": "Ignorar deteção MAC"
         },
         "data_description": {
           "skip_mac_detection": "Ativar para ligações VPN. Usa ID baseado no anfitrião em vez do endereço MAC (arranque mais rápido)."
         }
       }
     },
+    "error": {
+      "already_configured": "O dispositivo já está configurado",
+      "invalid_host": "Endereço do anfitrião inválido",
+      "cannot_connect": "Não é possível ligar ao dispositivo"
+    },
     "abort": {
-      "already_configured": "O dispositivo já está configurado."
+      "already_configured": "O dispositivo já está configurado",
+      "reconfigure_successful": "Reconfiguração bem-sucedida"
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Opções da Ligação Alfa",
-        "description": "Definir opções de ligação",
+        "title": "Opções de Execução Alfa",
+        "description": "Ajustar definições de sondagem e tempo limite",
         "data": {
-          "host": "IP ou nome do anfitrião",
-          "port": "Porta TCP",
-          "scan_interval": "Período de sondagem (mín: 30s máx: 600s)",
-          "timeout": "Tempo Limite de Ligação (mín: 5s máx: 60s)",
-          "skip_mac_detection": "Ignorar Deteção MAC"
-        },
-        "data_description": {
-          "skip_mac_detection": "Ativar para ligações VPN. Usa ID baseado no anfitrião em vez do endereço MAC (arranque mais rápido)."
+          "scan_interval": "Intervalo de sondagem (mín: 30s máx: 600s)",
+          "timeout": "Tempo limite de ligação (mín: 5s máx: 60s)"
         }
       }
     }

@@ -9,6 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 TBD
 
+## [1.1.11-beta.1] - 2025-12-27
+
+**Beta release** - Config entry migration and options flow improvements. Testing required.
+
+### ⚠️ Breaking Changes
+
+- **Config Entry v2** - Migration from v1 to v2 (automatic, but please verify)
+
+### ✨ Improvements
+
+- **OptionsFlowWithReload** - Options changes now auto-reload integration
+- **Better type hints** - Improved code quality in config flow
+- **Cleaner code** - Removed legacy migration code, improved method naming
+
+**Full Release Notes:** [docs/releases/v1.1.11-beta.1.md](docs/releases/v1.1.11-beta.1.md)
+
+**Full Changelog:** [v1.1.10...v1.1.11-beta.1](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.1.10...v1.1.11-beta.1)
+
 ## [1.1.10] - 2025-12-25
 
 **Patch release** - Updates ModbusLink to 1.3.2 for English-only error messages.

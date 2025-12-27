@@ -18,9 +18,7 @@ from .const import (
     CONF_SCAN_INTERVAL,
     CONF_SKIP_MAC_DETECTION,
     CONF_TIMEOUT,
-    DEFAULT_SCAN_INTERVAL,
     DEFAULT_SKIP_MAC_DETECTION,
-    DEFAULT_TIMEOUT,
     DOMAIN,
     MAX_SCAN_INTERVAL,
     MAX_TIMEOUT,
@@ -40,17 +38,18 @@ class SinapsiAlfaCoordinator(DataUpdateCoordinator):
     def __init__(self, hass: HomeAssistant, config_entry: ConfigEntry) -> None:
         """Initialize data update coordinator."""
 
-        # get parameters from user config
-        self.conf_name = config_entry.data.get(CONF_NAME)
-        self.conf_host = config_entry.data.get(CONF_HOST)
-        self.conf_port = int(config_entry.data.get(CONF_PORT))
-        self.scan_interval = int(
-            config_entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
-        )
-        self.timeout = int(config_entry.data.get(CONF_TIMEOUT, DEFAULT_TIMEOUT))
+        # Get initial config from data (set during setup, changed via reconfigure flow)
+        self.conf_name = config_entry.data[CONF_NAME]
+        self.conf_host = config_entry.data[CONF_HOST]
+        self.conf_port = int(config_entry.data[CONF_PORT])
         self.skip_mac_detection = config_entry.data.get(
             CONF_SKIP_MAC_DETECTION, DEFAULT_SKIP_MAC_DETECTION
         )
+
+        # Get runtime options from options (changed via options flow)
+        # Migration ensures these exist in options for existing installs
+        self.scan_interval = int(config_entry.options[CONF_SCAN_INTERVAL])
+        self.timeout = int(config_entry.options[CONF_TIMEOUT])
 
         # enforce scan_interval bounds
         if self.scan_interval < MIN_SCAN_INTERVAL:

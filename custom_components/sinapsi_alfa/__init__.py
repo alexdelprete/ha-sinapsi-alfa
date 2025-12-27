@@ -16,6 +16,10 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from .const import (
     CONF_HOST,
     CONF_NAME,
+    CONF_SCAN_INTERVAL,
+    CONF_TIMEOUT,
+    DEFAULT_SCAN_INTERVAL,
+    DEFAULT_TIMEOUT,
     DOMAIN,
     STARTUP_MESSAGE,
 )
@@ -61,10 +65,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: SinapsiAlfaConfig
     # Store coordinator in runtime_data to make it accessible throughout the integration
     config_entry.runtime_data = RuntimeData(coordinator)
 
-    # Register an update listener for config flow options changes
-    # Listener is attached when entry loads and automatically detached at unload
-    # ref.: https://developers.home-assistant.io/docs/config_entries_options_flow_handler/#signal-updates
-    config_entry.async_on_unload(config_entry.add_update_listener(async_reload_entry))
+    # Note: No manual update listener needed - OptionsFlowWithReload handles reload automatically
 
     # Setup platforms
     await hass.config_entries.async_forward_entry_setups(config_entry, PLATFORMS)
@@ -140,32 +141,84 @@ async def async_unload_entry(
     return unload_ok
 
 
-@callback
-def async_reload_entry(
-    hass: HomeAssistant, config_entry: SinapsiAlfaConfigEntry
-) -> None:
-    """Reload the config entry."""
-    hass.config_entries.async_schedule_reload(config_entry.entry_id)
+async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
+    """Migrate old config entry to new format."""
+    # Handle downgrade scenario (per HA best practice)
+    if config_entry.version > 2:
+        log_error(
+            _LOGGER,
+            "async_migrate_entry",
+            "Cannot downgrade from future version",
+            from_version=config_entry.version,
+            current_version=2,
+        )
+        return False
 
+    log_info(
+        _LOGGER,
+        "async_migrate_entry",
+        "Starting migration",
+        from_version=config_entry.version,
+        target_version=2,
+    )
 
-# Sample migration code in case it's needed
-# async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
-#     """Migrate an old config_entry."""
-#     version = config_entry.version
+    if config_entry.version == 1:
+        # Version 1 -> 2: Move scan_interval and timeout from data to options
+        # This follows HA best practice: data = initial config, options = runtime tuning
+        new_data = {**config_entry.data}
+        new_options = {**config_entry.options}
 
-#     # 1-> 2: Migration format
-#     if version == 1:
-#         # Get handler to coordinator from config
-#         coordinator = hass.data[DOMAIN][config_entry.entry_id][DATA]
-#         _LOGGER.debug("Migrating from version %s", version)
-#         old_uid = config_entry.unique_id
-#         new_uid = coordinator.api.data["mac_address"]
-#         if old_uid != new_uid:
-#             hass.config_entries.async_update_entry(
-#                 config_entry, unique_id=new_uid
-#             )
-#             _LOGGER.debug("Migration to version %s complete: OLD_UID: %s - NEW_UID: %s", config_entry.version, old_uid, new_uid)
-#         if config_entry.unique_id == new_uid:
-#             config_entry.version = 2
-#             _LOGGER.debug("Migration to version %s complete: NEW_UID: %s", config_entry.version, config_entry.unique_id)
-#     return True
+        # Extract and log scan_interval migration
+        if CONF_SCAN_INTERVAL in new_data:
+            scan_interval = new_data.pop(CONF_SCAN_INTERVAL)
+            new_options[CONF_SCAN_INTERVAL] = scan_interval
+            log_info(
+                _LOGGER,
+                "async_migrate_entry",
+                "Migrated scan_interval from data",
+                value=scan_interval,
+            )
+        else:
+            new_options[CONF_SCAN_INTERVAL] = DEFAULT_SCAN_INTERVAL
+            log_info(
+                _LOGGER,
+                "async_migrate_entry",
+                "Using default scan_interval",
+                value=DEFAULT_SCAN_INTERVAL,
+            )
+
+        # Extract and log timeout migration
+        if CONF_TIMEOUT in new_data:
+            timeout = new_data.pop(CONF_TIMEOUT)
+            new_options[CONF_TIMEOUT] = timeout
+            log_info(
+                _LOGGER,
+                "async_migrate_entry",
+                "Migrated timeout from data",
+                value=timeout,
+            )
+        else:
+            new_options[CONF_TIMEOUT] = DEFAULT_TIMEOUT
+            log_info(
+                _LOGGER,
+                "async_migrate_entry",
+                "Using default timeout",
+                value=DEFAULT_TIMEOUT,
+            )
+
+        hass.config_entries.async_update_entry(
+            config_entry,
+            data=new_data,
+            options=new_options,
+            version=2,
+        )
+
+        log_info(
+            _LOGGER,
+            "async_migrate_entry",
+            "Migration complete",
+            data_keys=list(new_data.keys()),
+            options_keys=list(new_options.keys()),
+        )
+
+    return True
