@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 TBD
 
+## [1.1.11-beta.2] - 2025-12-27
+
+**Beta release** - Fixes options flow error from beta.1.
+
+### 🐛 Bug Fixes
+
+- **Options Flow** - Fixed "500 Internal Server Error" when opening options
+
+**Full Release Notes:** [docs/releases/v1.1.11-beta.2.md](docs/releases/v1.1.11-beta.2.md)
+
+**Full Changelog:** [v1.1.11-beta.1...v1.1.11-beta.2](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.1.11-beta.1...v1.1.11-beta.2)
+
 ## [1.1.11-beta.1] - 2025-12-27
 
 **Beta release** - Config entry migration and options flow improvements. Testing required.
