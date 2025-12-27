@@ -71,7 +71,13 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg
         return False
 
     async def _test_connection(
-        self, name: str, host: str, port: int, scan_interval: int, timeout: int, skip_mac_detection: bool
+        self,
+        name: str,
+        host: str,
+        port: int,
+        scan_interval: int,
+        timeout: int,
+        skip_mac_detection: bool,
     ) -> str | bool:
         """Test connection and return serial number or False on failure."""
         log_debug(_LOGGER, "_test_connection", "Test connection", host=host, port=port)
@@ -80,7 +86,9 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg
             api = SinapsiAlfaAPI(
                 self.hass, name, host, port, scan_interval, timeout, skip_mac_detection
             )
-            log_debug(_LOGGER, "_test_connection", "API Client created: calling get data")
+            log_debug(
+                _LOGGER, "_test_connection", "API Client created: calling get data"
+            )
             await api.async_get_data()
             log_debug(_LOGGER, "_test_connection", "API Client: get data")
             log_debug(_LOGGER, "_test_connection", "API Client Data", data=api.data)
@@ -99,7 +107,9 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg
             )
             return False
 
-    async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+    async def async_step_user(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
         """Handle the initial step."""
         errors: dict[str, str] = {}
 
@@ -211,7 +221,9 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg
                 errors[CONF_HOST] = "invalid_host"
             else:
                 # Test connection with new settings (use existing options for scan_interval/timeout)
-                scan_interval = reconfigure_entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+                scan_interval = reconfigure_entry.options.get(
+                    CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
+                )
                 timeout = reconfigure_entry.options.get(CONF_TIMEOUT, DEFAULT_TIMEOUT)
 
                 uid = await self._test_connection(
