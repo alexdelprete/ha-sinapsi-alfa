@@ -201,6 +201,19 @@ This prevents log spam during extended outages.
 - Test reload/unload scenarios
 - Test availability tracking (device offline scenarios)
 
+### Quality Scale Tracking
+
+This integration tracks [Home Assistant Quality Scale](https://developers.home-assistant.io/docs/core/integration-quality-scale/) rules in `quality_scale.yaml`.
+
+**When implementing new features or fixing bugs:**
+
+1. Check if the change affects any quality scale rules
+2. Update `quality_scale.yaml` status accordingly:
+   - `done` - Rule is fully implemented
+   - `todo` - Rule needs implementation
+   - `exempt` with `comment` - Rule doesn't apply (explain why)
+3. Aim to complete all Bronze tier rules first, then Silver, Gold, Platinum
+
 ### Pre-Push Linting (MANDATORY)
 
 > **⚠️ ALWAYS run linting before ANY git push action.**
@@ -208,11 +221,19 @@ This prevents log spam during extended outages.
 Before pushing any commits, run these checks and fix all errors:
 
 ```bash
-ruff check custom_components/sinapsi_alfa/
-pymarkdown scan **/*.md
+# Python formatting and linting
+ruff format .
+ruff check . --fix
+
+# Type checking
+mypy custom_components/
+
+# Markdown formatting and linting
+mdformat .
+pymarkdown scan .
 ```
 
-This applies to ALL pushes, not just releases.
+All commands must pass without errors before committing. This applies to ALL pushes, not just releases.
 
 ## Release Management - CRITICAL
 
@@ -246,7 +267,7 @@ This applies to ALL pushes, not just releases.
 |------|------|--------|
 | 1 | Edit/Write | Create/update release notes in `docs/releases/vX.Y.Z.md` |
 | 2 | Edit | Update `CHANGELOG.md` with version summary |
-| 3 | Bash | Run linting: `ruff check` + `pymarkdown scan` |
+| 3 | Bash | Run linting: `ruff format`, `ruff check --fix`, `mypy`, `pymarkdown scan` |
 | 4 | `commit-commands:commit` skill | Stage and commit with proper format |
 | 5 | git CLI | `git push` |
 | 6 | **⏸️ STOP** | Wait for user "tag and release" command |
