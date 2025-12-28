@@ -4,4 +4,6 @@ set -e
 
 cd "$(dirname "$0")/.."
 
-python3 -m pip install --requirement requirements.txt
+# Install the package with all dev dependencies
+python3 -m pip install --upgrade pip
+python3 -m pip install -e ".[dev]"
