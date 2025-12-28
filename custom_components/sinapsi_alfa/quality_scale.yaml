@@ -1,0 +1,224 @@
+# Home Assistant Integration Quality Scale
+# https://developers.home-assistant.io/docs/core/integration-quality-scale/
+#
+# This is a HACS custom integration, not a core integration.
+# We track these rules for quality improvement purposes.
+
+rules:
+  # ============================================================================
+  # BRONZE TIER (18 rules) - Baseline for new integrations
+  # ============================================================================
+
+  # Rule: Service actions are registered in async_setup
+  action-setup:
+    status: exempt
+    comment: Integration does not define any service actions.
+
+  # Rule: If it's a polling integration, set an appropriate polling interval
+  appropriate-polling: done  # Configurable scan_interval (30-600s) via options flow
+
+  # Rule: Has branding assets available for the integration
+  brands:
+    status: todo
+    comment: Submit branding assets to homeassistant/brands repo.
+
+  # Rule: Place common patterns in common modules
+  common-modules: done  # coordinator.py, entity.py, helpers.py, api.py
+
+  # Rule: Integration needs to be able to be set up via the UI
+  config-flow: done  # UI setup via config_flow.py with VERSION = 2
+
+  # Rule: Full test coverage for the config flow
+  config-flow-test-coverage:
+    status: todo
+    comment: Create comprehensive test suite for config flow.
+
+  # Rule: Dependency transparency
+  dependency-transparency: done  # modbuslink and getmac are OSI-licensed, on PyPI
+
+  # Rule: The documentation describes the provided service actions
+  docs-actions:
+    status: exempt
+    comment: Integration does not define any service actions.
+
+  # Rule: The documentation includes a high-level description
+  docs-high-level-description: done  # README.md describes Sinapsi Alfa device
+
+  # Rule: The documentation provides step-by-step installation instructions
+  docs-installation-instructions: done  # README.md with HACS instructions
+
+  # Rule: The documentation provides removal instructions
+  docs-removal-instructions: done  # Standard HA removal via integrations page
+
+  # Rule: Entity events are subscribed in the correct lifecycle methods
+  entity-event-setup: done  # Uses DataUpdateCoordinator pattern
+
+  # Rule: Entities have a unique ID
+  entity-unique-id: done  # MAC address based unique IDs
+
+  # Rule: Entities use has_entity_name = True
+  has-entity-name: done  # _attr_has_entity_name = True in sensor.py
+
+  # Rule: Use ConfigEntry.runtime_data to store runtime data
+  runtime-data: done  # Uses entry.runtime_data with RuntimeData dataclass
+
+  # Rule: Test a connection in the config flow
+  test-before-configure: done  # Validates Modbus connection before setup
+
+  # Rule: Check during integration initialization if we can set it up correctly
+  test-before-setup: done  # Raises ConfigEntryNotReady on connection failure
+
+  # Rule: Don't allow the same device or service to be set up twice
+  unique-config-entry: done  # Uses MAC address as unique_id
+
+  # ============================================================================
+  # SILVER TIER (10 rules) - Enhanced reliability
+  # ============================================================================
+
+  # Rule: Service actions raise exceptions when encountering failures
+  action-exceptions:
+    status: exempt
+    comment: Integration does not define any service actions.
+
+  # Rule: Support config entry unloading
+  config-entry-unloading: done  # async_unload_entry properly cleans up
+
+  # Rule: The documentation describes all integration configuration options
+  docs-configuration-parameters: done  # README documents scan_interval, timeout
+
+  # Rule: The documentation describes all integration installation parameters
+  docs-installation-parameters: done  # README documents host, port, name
+
+  # Rule: Mark entity unavailable if appropriate
+  entity-unavailable: done  # Coordinator handles availability via UpdateFailed
+
+  # Rule: Has an integration owner
+  integration-owner: done  # @alexdelprete in manifest.json codeowners
+
+  # Rule: If unavailable, log once when unavailable and once when back connected
+  log-when-unavailable: done  # DataUpdateCoordinator handles this automatically
+
+  # Rule: Number of parallel updates is specified
+  parallel-updates:
+    status: exempt
+    comment: Uses DataUpdateCoordinator, PARALLEL_UPDATES not needed.
+
+  # Rule: Reauthentication needs to be available via the UI
+  reauthentication-flow:
+    status: exempt
+    comment: Integration does not require authentication credentials.
+
+  # Rule: Above 95% test coverage for all integration modules
+  test-coverage:
+    status: todo
+    comment: Create test suite with >95% coverage.
+
+  # ============================================================================
+  # GOLD TIER (20 rules) - Best user experience
+  # ============================================================================
+
+  # Rule: The integration creates devices
+  devices: done  # Creates device with manufacturer, model, MAC address
+
+  # Rule: Implements diagnostics
+  diagnostics:
+    status: todo
+    comment: Implement diagnostics.py for debug information.
+
+  # Rule: Devices can be discovered
+  discovery:
+    status: exempt
+    comment: Modbus TCP devices cannot be auto-discovered.
+
+  # Rule: Integration uses discovery info to update network information
+  discovery-update-info:
+    status: exempt
+    comment: No discovery mechanism available for Modbus TCP.
+
+  # Rule: The documentation describes how data is updated
+  docs-data-update: done  # README explains polling via Modbus TCP
+
+  # Rule: The documentation provides automation examples
+  docs-examples:
+    status: todo
+    comment: Add example automations for energy monitoring.
+
+  # Rule: The documentation describes known limitations
+  docs-known-limitations:
+    status: todo
+    comment: Document limitations (single device, Italian market focus).
+
+  # Rule: The documentation describes known supported / unsupported devices
+  docs-supported-devices: done  # README specifies Sinapsi Alfa device
+
+  # Rule: The documentation describes the supported functionality
+  docs-supported-functions: done  # README lists all 24 sensors
+
+  # Rule: The documentation provides troubleshooting information
+  docs-troubleshooting:
+    status: todo
+    comment: Add troubleshooting section for common issues.
+
+  # Rule: The documentation describes use cases
+  docs-use-cases:
+    status: todo
+    comment: Document energy monitoring use cases.
+
+  # Rule: Devices added after integration setup
+  dynamic-devices:
+    status: exempt
+    comment: Single device integration, no dynamic device addition.
+
+  # Rule: Entities are assigned an appropriate EntityCategory
+  entity-category: done  # Uses EntityCategory.DIAGNOSTIC where appropriate
+
+  # Rule: Entities use device classes where possible
+  entity-device-class: done  # Uses POWER, ENERGY device classes
+
+  # Rule: Integration disables less popular (or noisy) entities
+  entity-disabled-by-default:
+    status: todo
+    comment: Consider disabling time band sensors by default.
+
+  # Rule: Entities have translated names
+  entity-translations:
+    status: exempt
+    comment: Uses Italian names intentionally for Italian market.
+
+  # Rule: Exception messages are translatable
+  exception-translations:
+    status: todo
+    comment: Add translation keys for error messages.
+
+  # Rule: Entities implement icon translations
+  icon-translations:
+    status: todo
+    comment: Add icons.json for entity icons.
+
+  # Rule: Integrations should have a reconfigure flow
+  reconfiguration-flow: done  # Reconfigure flow for host/port changes
+
+  # Rule: Repair issues and repair flows are used when user intervention is needed
+  repair-issues:
+    status: todo
+    comment: Implement repair issues for connection problems.
+
+  # Rule: Stale devices are removed
+  stale-devices:
+    status: exempt
+    comment: Single device per config entry, removed with integration.
+
+  # ============================================================================
+  # PLATINUM TIER (3 rules) - Highest quality
+  # ============================================================================
+
+  # Rule: Dependency is async
+  async-dependency: done  # ModbusLink is native async
+
+  # Rule: The integration dependency supports passing in a websession
+  inject-websession:
+    status: exempt
+    comment: Uses Modbus TCP, not HTTP.
+
+  # Rule: Strict typing
+  strict-typing: done  # Full type annotations, mypy validated
