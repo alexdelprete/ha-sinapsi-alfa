@@ -9,6 +9,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 TBD
 
+## [1.1.12-beta.1] - 2025-12-29
+
+**Beta release** - Gold tier Quality Scale implementation. Testing required.
+
+### ✨ New Features
+
+- **Diagnostics support** - Download debug info from integration menu
+- **Repair issues** - Automatic repair issue after 3 consecutive connection failures
+- **Icon translations** - Custom icons for all 24 sensors via icons.json
+- **Entity translations** - 10 languages (de, en, es, et, fi, fr, it, nb, pt, sv)
+- **Exception translations** - Error messages in user's language
+- **Entity disabled by default** - F1-F6 time band sensors disabled by default
+
+### 🔧 Improvements
+
+- **Full type annotations** - mypy strict typing compliance
+- **95% test coverage** - Increased from 85%
+- **README restructured** - Proper markdown formatting
+
+**Full Release Notes:** [docs/releases/v1.1.12-beta.1.md](docs/releases/v1.1.12-beta.1.md)
+
+**Full Changelog:** [v1.1.11...v1.1.12-beta.1](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.1.11...v1.1.12-beta.1)
+
 ## [1.1.11] - 2025-12-27
 
 **Stable release** - Config entry migration and options flow improvements.
@@ -505,6 +528,10 @@ ______________________________________________________________________
 [1.1.0]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.0
 [1.1.1]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.1
 [1.1.10]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.10
+[1.1.11]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.11
+[1.1.11-beta.1]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.11-beta.1
+[1.1.11-beta.2]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.11-beta.2
+[1.1.12-beta.1]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.12-beta.1
 [1.1.2]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.2
 [1.1.3]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.3
 [1.1.4]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.4
