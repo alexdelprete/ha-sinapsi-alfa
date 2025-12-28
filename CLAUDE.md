@@ -177,7 +177,7 @@ This prevents log spam during extended outages.
 
 ### Ruff Configuration
 
-- Follow `.ruff.toml` rules strictly
+- Follow `pyproject.toml` ruff rules strictly (in `[tool.ruff]` section)
 - Key rules:
   - A001: Don't shadow builtins
   - TRY300: Move return/break outside try blocks
@@ -209,7 +209,7 @@ Before pushing any commits, run these checks and fix all errors:
 
 ```bash
 ruff check custom_components/sinapsi_alfa/
-markdownlint "**/*.md"
+pymarkdown scan **/*.md
 ```
 
 This applies to ALL pushes, not just releases.
@@ -246,7 +246,7 @@ This applies to ALL pushes, not just releases.
 |------|------|--------|
 | 1 | Edit/Write | Create/update release notes in `docs/releases/vX.Y.Z.md` |
 | 2 | Edit | Update `CHANGELOG.md` with version summary |
-| 3 | Bash | Run linting: `ruff check` + `markdownlint` |
+| 3 | Bash | Run linting: `ruff check` + `pymarkdown scan` |
 | 4 | `commit-commands:commit` skill | Stage and commit with proper format |
 | 5 | git CLI | `git push` |
 | 6 | **⏸️ STOP** | Wait for user "tag and release" command |
@@ -451,21 +451,17 @@ energia_auto_consumata = energia_prodotta - energia_immessa
 
 ## Markdown Standards
 
-Follow markdownlint rules (configured in `.markdownlint.json`):
+Follow pymarkdown rules (configured in `pyproject.toml` under `[tool.pymarkdown]`):
 
+- Line length 120 characters (MD013)
+- Unique heading names (MD024: siblings_only for CHANGELOG format)
+- Consistent bold style using `**` (MD050: asterisk)
+- No bare URLs (MD034) - always use `[text](url)` format
 - Blank lines around lists and code blocks
 - Language specification for fenced code blocks
-- Blank line after bold headers
-- Unique heading names (MD024: siblings_only for CHANGELOG format)
-- Line length 120 characters (MD013)
-- No bare URLs (MD034) - always use `[text](url)` format
-- Consistent bold style using `**` (MD050: asterisk)
 
-**Disabled rules** (common patterns in GitHub READMEs):
+**Disabled rules:**
 
-- MD013: Line length (URLs and images often exceed limits)
-- MD025: Single h1 (multiple `#` sections common in READMEs)
-- MD001: Heading increment (flexible heading hierarchy)
 - MD036: Emphasis as heading (italic disclaimers common)
 
 ## Do's and Don'ts

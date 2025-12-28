@@ -3,10 +3,10 @@
 https://github.com/alexdelprete/ha-sinapsi-alfa
 """
 
+from datetime import UTC, datetime
 import ipaddress
 import logging
 import re
-from datetime import UTC, datetime
 from typing import Any
 
 

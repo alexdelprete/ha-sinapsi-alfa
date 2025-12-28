@@ -12,20 +12,21 @@ import time
 from typing import Any
 
 from getmac import getmac
-from homeassistant.components.sensor import SensorDeviceClass
-from homeassistant.core import HomeAssistant
 from modbuslink import (
     AsyncModbusClient,
     AsyncTcpTransport,
+    ConnectionError as ModbusConnectionError,
     CRCError,
     InvalidResponseError,
     Language,
     ModbusException,
     ModbusLinkError,
+    TimeoutError as ModbusTimeoutError,
     set_language,
 )
-from modbuslink import ConnectionError as ModbusConnectionError
-from modbuslink import TimeoutError as ModbusTimeoutError
+
+from homeassistant.components.sensor import SensorDeviceClass
+from homeassistant.core import HomeAssistant
 
 from .const import (
     DEFAULT_DEVICE_ID,
@@ -41,12 +42,7 @@ from .const import (
     REGISTER_BATCHES,
     SENSOR_ENTITIES,
 )
-from .helpers import (
-    log_debug,
-    log_error,
-    log_warning,
-    unix_timestamp_to_iso8601_local_tz,
-)
+from .helpers import log_debug, log_error, log_warning, unix_timestamp_to_iso8601_local_tz
 
 # Configure ModbusLink to use English for logs AND errors
 set_language(Language.EN)

@@ -3,8 +3,8 @@
 https://github.com/alexdelprete/ha-sinapsi-alfa
 """
 
-import logging
 from dataclasses import dataclass
+import logging
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform

@@ -12,11 +12,7 @@ from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from . import SinapsiAlfaConfigEntry
-from .const import (
-    CONF_NAME,
-    DOMAIN,
-    SENSOR_ENTITIES,
-)
+from .const import CONF_NAME, DOMAIN, SENSOR_ENTITIES
 from .coordinator import SinapsiAlfaCoordinator
 from .helpers import log_debug
 

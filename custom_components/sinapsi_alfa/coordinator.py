@@ -3,8 +3,8 @@
 https://github.com/alexdelprete/ha-sinapsi-alfa
 """
 
-import logging
 from datetime import datetime, timedelta
+import logging
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
