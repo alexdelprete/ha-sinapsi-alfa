@@ -18,9 +18,7 @@ rules:
   appropriate-polling: done  # Configurable scan_interval (30-600s) via options flow
 
   # Rule: Has branding assets available for the integration
-  brands:
-    status: todo
-    comment: Submit branding assets to homeassistant/brands repo.
+  brands: done  # Available in HACS, branding assets submitted
 
   # Rule: Place common patterns in common modules
   common-modules: done  # coordinator.py, entity.py, helpers.py, api.py
@@ -29,9 +27,7 @@ rules:
   config-flow: done  # UI setup via config_flow.py with VERSION = 2
 
   # Rule: Full test coverage for the config flow
-  config-flow-test-coverage:
-    status: todo
-    comment: Create comprehensive test suite for config flow.
+  config-flow-test-coverage: done  # tests/test_config_flow.py covers all flows
 
   # Rule: Dependency transparency
   dependency-transparency: done  # modbuslink and getmac are OSI-licensed, on PyPI
@@ -111,7 +107,7 @@ rules:
   # Rule: Above 95% test coverage for all integration modules
   test-coverage:
     status: todo
-    comment: Create test suite with >95% coverage.
+    comment: Test suite created (config_flow, coordinator, api). Run coverage to verify >95%.
 
   # ============================================================================
   # GOLD TIER (20 rules) - Best user experience
