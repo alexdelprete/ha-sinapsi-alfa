@@ -26,8 +26,12 @@ from .const import (
     MIN_TIMEOUT,
 )
 from .helpers import log_debug
+from .repairs import create_connection_issue, delete_connection_issue
 
 _LOGGER = logging.getLogger(__name__)
+
+# Number of consecutive failures before creating repair issue
+FAILURES_BEFORE_REPAIR_ISSUE = 3
 
 
 class SinapsiAlfaCoordinator(DataUpdateCoordinator):
@@ -89,6 +93,9 @@ class SinapsiAlfaCoordinator(DataUpdateCoordinator):
 
         self.last_update_time = datetime.now()
         self.last_update_success = True
+        self._consecutive_failures = 0
+        self._repair_issue_created = False
+        self._entry_id = config_entry.entry_id
 
         self.api = SinapsiAlfaAPI(
             hass,
@@ -100,9 +107,7 @@ class SinapsiAlfaCoordinator(DataUpdateCoordinator):
             self.skip_mac_detection,
         )
 
-        log_debug(
-            _LOGGER, "__init__", "Coordinator Config Data", data=config_entry.data
-        )
+        log_debug(_LOGGER, "__init__", "Coordinator Config Data", data=config_entry.data)
         log_debug(
             _LOGGER,
             "__init__",
@@ -112,7 +117,7 @@ class SinapsiAlfaCoordinator(DataUpdateCoordinator):
             scan_interval=self.scan_interval,
         )
 
-    async def async_update_data(self):
+    async def async_update_data(self) -> bool:
         """Update data method."""
         log_debug(_LOGGER, "async_update_data", "Update started", time=datetime.now())
         try:
@@ -124,14 +129,46 @@ class SinapsiAlfaCoordinator(DataUpdateCoordinator):
                 "Update completed",
                 time=self.last_update_time,
             )
+            # Reset failure counter on success
+            self._consecutive_failures = 0
+            # Delete repair issue if it was created
+            if self._repair_issue_created:
+                delete_connection_issue(self.hass, self._entry_id)
+                self._repair_issue_created = False
+                log_debug(
+                    _LOGGER,
+                    "async_update_data",
+                    "Connection restored, repair issue deleted",
+                )
         except Exception as ex:
             self.last_update_status = False
+            self._consecutive_failures += 1
             log_debug(
                 _LOGGER,
                 "async_update_data",
                 "Update error",
                 error=ex,
+                consecutive_failures=self._consecutive_failures,
                 time=self.last_update_time,
             )
+            # Create repair issue after repeated failures
+            if (
+                self._consecutive_failures >= FAILURES_BEFORE_REPAIR_ISSUE
+                and not self._repair_issue_created
+            ):
+                create_connection_issue(
+                    self.hass,
+                    self._entry_id,
+                    self.conf_name,
+                    self.conf_host,
+                    self.conf_port,
+                )
+                self._repair_issue_created = True
+                log_debug(
+                    _LOGGER,
+                    "async_update_data",
+                    "Repair issue created after repeated failures",
+                    failures=self._consecutive_failures,
+                )
             raise UpdateFailed from ex
         return self.last_update_status

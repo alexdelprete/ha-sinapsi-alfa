@@ -45,7 +45,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @callback
-def get_host_from_config(hass: HomeAssistant):
+def get_host_from_config(hass: HomeAssistant) -> set[str | None]:
     """Return the hosts already configured."""
     return {
         config_entry.data.get(CONF_HOST)
@@ -61,11 +61,11 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg
 
     @staticmethod
     @callback
-    def async_get_options_flow(config_entry: ConfigEntry):
+    def async_get_options_flow(config_entry: ConfigEntry) -> "SinapsiAlfaOptionsFlow":
         """Initiate Options Flow Instance."""
         return SinapsiAlfaOptionsFlow()
 
-    def _host_in_configuration_exists(self, host) -> bool:
+    def _host_in_configuration_exists(self, host: str | None) -> bool:
         """Return True if host exists in configuration."""
         if host in get_host_from_config(self.hass):
             return True
@@ -87,9 +87,7 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg
             api = SinapsiAlfaAPI(
                 self.hass, name, host, port, scan_interval, timeout, skip_mac_detection
             )
-            log_debug(
-                _LOGGER, "_test_connection", "API Client created: calling get data"
-            )
+            log_debug(_LOGGER, "_test_connection", "API Client created: calling get data")
             await api.async_get_data()
             log_debug(_LOGGER, "_test_connection", "API Client: get data")
             log_debug(_LOGGER, "_test_connection", "API Client Data", data=api.data)
@@ -108,9 +106,7 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg
             )
             return False
 
-    async def async_step_user(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
+    async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Handle the initial step."""
         errors: dict[str, str] = {}
 
@@ -120,9 +116,7 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg
             port = user_input[CONF_PORT]
             scan_interval = user_input[CONF_SCAN_INTERVAL]
             timeout = user_input[CONF_TIMEOUT]
-            skip_mac_detection = user_input.get(
-                CONF_SKIP_MAC_DETECTION, DEFAULT_SKIP_MAC_DETECTION
-            )
+            skip_mac_detection = user_input.get(CONF_SKIP_MAC_DETECTION, DEFAULT_SKIP_MAC_DETECTION)
 
             if self._host_in_configuration_exists(host):
                 errors[CONF_HOST] = "already_configured"
@@ -203,9 +197,7 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg
             name = user_input[CONF_NAME]
             host = user_input[CONF_HOST]
             port = user_input[CONF_PORT]
-            skip_mac_detection = user_input.get(
-                CONF_SKIP_MAC_DETECTION, DEFAULT_SKIP_MAC_DETECTION
-            )
+            skip_mac_detection = user_input.get(CONF_SKIP_MAC_DETECTION, DEFAULT_SKIP_MAC_DETECTION)
 
             log_debug(
                 _LOGGER,
@@ -286,9 +278,7 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg
 class SinapsiAlfaOptionsFlow(OptionsFlowWithReload):
     """Config flow options handler with auto-reload."""
 
-    async def async_step_init(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
+    async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Manage the options."""
         if user_input is not None:
             log_debug(
@@ -315,9 +305,7 @@ class SinapsiAlfaOptionsFlow(OptionsFlowWithReload):
                     ),
                     vol.Required(
                         CONF_TIMEOUT,
-                        default=self.config_entry.options.get(
-                            CONF_TIMEOUT, DEFAULT_TIMEOUT
-                        ),
+                        default=self.config_entry.options.get(CONF_TIMEOUT, DEFAULT_TIMEOUT),
                     ): vol.All(
                         vol.Coerce(int),
                         vol.Clamp(min=MIN_TIMEOUT, max=MAX_TIMEOUT),

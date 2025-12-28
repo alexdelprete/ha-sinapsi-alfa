@@ -36,16 +36,10 @@ def unix_timestamp_to_iso8601_local_tz(unix_timestamp: int) -> str:
 
     """
 
-    return (
-        datetime.fromtimestamp(timestamp=unix_timestamp, tz=UTC)
-        .astimezone()
-        .isoformat()
-    )
+    return datetime.fromtimestamp(timestamp=unix_timestamp, tz=UTC).astimezone().isoformat()
 
 
-def log_debug(
-    logger: logging.Logger, context: str, message: str, **kwargs: Any
-) -> None:
+def log_debug(logger: logging.Logger, context: str, message: str, **kwargs: Any) -> None:
     """Standardized debug logging with context."""
     context_str = f"({context})"
     if kwargs:
@@ -63,9 +57,7 @@ def log_info(logger: logging.Logger, context: str, message: str, **kwargs: Any) 
     logger.info("%s: %s", context_str, message)
 
 
-def log_warning(
-    logger: logging.Logger, context: str, message: str, **kwargs: Any
-) -> None:
+def log_warning(logger: logging.Logger, context: str, message: str, **kwargs: Any) -> None:
     """Standardized warning logging with context."""
     context_str = f"({context})"
     if kwargs:
@@ -74,9 +66,7 @@ def log_warning(
     logger.warning("%s: %s", context_str, message)
 
 
-def log_error(
-    logger: logging.Logger, context: str, message: str, **kwargs: Any
-) -> None:
+def log_error(logger: logging.Logger, context: str, message: str, **kwargs: Any) -> None:
     """Standardized error logging with context."""
     context_str = f"({context})"
     if kwargs:

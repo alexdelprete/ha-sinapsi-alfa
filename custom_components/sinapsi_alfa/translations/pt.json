@@ -2,54 +2,156 @@
   "config": {
     "step": {
       "user": {
-        "title": "Configuração da Ligação Alfa",
-        "description": "Se precisar de ajuda com a configuração, aceda a: https://github.com/alexdelprete/ha-sinapsi-alfa",
+        "title": "Configuracao da Ligacao Alfa",
+        "description": "Se precisar de ajuda com a configuracao, aceda a: https://github.com/alexdelprete/ha-sinapsi-alfa",
         "data": {
           "name": "Nome do dispositivo (usado como prefixo dos sensores)",
-          "host": "IP ou nome do anfitrião",
+          "host": "IP ou nome do anfitriao",
           "port": "Porta TCP",
-          "scan_interval": "Intervalo de sondagem (mín: 30s máx: 600s)",
-          "timeout": "Tempo limite de ligação (mín: 5s máx: 60s)",
-          "skip_mac_detection": "Ignorar deteção MAC"
+          "scan_interval": "Intervalo de sondagem (min: 30s max: 600s)",
+          "timeout": "Tempo limite de ligacao (min: 5s max: 60s)",
+          "skip_mac_detection": "Ignorar detecao MAC"
         },
         "data_description": {
-          "skip_mac_detection": "Ativar para ligações VPN. Usa ID baseado no anfitrião em vez do endereço MAC (arranque mais rápido)."
+          "skip_mac_detection": "Ativar para ligacoes VPN. Usa ID baseado no anfitriao em vez do endereco MAC (arranque mais rapido)."
         }
       },
       "reconfigure": {
-        "title": "Reconfigurar Ligação Alfa",
-        "description": "Atualizar definições de ligação do dispositivo",
+        "title": "Reconfigurar Ligacao Alfa",
+        "description": "Atualizar definicoes de ligacao do dispositivo",
         "data": {
           "name": "Nome do dispositivo (usado como prefixo dos sensores)",
-          "host": "IP ou nome do anfitrião",
+          "host": "IP ou nome do anfitriao",
           "port": "Porta TCP",
-          "skip_mac_detection": "Ignorar deteção MAC"
+          "skip_mac_detection": "Ignorar detecao MAC"
         },
         "data_description": {
-          "skip_mac_detection": "Ativar para ligações VPN. Usa ID baseado no anfitrião em vez do endereço MAC (arranque mais rápido)."
+          "skip_mac_detection": "Ativar para ligacoes VPN. Usa ID baseado no anfitriao em vez do endereco MAC (arranque mais rapido)."
         }
       }
     },
     "error": {
-      "already_configured": "O dispositivo já está configurado",
-      "invalid_host": "Endereço do anfitrião inválido",
-      "cannot_connect": "Não é possível ligar ao dispositivo"
+      "already_configured": "O dispositivo ja esta configurado",
+      "invalid_host": "Endereco do anfitriao invalido",
+      "cannot_connect": "Nao e possivel ligar ao dispositivo"
     },
     "abort": {
-      "already_configured": "O dispositivo já está configurado",
-      "reconfigure_successful": "Reconfiguração bem-sucedida"
+      "already_configured": "O dispositivo ja esta configurado",
+      "reconfigure_successful": "Reconfiguracao bem-sucedida"
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Opções de Execução Alfa",
-        "description": "Ajustar definições de sondagem e tempo limite",
+        "title": "Opcoes de Execucao Alfa",
+        "description": "Ajustar definicoes de sondagem e tempo limite",
         "data": {
-          "scan_interval": "Intervalo de sondagem (mín: 30s máx: 600s)",
-          "timeout": "Tempo limite de ligação (mín: 5s máx: 60s)"
+          "scan_interval": "Intervalo de sondagem (min: 30s max: 600s)",
+          "timeout": "Tempo limite de ligacao (min: 5s max: 60s)"
         }
       }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "potenza_prelevata": {
+        "name": "Potencia Consumida da Rede"
+      },
+      "potenza_prelevata_media_15m": {
+        "name": "Potencia Consumida Media 15m"
+      },
+      "potenza_immessa": {
+        "name": "Potencia Injetada"
+      },
+      "potenza_immessa_media_15m": {
+        "name": "Potencia Injetada Media 15m"
+      },
+      "potenza_prodotta": {
+        "name": "Potencia Produzida"
+      },
+      "energia_prelevata": {
+        "name": "Energia Consumida da Rede"
+      },
+      "energia_immessa": {
+        "name": "Energia Injetada"
+      },
+      "energia_prodotta": {
+        "name": "Energia Produzida"
+      },
+      "energia_prelevata_giornaliera_f1": {
+        "name": "Energia Diaria Consumida F1"
+      },
+      "energia_prelevata_giornaliera_f2": {
+        "name": "Energia Diaria Consumida F2"
+      },
+      "energia_prelevata_giornaliera_f3": {
+        "name": "Energia Diaria Consumida F3"
+      },
+      "energia_prelevata_giornaliera_f4": {
+        "name": "Energia Diaria Consumida F4"
+      },
+      "energia_prelevata_giornaliera_f5": {
+        "name": "Energia Diaria Consumida F5"
+      },
+      "energia_prelevata_giornaliera_f6": {
+        "name": "Energia Diaria Consumida F6"
+      },
+      "energia_immessa_giornaliera_f1": {
+        "name": "Energia Diaria Injetada F1"
+      },
+      "energia_immessa_giornaliera_f2": {
+        "name": "Energia Diaria Injetada F2"
+      },
+      "energia_immessa_giornaliera_f3": {
+        "name": "Energia Diaria Injetada F3"
+      },
+      "energia_immessa_giornaliera_f4": {
+        "name": "Energia Diaria Injetada F4"
+      },
+      "energia_immessa_giornaliera_f5": {
+        "name": "Energia Diaria Injetada F5"
+      },
+      "energia_immessa_giornaliera_f6": {
+        "name": "Energia Diaria Injetada F6"
+      },
+      "fascia_oraria_attuale": {
+        "name": "Periodo Horario Atual"
+      },
+      "tempo_residuo_distacco": {
+        "name": "Temporizador de Desligamento"
+      },
+      "data_evento": {
+        "name": "Data do Evento"
+      },
+      "potenza_consumata": {
+        "name": "Potencia Total Consumida"
+      },
+      "potenza_auto_consumata": {
+        "name": "Potencia Autoconsumida"
+      },
+      "energia_consumata": {
+        "name": "Energia Total Consumida"
+      },
+      "energia_auto_consumata": {
+        "name": "Energia Autoconsumida"
+      }
+    }
+  },
+  "exceptions": {
+    "connection_timeout": {
+      "message": "Tempo esgotado ao ligar a {device_name}. Verifique se o dispositivo esta ligado e acessivel no endereco IP configurado."
+    },
+    "connection_failed": {
+      "message": "Falha ao ligar ao dispositivo em {host}:{port}. Verifique se o dispositivo esta online e se as definicoes de ligacao estao corretas."
+    },
+    "modbus_error": {
+      "message": "Erro de comunicacao Modbus com {device_name}. O dispositivo pode estar ocupado ou com problemas."
+    }
+  },
+  "issues": {
+    "connection_failed": {
+      "title": "Nao e possivel ligar a {device_name}",
+      "description": "A integracao nao consegue ligar ao seu dispositivo Sinapsi Alfa em {host}:{port}.\n\n**Possiveis causas:**\n- O dispositivo esta desligado ou nao ligado a rede\n- O endereco IP mudou\n- Uma firewall esta a bloquear a ligacao\n- A porta Modbus TCP (502) nao esta acessivel\n\n**Para resolver:**\n1. Verifique se o dispositivo esta ligado e conectado a sua rede\n2. Verifique o endereco IP na tabela DHCP do seu router\n3. Tente aceder diretamente a interface web do dispositivo\n4. Se o IP mudou, reconfigure a integracao com o novo endereco"
     }
   }
 }

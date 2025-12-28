@@ -1,0 +1,87 @@
+{
+  "entity": {
+    "sensor": {
+      "potenza_prelevata": {
+        "default": "mdi:transmission-tower-export"
+      },
+      "potenza_prelevata_media_15m": {
+        "default": "mdi:transmission-tower-export"
+      },
+      "potenza_immessa": {
+        "default": "mdi:transmission-tower-import"
+      },
+      "potenza_immessa_media_15m": {
+        "default": "mdi:transmission-tower-import"
+      },
+      "potenza_prodotta": {
+        "default": "mdi:solar-power-variant-outline"
+      },
+      "energia_prelevata": {
+        "default": "mdi:transmission-tower-export"
+      },
+      "energia_immessa": {
+        "default": "mdi:transmission-tower-import"
+      },
+      "energia_prodotta": {
+        "default": "mdi:solar-power-variant-outline"
+      },
+      "energia_prelevata_giornaliera_f1": {
+        "default": "mdi:transmission-tower-export"
+      },
+      "energia_prelevata_giornaliera_f2": {
+        "default": "mdi:transmission-tower-export"
+      },
+      "energia_prelevata_giornaliera_f3": {
+        "default": "mdi:transmission-tower-export"
+      },
+      "energia_prelevata_giornaliera_f4": {
+        "default": "mdi:transmission-tower-export"
+      },
+      "energia_prelevata_giornaliera_f5": {
+        "default": "mdi:transmission-tower-export"
+      },
+      "energia_prelevata_giornaliera_f6": {
+        "default": "mdi:transmission-tower-export"
+      },
+      "energia_immessa_giornaliera_f1": {
+        "default": "mdi:transmission-tower-import"
+      },
+      "energia_immessa_giornaliera_f2": {
+        "default": "mdi:transmission-tower-import"
+      },
+      "energia_immessa_giornaliera_f3": {
+        "default": "mdi:transmission-tower-import"
+      },
+      "energia_immessa_giornaliera_f4": {
+        "default": "mdi:transmission-tower-import"
+      },
+      "energia_immessa_giornaliera_f5": {
+        "default": "mdi:transmission-tower-import"
+      },
+      "energia_immessa_giornaliera_f6": {
+        "default": "mdi:transmission-tower-import"
+      },
+      "fascia_oraria_attuale": {
+        "default": "mdi:clock-time-four-outline"
+      },
+      "tempo_residuo_distacco": {
+        "default": "mdi:timer-outline"
+      },
+      "data_evento": {
+        "default": "mdi:calendar-outline"
+      },
+      "potenza_consumata": {
+        "default": "mdi:home-lightning-bolt-outline"
+      },
+      "potenza_auto_consumata": {
+        "default": "mdi:home-lightning-bolt-outline"
+      },
+      "energia_consumata": {
+        "default": "mdi:home-lightning-bolt-outline"
+      },
+      "energia_auto_consumata": {
+        "default": "mdi:home-lightning-bolt-outline"
+      }
+    }
+  }
+}

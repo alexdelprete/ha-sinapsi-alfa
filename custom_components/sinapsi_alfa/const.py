@@ -155,6 +155,7 @@ SENSOR_ENTITIES = [
         "unit": UnitOfEnergy.KILO_WATT_HOUR,
         "modbus_type": "uint32",
         "modbus_addr": 30,
+        "disabled_by_default": True,
     },
     {
         "name": "Energia Prelevata Giornaliera F2",
@@ -165,6 +166,7 @@ SENSOR_ENTITIES = [
         "unit": UnitOfEnergy.KILO_WATT_HOUR,
         "modbus_type": "uint32",
         "modbus_addr": 32,
+        "disabled_by_default": True,
     },
     {
         "name": "Energia Prelevata Giornaliera F3",
@@ -175,6 +177,7 @@ SENSOR_ENTITIES = [
         "unit": UnitOfEnergy.KILO_WATT_HOUR,
         "modbus_type": "uint32",
         "modbus_addr": 34,
+        "disabled_by_default": True,
     },
     {
         "name": "Energia Prelevata Giornaliera F4",
@@ -185,6 +188,7 @@ SENSOR_ENTITIES = [
         "unit": UnitOfEnergy.KILO_WATT_HOUR,
         "modbus_type": "uint32",
         "modbus_addr": 36,
+        "disabled_by_default": True,
     },
     {
         "name": "Energia Prelevata Giornaliera F5",
@@ -195,6 +199,7 @@ SENSOR_ENTITIES = [
         "unit": UnitOfEnergy.KILO_WATT_HOUR,
         "modbus_type": "uint32",
         "modbus_addr": 38,
+        "disabled_by_default": True,
     },
     {
         "name": "Energia Prelevata Giornaliera F6",
@@ -205,6 +210,7 @@ SENSOR_ENTITIES = [
         "unit": UnitOfEnergy.KILO_WATT_HOUR,
         "modbus_type": "uint32",
         "modbus_addr": 40,
+        "disabled_by_default": True,
     },
     {
         "name": "Energia Immessa Giornaliera F1",
@@ -215,6 +221,7 @@ SENSOR_ENTITIES = [
         "unit": UnitOfEnergy.KILO_WATT_HOUR,
         "modbus_type": "uint32",
         "modbus_addr": 54,
+        "disabled_by_default": True,
     },
     {
         "name": "Energia Immessa Giornaliera F2",
@@ -225,6 +232,7 @@ SENSOR_ENTITIES = [
         "unit": UnitOfEnergy.KILO_WATT_HOUR,
         "modbus_type": "uint32",
         "modbus_addr": 56,
+        "disabled_by_default": True,
     },
     {
         "name": "Energia Immessa Giornaliera F3",
@@ -235,6 +243,7 @@ SENSOR_ENTITIES = [
         "unit": UnitOfEnergy.KILO_WATT_HOUR,
         "modbus_type": "uint32",
         "modbus_addr": 58,
+        "disabled_by_default": True,
     },
     {
         "name": "Energia Immessa Giornaliera F4",
@@ -245,6 +254,7 @@ SENSOR_ENTITIES = [
         "unit": UnitOfEnergy.KILO_WATT_HOUR,
         "modbus_type": "uint32",
         "modbus_addr": 60,
+        "disabled_by_default": True,
     },
     {
         "name": "Energia Immessa Giornaliera F5",
@@ -255,6 +265,7 @@ SENSOR_ENTITIES = [
         "unit": UnitOfEnergy.KILO_WATT_HOUR,
         "modbus_type": "uint32",
         "modbus_addr": 62,
+        "disabled_by_default": True,
     },
     {
         "name": "Energia Immessa Giornaliera F6",
@@ -265,6 +276,7 @@ SENSOR_ENTITIES = [
         "unit": UnitOfEnergy.KILO_WATT_HOUR,
         "modbus_type": "uint32",
         "modbus_addr": 64,
+        "disabled_by_default": True,
     },
     {
         "name": "Fascia Oraria Attuale",

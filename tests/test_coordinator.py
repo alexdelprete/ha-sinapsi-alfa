@@ -163,9 +163,7 @@ async def test_coordinator_update_failure(
         autospec=True,
     ) as mock_api_class:
         mock_api = mock_api_class.return_value
-        mock_api.async_get_data = AsyncMock(
-            side_effect=Exception("Connection timeout")
-        )
+        mock_api.async_get_data = AsyncMock(side_effect=Exception("Connection timeout"))
 
         coordinator = SinapsiAlfaCoordinator(hass, entry)
 

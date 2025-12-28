@@ -1,0 +1,157 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Configuracion de Conexion Alfa",
+        "description": "Si necesita ayuda con la configuracion, visite: https://github.com/alexdelprete/ha-sinapsi-alfa",
+        "data": {
+          "name": "Nombre del dispositivo (usado como prefijo de sensores)",
+          "host": "IP o nombre de host",
+          "port": "Puerto TCP",
+          "scan_interval": "Intervalo de sondeo (min: 30s max: 600s)",
+          "timeout": "Tiempo de espera de conexion (min: 5s max: 60s)",
+          "skip_mac_detection": "Omitir deteccion MAC"
+        },
+        "data_description": {
+          "skip_mac_detection": "Activar para conexiones VPN. Usa ID basado en host en lugar de direccion MAC (inicio mas rapido)."
+        }
+      },
+      "reconfigure": {
+        "title": "Reconfigurar Conexion Alfa",
+        "description": "Actualizar configuracion de conexion del dispositivo",
+        "data": {
+          "name": "Nombre del dispositivo (usado como prefijo de sensores)",
+          "host": "IP o nombre de host",
+          "port": "Puerto TCP",
+          "skip_mac_detection": "Omitir deteccion MAC"
+        },
+        "data_description": {
+          "skip_mac_detection": "Activar para conexiones VPN. Usa ID basado en host en lugar de direccion MAC (inicio mas rapido)."
+        }
+      }
+    },
+    "error": {
+      "already_configured": "El dispositivo ya esta configurado",
+      "invalid_host": "Direccion de host invalida",
+      "cannot_connect": "No se puede conectar al dispositivo"
+    },
+    "abort": {
+      "already_configured": "El dispositivo ya esta configurado",
+      "reconfigure_successful": "Reconfiguracion exitosa"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opciones de Ejecucion Alfa",
+        "description": "Ajustar configuracion de sondeo y tiempo de espera",
+        "data": {
+          "scan_interval": "Intervalo de sondeo (min: 30s max: 600s)",
+          "timeout": "Tiempo de espera de conexion (min: 5s max: 60s)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "potenza_prelevata": {
+        "name": "Potencia Consumida de Red"
+      },
+      "potenza_prelevata_media_15m": {
+        "name": "Potencia Consumida Prom 15m"
+      },
+      "potenza_immessa": {
+        "name": "Potencia Inyectada"
+      },
+      "potenza_immessa_media_15m": {
+        "name": "Potencia Inyectada Prom 15m"
+      },
+      "potenza_prodotta": {
+        "name": "Potencia Producida"
+      },
+      "energia_prelevata": {
+        "name": "Energia Consumida de Red"
+      },
+      "energia_immessa": {
+        "name": "Energia Inyectada"
+      },
+      "energia_prodotta": {
+        "name": "Energia Producida"
+      },
+      "energia_prelevata_giornaliera_f1": {
+        "name": "Energia Diaria Consumida F1"
+      },
+      "energia_prelevata_giornaliera_f2": {
+        "name": "Energia Diaria Consumida F2"
+      },
+      "energia_prelevata_giornaliera_f3": {
+        "name": "Energia Diaria Consumida F3"
+      },
+      "energia_prelevata_giornaliera_f4": {
+        "name": "Energia Diaria Consumida F4"
+      },
+      "energia_prelevata_giornaliera_f5": {
+        "name": "Energia Diaria Consumida F5"
+      },
+      "energia_prelevata_giornaliera_f6": {
+        "name": "Energia Diaria Consumida F6"
+      },
+      "energia_immessa_giornaliera_f1": {
+        "name": "Energia Diaria Inyectada F1"
+      },
+      "energia_immessa_giornaliera_f2": {
+        "name": "Energia Diaria Inyectada F2"
+      },
+      "energia_immessa_giornaliera_f3": {
+        "name": "Energia Diaria Inyectada F3"
+      },
+      "energia_immessa_giornaliera_f4": {
+        "name": "Energia Diaria Inyectada F4"
+      },
+      "energia_immessa_giornaliera_f5": {
+        "name": "Energia Diaria Inyectada F5"
+      },
+      "energia_immessa_giornaliera_f6": {
+        "name": "Energia Diaria Inyectada F6"
+      },
+      "fascia_oraria_attuale": {
+        "name": "Franja Horaria Actual"
+      },
+      "tempo_residuo_distacco": {
+        "name": "Temporizador de Desconexion"
+      },
+      "data_evento": {
+        "name": "Fecha del Evento"
+      },
+      "potenza_consumata": {
+        "name": "Potencia Total Consumida"
+      },
+      "potenza_auto_consumata": {
+        "name": "Potencia Autoconsumida"
+      },
+      "energia_consumata": {
+        "name": "Energia Total Consumida"
+      },
+      "energia_auto_consumata": {
+        "name": "Energia Autoconsumida"
+      }
+    }
+  },
+  "exceptions": {
+    "connection_timeout": {
+      "message": "Tiempo de espera agotado al conectar con {device_name}. Verifique que el dispositivo este encendido y sea accesible en la direccion IP configurada."
+    },
+    "connection_failed": {
+      "message": "Error al conectar con el dispositivo en {host}:{port}. Verifique que el dispositivo este en linea y que la configuracion de conexion sea correcta."
+    },
+    "modbus_error": {
+      "message": "Error de comunicacion Modbus con {device_name}. El dispositivo puede estar ocupado o experimentando problemas."
+    }
+  },
+  "issues": {
+    "connection_failed": {
+      "title": "No se puede conectar a {device_name}",
+      "description": "La integracion no puede conectarse a su dispositivo Sinapsi Alfa en {host}:{port}.\n\n**Posibles causas:**\n- El dispositivo esta apagado o no conectado a la red\n- La direccion IP ha cambiado\n- Un firewall esta bloqueando la conexion\n- El puerto Modbus TCP (502) no es accesible\n\n**Para resolver:**\n1. Verifique que el dispositivo este encendido y conectado a su red\n2. Compruebe la direccion IP en la tabla DHCP de su router\n3. Intente acceder directamente a la interfaz web del dispositivo\n4. Si la IP ha cambiado, reconfigure la integracion con la nueva direccion"
+    }
+  }
+}

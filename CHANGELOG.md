@@ -101,7 +101,7 @@ TBD
 
 **Full Changelog:** [v1.1.7...v1.1.8](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.1.7...v1.1.8)
 
----
+______________________________________________________________________
 
 ## [1.1.7] - 2025-12-19
 
@@ -115,7 +115,7 @@ TBD
 
 **Full Changelog:** [v1.1.6...v1.1.7](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.1.6...v1.1.7)
 
----
+______________________________________________________________________
 
 ## [1.1.6] - 2025-12-19
 
@@ -129,7 +129,7 @@ TBD
 
 **Full Changelog:** [v1.1.5...v1.1.6](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.1.5...v1.1.6)
 
----
+______________________________________________________________________
 
 ## [1.1.5] - 2025-12-18
 
@@ -146,7 +146,7 @@ Thanks to the ModbusLink developer ([@Miraitowa-la](https://github.com/Miraitowa
 
 **Full Changelog:** [v1.1.4...v1.1.5](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.1.4...v1.1.5)
 
----
+______________________________________________________________________
 
 ## [1.1.4] - 2025-12-18
 
@@ -161,7 +161,7 @@ Thanks to the ModbusLink developer ([@Miraitowa-la](https://github.com/Miraitowa
 
 **Full Changelog:** [v1.1.3...v1.1.4](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.1.3...v1.1.4)
 
----
+______________________________________________________________________
 
 ## [1.1.3] - 2025-12-18
 
@@ -175,7 +175,7 @@ Thanks to the ModbusLink developer ([@Miraitowa-la](https://github.com/Miraitowa
 
 **Full Changelog:** [v1.1.2...v1.1.3](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.1.2...v1.1.3)
 
----
+______________________________________________________________________
 
 ## [1.1.2] - 2025-12-18
 
@@ -195,7 +195,7 @@ Thanks to the ModbusLink developer ([@Miraitowa-la](https://github.com/Miraitowa
 
 **Full Changelog:** [v1.1.1...v1.1.2](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.1.1...v1.1.2)
 
----
+______________________________________________________________________
 
 ## [1.1.1] - 2025-12-18
 
@@ -216,7 +216,7 @@ Thanks to Lorenzo Canale ([@lorenzocanalelc](https://github.com/lorenzocanalelc)
 
 **Full Changelog:** [v1.1.0...v1.1.1](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.1.0...v1.1.1)
 
----
+______________________________________________________________________
 
 ## [1.1.0] - 2025-12-17
 
@@ -238,7 +238,7 @@ Thanks to Lorenzo Canale ([@lorenzocanalelc](https://github.com/lorenzocanalelc)
 
 **Full Changelog:** [v1.0.1...v1.1.0](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.0.1...v1.1.0)
 
----
+______________________________________________________________________
 
 ## [1.0.1] - 2025-12-11
 
@@ -254,7 +254,7 @@ Thanks to Marco Lusini ([@met67](https://github.com/met67)) for reporting.
 
 **Full Changelog:** [v1.0.0...v1.0.1](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.0.0...v1.0.1)
 
----
+______________________________________________________________________
 
 ## [1.0.0] - 2025-12-07
 
@@ -292,7 +292,7 @@ Thanks to Marco Lusini ([@met67](https://github.com/met67)) for reporting.
 
 **Full Changelog:** [v0.5.0...v1.0.0](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v0.5.0...v1.0.0)
 
----
+______________________________________________________________________
 
 ## [1.0.0-beta.4] - 2025-12-07
 
@@ -310,7 +310,7 @@ ModbusLink is in **Alpha status** (Development Status 3). This release requires 
 
 **Full Changelog:** [v1.0.0-beta.3...v1.0.0-beta.4](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.0.0-beta.3...v1.0.0-beta.4)
 
----
+______________________________________________________________________
 
 ## [1.0.0-beta.3] - 2025-12-07
 
@@ -328,7 +328,7 @@ ModbusLink is in **Alpha status** (Development Status 3). This release requires 
 
 **Full Changelog:** [v1.0.0-beta.2...v1.0.0-beta.3](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.0.0-beta.2...v1.0.0-beta.3)
 
----
+______________________________________________________________________
 
 ## [1.0.0-beta.2] - 2025-12-07
 
@@ -359,7 +359,7 @@ ModbusLink is in **Alpha status** (Development Status 3). This release requires 
 
 **Full Changelog:** [v1.0.0-beta.1...v1.0.0-beta.2](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.0.0-beta.1...v1.0.0-beta.2)
 
----
+______________________________________________________________________
 
 ## [1.0.0-beta.1] - 2025-12-06
 
@@ -385,7 +385,7 @@ ModbusLink is in **Alpha status** (Development Status 3). This release requires 
 
 **Full Changelog:** [v0.5.0...v1.0.0-beta.1](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v0.5.0...v1.0.0-beta.1)
 
----
+______________________________________________________________________
 
 ## [0.5.0] - 2025-10-15
 
@@ -426,7 +426,7 @@ Official stable release with Python 3.13 support, Home Assistant 2025.10 compati
 
 **Full Changelog:** [v0.4.2...v0.5.0](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v0.4.2...v0.5.0)
 
----
+______________________________________________________________________
 
 ## [0.5.0-beta.1] - 2025-10-12
 
@@ -459,7 +459,7 @@ All Sinapsi-specific features remain unchanged: Modbus addresses, Italian sensor
 
 **Full Changelog:** [v0.4.2...v0.5.0-beta.1](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v0.4.2...v0.5.0-beta.1)
 
----
+______________________________________________________________________
 
 ## [0.4.2] - 2025-09-22
 
@@ -491,25 +491,25 @@ Stable release with pymodbus 3.11.1 compatibility and improved MAC address detec
 
 **Full Changelog:** [v0.4.1...v0.4.2](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v0.4.1...v0.4.2)
 
----
+______________________________________________________________________
 
-[1.1.10]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.10
-[1.1.9]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.9
-[1.1.8]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.8
-[1.1.7]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.7
-[1.1.6]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.6
-[1.1.5]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.5
-[1.1.4]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.4
-[1.1.3]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.3
-[1.1.2]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.2
-[1.1.1]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.1
-[1.1.0]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.0
-[1.0.1]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.0.1
-[1.0.0]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.0.0
-[1.0.0-beta.4]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.0.0-beta.4
-[1.0.0-beta.3]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.0.0-beta.3
-[1.0.0-beta.2]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.0.0-beta.2
-[1.0.0-beta.1]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.0.0-beta.1
+[0.4.2]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v0.4.2
 [0.5.0]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v0.5.0
 [0.5.0-beta.1]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v0.5.0-beta.1
-[0.4.2]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v0.4.2
+[1.0.0]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.0.0
+[1.0.0-beta.1]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.0.0-beta.1
+[1.0.0-beta.2]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.0.0-beta.2
+[1.0.0-beta.3]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.0.0-beta.3
+[1.0.0-beta.4]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.0.0-beta.4
+[1.0.1]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.0.1
+[1.1.0]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.0
+[1.1.1]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.1
+[1.1.10]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.10
+[1.1.2]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.2
+[1.1.3]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.3
+[1.1.4]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.4
+[1.1.5]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.5
+[1.1.6]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.6
+[1.1.7]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.7
+[1.1.8]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.8
+[1.1.9]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.9

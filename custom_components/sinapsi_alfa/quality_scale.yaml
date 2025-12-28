@@ -105,9 +105,7 @@ rules:
     comment: Integration does not require authentication credentials.
 
   # Rule: Above 95% test coverage for all integration modules
-  test-coverage:
-    status: todo
-    comment: Test suite created (config_flow, coordinator, api). Run coverage to verify >95%.
+  test-coverage: done  # Tests for all modules: init, sensor, helpers, config_flow, coordinator, api
 
   # ============================================================================
   # GOLD TIER (20 rules) - Best user experience
@@ -117,9 +115,7 @@ rules:
   devices: done  # Creates device with manufacturer, model, MAC address
 
   # Rule: Implements diagnostics
-  diagnostics:
-    status: todo
-    comment: Implement diagnostics.py for debug information.
+  diagnostics: done  # diagnostics.py provides downloadable debug info
 
   # Rule: Devices can be discovered
   discovery:
@@ -135,14 +131,10 @@ rules:
   docs-data-update: done  # README explains polling via Modbus TCP
 
   # Rule: The documentation provides automation examples
-  docs-examples:
-    status: todo
-    comment: Add example automations for energy monitoring.
+  docs-examples: done  # README includes 3 automation examples (solar surplus, daily report, appliances)
 
   # Rule: The documentation describes known limitations
-  docs-known-limitations:
-    status: todo
-    comment: Document limitations (single device, Italian market focus).
+  docs-known-limitations: done  # README documents 6 limitations (single device, Italian focus, etc.)
 
   # Rule: The documentation describes known supported / unsupported devices
   docs-supported-devices: done  # README specifies Sinapsi Alfa device
@@ -151,14 +143,10 @@ rules:
   docs-supported-functions: done  # README lists all 24 sensors
 
   # Rule: The documentation provides troubleshooting information
-  docs-troubleshooting:
-    status: todo
-    comment: Add troubleshooting section for common issues.
+  docs-troubleshooting: done  # README includes debug logging, log viewing, issue reporting
 
   # Rule: The documentation describes use cases
-  docs-use-cases:
-    status: todo
-    comment: Document energy monitoring use cases.
+  docs-use-cases: done  # README documents energy dashboard, billing, HA Energy Dashboard
 
   # Rule: Devices added after integration setup
   dynamic-devices:
@@ -172,32 +160,22 @@ rules:
   entity-device-class: done  # Uses POWER, ENERGY device classes
 
   # Rule: Integration disables less popular (or noisy) entities
-  entity-disabled-by-default:
-    status: todo
-    comment: Consider disabling time band sensors by default.
+  entity-disabled-by-default: done  # F1-F6 time band sensors disabled by default
 
   # Rule: Entities have translated names
-  entity-translations:
-    status: exempt
-    comment: Uses Italian names intentionally for Italian market.
+  entity-translations: done  # 10 languages: de, en, es, et, fi, fr, it, nb, pt, sv
 
   # Rule: Exception messages are translatable
-  exception-translations:
-    status: todo
-    comment: Add translation keys for error messages.
+  exception-translations: done  # exceptions section in all 10 translation files
 
   # Rule: Entities implement icon translations
-  icon-translations:
-    status: todo
-    comment: Add icons.json for entity icons.
+  icon-translations: done  # icons.json defines icons for all 24 sensors
 
   # Rule: Integrations should have a reconfigure flow
   reconfiguration-flow: done  # Reconfigure flow for host/port changes
 
   # Rule: Repair issues and repair flows are used when user intervention is needed
-  repair-issues:
-    status: todo
-    comment: Implement repair issues for connection problems.
+  repair-issues: done  # Creates repair issue after 3 consecutive connection failures
 
   # Rule: Stale devices are removed
   stale-devices:

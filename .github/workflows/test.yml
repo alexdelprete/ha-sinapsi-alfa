@@ -29,7 +29,7 @@ jobs:
             --cov=custom_components/sinapsi_alfa \
             --cov-report=term-missing \
             --cov-report=xml \
-            --cov-fail-under=85 \
+            --cov-fail-under=95 \
             -v
 
       - name: Upload coverage to Codecov

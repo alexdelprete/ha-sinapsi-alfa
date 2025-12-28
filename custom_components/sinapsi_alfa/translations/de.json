@@ -1,0 +1,157 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Alfa-Verbindungskonfiguration",
+        "description": "Wenn Sie Hilfe bei der Konfiguration benotigen, besuchen Sie: https://github.com/alexdelprete/ha-sinapsi-alfa",
+        "data": {
+          "name": "Geratename (wird als Sensorprafix verwendet)",
+          "host": "IP oder Hostname",
+          "port": "TCP-Port",
+          "scan_interval": "Abfrageintervall (min: 30s max: 600s)",
+          "timeout": "Verbindungs-Timeout (min: 5s max: 60s)",
+          "skip_mac_detection": "MAC-Erkennung uberspringen"
+        },
+        "data_description": {
+          "skip_mac_detection": "Fur VPN-Verbindungen aktivieren. Verwendet hostbasierte Gerate-ID anstelle der MAC-Adresse (schnellerer Start)."
+        }
+      },
+      "reconfigure": {
+        "title": "Alfa-Verbindung neu konfigurieren",
+        "description": "Geraeteverbindungseinstellungen aktualisieren",
+        "data": {
+          "name": "Geratename (wird als Sensorprafix verwendet)",
+          "host": "IP oder Hostname",
+          "port": "TCP-Port",
+          "skip_mac_detection": "MAC-Erkennung uberspringen"
+        },
+        "data_description": {
+          "skip_mac_detection": "Fur VPN-Verbindungen aktivieren. Verwendet hostbasierte Gerate-ID anstelle der MAC-Adresse (schnellerer Start)."
+        }
+      }
+    },
+    "error": {
+      "already_configured": "Gerat ist bereits konfiguriert",
+      "invalid_host": "Ungultige Hostadresse",
+      "cannot_connect": "Verbindung zum Gerat nicht moglich"
+    },
+    "abort": {
+      "already_configured": "Gerat ist bereits konfiguriert",
+      "reconfigure_successful": "Neukonfiguration erfolgreich"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Alfa-Laufzeitoptionen",
+        "description": "Abfrage- und Timeout-Einstellungen anpassen",
+        "data": {
+          "scan_interval": "Abfrageintervall (min: 30s max: 600s)",
+          "timeout": "Verbindungs-Timeout (min: 5s max: 60s)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "potenza_prelevata": {
+        "name": "Netzbezug Leistung"
+      },
+      "potenza_prelevata_media_15m": {
+        "name": "Netzbezug Leistung Mittel 15m"
+      },
+      "potenza_immessa": {
+        "name": "Einspeisung Leistung"
+      },
+      "potenza_immessa_media_15m": {
+        "name": "Einspeisung Leistung Mittel 15m"
+      },
+      "potenza_prodotta": {
+        "name": "Erzeugte Leistung"
+      },
+      "energia_prelevata": {
+        "name": "Netzbezug Energie"
+      },
+      "energia_immessa": {
+        "name": "Einspeisung Energie"
+      },
+      "energia_prodotta": {
+        "name": "Erzeugte Energie"
+      },
+      "energia_prelevata_giornaliera_f1": {
+        "name": "Tagesenergie Bezug F1"
+      },
+      "energia_prelevata_giornaliera_f2": {
+        "name": "Tagesenergie Bezug F2"
+      },
+      "energia_prelevata_giornaliera_f3": {
+        "name": "Tagesenergie Bezug F3"
+      },
+      "energia_prelevata_giornaliera_f4": {
+        "name": "Tagesenergie Bezug F4"
+      },
+      "energia_prelevata_giornaliera_f5": {
+        "name": "Tagesenergie Bezug F5"
+      },
+      "energia_prelevata_giornaliera_f6": {
+        "name": "Tagesenergie Bezug F6"
+      },
+      "energia_immessa_giornaliera_f1": {
+        "name": "Tagesenergie Einspeisung F1"
+      },
+      "energia_immessa_giornaliera_f2": {
+        "name": "Tagesenergie Einspeisung F2"
+      },
+      "energia_immessa_giornaliera_f3": {
+        "name": "Tagesenergie Einspeisung F3"
+      },
+      "energia_immessa_giornaliera_f4": {
+        "name": "Tagesenergie Einspeisung F4"
+      },
+      "energia_immessa_giornaliera_f5": {
+        "name": "Tagesenergie Einspeisung F5"
+      },
+      "energia_immessa_giornaliera_f6": {
+        "name": "Tagesenergie Einspeisung F6"
+      },
+      "fascia_oraria_attuale": {
+        "name": "Aktuelles Zeitband"
+      },
+      "tempo_residuo_distacco": {
+        "name": "Abschalt-Timer"
+      },
+      "data_evento": {
+        "name": "Ereignisdatum"
+      },
+      "potenza_consumata": {
+        "name": "Verbrauchte Leistung"
+      },
+      "potenza_auto_consumata": {
+        "name": "Eigenverbrauch Leistung"
+      },
+      "energia_consumata": {
+        "name": "Verbrauchte Energie"
+      },
+      "energia_auto_consumata": {
+        "name": "Eigenverbrauch Energie"
+      }
+    }
+  },
+  "exceptions": {
+    "connection_timeout": {
+      "message": "Zeituberschreitung bei der Verbindung zu {device_name}. Prufen Sie, ob das Gerat eingeschaltet und unter der konfigurierten IP-Adresse erreichbar ist."
+    },
+    "connection_failed": {
+      "message": "Verbindung zu Gerat auf {host}:{port} fehlgeschlagen. Stellen Sie sicher, dass das Gerat online ist und die Verbindungseinstellungen korrekt sind."
+    },
+    "modbus_error": {
+      "message": "Modbus-Kommunikationsfehler mit {device_name}. Das Gerat ist moglicherweise beschaftigt oder hat Probleme."
+    }
+  },
+  "issues": {
+    "connection_failed": {
+      "title": "Verbindung zu {device_name} nicht moglich",
+      "description": "Die Integration kann keine Verbindung zu Ihrem Sinapsi Alfa-Gerat unter {host}:{port} herstellen.\n\n**Mogliche Ursachen:**\n- Das Gerat ist ausgeschaltet oder nicht mit dem Netzwerk verbunden\n- Die IP-Adresse hat sich geandert\n- Eine Firewall blockiert die Verbindung\n- Der Modbus-TCP-Port (502) ist nicht zuganglich\n\n**Zur Losung:**\n1. Prufen Sie, ob das Gerat eingeschaltet und mit Ihrem Netzwerk verbunden ist\n2. Uberprufen Sie die IP-Adresse in der DHCP-Tabelle Ihres Routers\n3. Versuchen Sie, direkt auf die Weboberflache des Gerats zuzugreifen\n4. Wenn sich die IP geandert hat, konfigurieren Sie die Integration mit der neuen Adresse neu"
+    }
+  }
+}

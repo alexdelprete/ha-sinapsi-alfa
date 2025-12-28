@@ -1,0 +1,157 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Alfa-yhteyden maaritys",
+        "description": "Jos tarvitset apua maarityksessa, kay osoitteessa: https://github.com/alexdelprete/ha-sinapsi-alfa",
+        "data": {
+          "name": "Laitteen nimi (kaytetaan anturien etuliitteena)",
+          "host": "IP tai isantanimi",
+          "port": "TCP-portti",
+          "scan_interval": "Kyselyvali (min: 30s max: 600s)",
+          "timeout": "Yhteyden aikakatkaisu (min: 5s max: 60s)",
+          "skip_mac_detection": "Ohita MAC-tunnistus"
+        },
+        "data_description": {
+          "skip_mac_detection": "Ota kayttoon VPN-yhteyksia varten. Kayttaa isantapohjaista laitetunnusta MAC-osoitteen sijaan (nopeampi kaynnistys)."
+        }
+      },
+      "reconfigure": {
+        "title": "Maarita Alfa-yhteys uudelleen",
+        "description": "Paivita laitteen yhteysasetukset",
+        "data": {
+          "name": "Laitteen nimi (kaytetaan anturien etuliitteena)",
+          "host": "IP tai isantanimi",
+          "port": "TCP-portti",
+          "skip_mac_detection": "Ohita MAC-tunnistus"
+        },
+        "data_description": {
+          "skip_mac_detection": "Ota kayttoon VPN-yhteyksia varten. Kayttaa isantapohjaista laitetunnusta MAC-osoitteen sijaan (nopeampi kaynnistys)."
+        }
+      }
+    },
+    "error": {
+      "already_configured": "Laite on jo maaritetty",
+      "invalid_host": "Virheellinen isantaosoite",
+      "cannot_connect": "Laitteeseen ei saada yhteytta"
+    },
+    "abort": {
+      "already_configured": "Laite on jo maaritetty",
+      "reconfigure_successful": "Uudelleenmaaritys onnistui"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Alfa-ajonaikaiset asetukset",
+        "description": "Saada kysely- ja aikakatkaisuasetuksia",
+        "data": {
+          "scan_interval": "Kyselyvali (min: 30s max: 600s)",
+          "timeout": "Yhteyden aikakatkaisu (min: 5s max: 60s)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "potenza_prelevata": {
+        "name": "Verkosta otettu teho"
+      },
+      "potenza_prelevata_media_15m": {
+        "name": "Verkosta otettu teho ka 15m"
+      },
+      "potenza_immessa": {
+        "name": "Verkkoon syotetty teho"
+      },
+      "potenza_immessa_media_15m": {
+        "name": "Verkkoon syotetty teho ka 15m"
+      },
+      "potenza_prodotta": {
+        "name": "Tuotettu teho"
+      },
+      "energia_prelevata": {
+        "name": "Verkosta otettu energia"
+      },
+      "energia_immessa": {
+        "name": "Verkkoon syotetty energia"
+      },
+      "energia_prodotta": {
+        "name": "Tuotettu energia"
+      },
+      "energia_prelevata_giornaliera_f1": {
+        "name": "Paivaenergia otettu F1"
+      },
+      "energia_prelevata_giornaliera_f2": {
+        "name": "Paivaenergia otettu F2"
+      },
+      "energia_prelevata_giornaliera_f3": {
+        "name": "Paivaenergia otettu F3"
+      },
+      "energia_prelevata_giornaliera_f4": {
+        "name": "Paivaenergia otettu F4"
+      },
+      "energia_prelevata_giornaliera_f5": {
+        "name": "Paivaenergia otettu F5"
+      },
+      "energia_prelevata_giornaliera_f6": {
+        "name": "Paivaenergia otettu F6"
+      },
+      "energia_immessa_giornaliera_f1": {
+        "name": "Paivaenergia syotetty F1"
+      },
+      "energia_immessa_giornaliera_f2": {
+        "name": "Paivaenergia syotetty F2"
+      },
+      "energia_immessa_giornaliera_f3": {
+        "name": "Paivaenergia syotetty F3"
+      },
+      "energia_immessa_giornaliera_f4": {
+        "name": "Paivaenergia syotetty F4"
+      },
+      "energia_immessa_giornaliera_f5": {
+        "name": "Paivaenergia syotetty F5"
+      },
+      "energia_immessa_giornaliera_f6": {
+        "name": "Paivaenergia syotetty F6"
+      },
+      "fascia_oraria_attuale": {
+        "name": "Nykyinen aikavyohyke"
+      },
+      "tempo_residuo_distacco": {
+        "name": "Irrotusajastin"
+      },
+      "data_evento": {
+        "name": "Tapahtuman paivamaara"
+      },
+      "potenza_consumata": {
+        "name": "Kulutettu teho"
+      },
+      "potenza_auto_consumata": {
+        "name": "Omakaytetty teho"
+      },
+      "energia_consumata": {
+        "name": "Kulutettu energia"
+      },
+      "energia_auto_consumata": {
+        "name": "Omakaytetty energia"
+      }
+    }
+  },
+  "exceptions": {
+    "connection_timeout": {
+      "message": "Yhteyden aikakatkaisu laitteeseen {device_name}. Tarkista, etta laite on paalla ja tavoitettavissa maaritetyssa IP-osoitteessa."
+    },
+    "connection_failed": {
+      "message": "Yhteys laitteeseen osoitteessa {host}:{port} epaonnistui. Tarkista, etta laite on verkossa ja yhteysasetukset ovat oikein."
+    },
+    "modbus_error": {
+      "message": "Modbus-viestintavirhe laitteen {device_name} kanssa. Laite saattaa olla varattu tai kokea ongelmia."
+    }
+  },
+  "issues": {
+    "connection_failed": {
+      "title": "Yhteyden muodostaminen laitteeseen {device_name} ei onnistu",
+      "description": "Integraatio ei voi muodostaa yhteytta Sinapsi Alfa -laitteeseesi osoitteessa {host}:{port}.\n\n**Mahdolliset syyt:**\n- Laite on pois paalta tai ei ole yhdistetty verkkoon\n- IP-osoite on muuttunut\n- Palomuuri estaa yhteyden\n- Modbus TCP -portti (502) ei ole kaytettavissa\n\n**Ratkaisemiseksi:**\n1. Tarkista, etta laite on paalla ja yhdistetty verkkoon\n2. Tarkista IP-osoite reitittimesi DHCP-taulukosta\n3. Yrita paasta suoraan laitteen verkkokayttoliittymaan\n4. Jos IP on muuttunut, maarita integraatio uudelleen uudella osoitteella"
+    }
+  }
+}

@@ -5,6 +5,7 @@ This directory contains detailed release notes for each version of the Alfa by S
 ## Structure
 
 Each release has its own markdown file named with the version number:
+
 - `v0.5.0-beta.1.md` - Beta 1 of version 0.5.0
 - `v0.5.0.md` - Stable version 0.5.0
 - `v0.6.0.md` - Future version 0.6.0
@@ -13,6 +14,7 @@ Each release has its own markdown file named with the version number:
 ## Viewing Release Notes
 
 ### For Users
+
 - **Latest release notes:** Check the [CHANGELOG.md](../../CHANGELOG.md) in the root directory
 - **Specific version details:** Browse files in this directory
 - **GitHub releases:** Visit the [repository releases page](https://github.com/alexdelprete/ha-sinapsi-alfa/releases)
@@ -24,6 +26,7 @@ Each release has its own markdown file named with the version number:
 ### 📋 Two Types of Release Notes
 
 #### 1. **Stable/Official Release Notes** (e.g., v0.5.0)
+
 **These should include ALL changes since the last stable release.**
 
 - **Scope**: Everything from the previous stable release to current
@@ -42,6 +45,7 @@ Each release has its own markdown file named with the version number:
   - Comprehensive Migration Notes
 
 #### 2. **Beta Release Notes** (e.g., v0.5.0-beta.1)
+
 **These should document only incremental changes.**
 
 - **Scope**: Only new changes in this specific beta
@@ -72,6 +76,7 @@ v0.5.0 (stable) → Documents: EVERYTHING (A+B+C+D+polish+deps)
 ```
 
 **v0.5.0.md should contain**:
+
 - Feature A, B, C, D
 - All bug fixes (B, D, and any others)
 - All dependency updates
@@ -87,28 +92,28 @@ When creating a new release, follow this workflow:
 ### For Beta Releases
 
 1. **Create beta release file**: `vX.Y.Z-beta.N.md`
-2. **Document incremental changes** since previous beta (or since last stable if beta.1)
-3. **Update CHANGELOG.md** with beta summary
-4. **Update version** in `manifest.json`
-5. **Update version** in `const.py` (VERSION constant)
-6. **Create git tag**: `git tag -a vX.Y.Z-beta.N -m "Beta N of vX.Y.Z"`
-7. **Push**: `git push && git push --tags`
-8. **Create GitHub release**: `gh release create vX.Y.Z-beta.N --prerelease`
+1. **Document incremental changes** since previous beta (or since last stable if beta.1)
+1. **Update CHANGELOG.md** with beta summary
+1. **Update version** in `manifest.json`
+1. **Update version** in `const.py` (VERSION constant)
+1. **Create git tag**: `git tag -a vX.Y.Z-beta.N -m "Beta N of vX.Y.Z"`
+1. **Push**: `git push && git push --tags`
+1. **Create GitHub release**: `gh release create vX.Y.Z-beta.N --prerelease`
 
 ### For Stable Releases
 
 1. **Create comprehensive release file**: `vX.Y.Z.md`
-2. **Document ALL changes since last stable release**:
+1. **Document ALL changes since last stable release**:
    - Review all beta release notes
    - Review all commits since last stable
    - Review all PRs merged since last stable
    - Include everything in comprehensive format
-3. **Update CHANGELOG.md** with complete summary
-4. **Update version** in `manifest.json` (remove -beta suffix)
-5. **Update version** in `const.py` (remove -beta suffix)
-6. **Create git tag**: `git tag -a vX.Y.Z -m "Release vX.Y.Z"`
-7. **Push**: `git push && git push --tags`
-8. **Create GitHub release**: `gh release create vX.Y.Z --latest`
+1. **Update CHANGELOG.md** with complete summary
+1. **Update version** in `manifest.json` (remove -beta suffix)
+1. **Update version** in `const.py` (remove -beta suffix)
+1. **Create git tag**: `git tag -a vX.Y.Z -m "Release vX.Y.Z"`
+1. **Push**: `git push && git push --tags`
+1. **Create GitHub release**: `gh release create vX.Y.Z --latest`
 
 ## Release Note Template
 
@@ -168,6 +173,7 @@ When creating a new release, follow this workflow:
 ```
 
 Each release note file should include:
+
 - Version number in title (with beta/stable indicator)
 - Release date
 - What's Changed summary (incremental for beta, comprehensive for stable)
@@ -192,6 +198,7 @@ Each release note file should include:
 ## Questions?
 
 If you have questions about the release process or documentation:
+
 - Check existing release notes as examples
 - Review [Keep a Changelog](https://keepachangelog.com/) guidelines
 - Review [Semantic Versioning](https://semver.org/) specification

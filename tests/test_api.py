@@ -49,9 +49,7 @@ def mock_client():
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=None)
         # Default: successful read returning sample data
-        mock_client.read_holding_registers = AsyncMock(
-            return_value=[0] * 40
-        )
+        mock_client.read_holding_registers = AsyncMock(return_value=[0] * 40)
         yield mock_client
 
 
@@ -167,9 +165,7 @@ class TestSinapsiConnectionError:
 
     def test_connection_error_with_details(self):
         """Test connection error with host/port details."""
-        error = SinapsiConnectionError(
-            "Connection timeout", host=TEST_HOST, port=TEST_PORT
-        )
+        error = SinapsiConnectionError("Connection timeout", host=TEST_HOST, port=TEST_PORT)
 
         assert str(error) == "Connection timeout"
         assert error.host == TEST_HOST
@@ -189,9 +185,7 @@ class TestSinapsiModbusError:
 
     def test_modbus_error_with_details(self):
         """Test Modbus error with address/operation details."""
-        error = SinapsiModbusError(
-            "Register read failed", address=100, operation="read_holding"
-        )
+        error = SinapsiModbusError("Register read failed", address=100, operation="read_holding")
 
         assert str(error) == "Register read failed"
         assert error.address == 100
@@ -375,9 +369,7 @@ class TestPortCheck:
 class TestAsyncGetData:
     """Tests for async_get_data method."""
 
-    async def test_async_get_data_port_not_available(
-        self, mock_hass, mock_transport, mock_client
-    ):
+    async def test_async_get_data_port_not_available(self, mock_hass, mock_transport, mock_client):
         """Test async_get_data when port is not available."""
         api = SinapsiAlfaAPI(
             mock_hass,
@@ -395,9 +387,7 @@ class TestAsyncGetData:
             assert "Device not active" in str(exc_info.value)
             assert api._connection_healthy is False
 
-    async def test_async_get_data_skip_mac_detection(
-        self, mock_hass, mock_transport, mock_client
-    ):
+    async def test_async_get_data_skip_mac_detection(self, mock_hass, mock_transport, mock_client):
         """Test async_get_data with MAC detection skipped."""
         api = SinapsiAlfaAPI(
             mock_hass,

@@ -6,9 +6,11 @@ https://github.com/alexdelprete/ha-sinapsi-alfa
 import logging
 from typing import Any
 
-from homeassistant.components.sensor import SensorEntity
+from homeassistant.components.sensor import SensorDeviceClass, SensorEntity, SensorStateClass
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity import EntityCategory
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from . import SinapsiAlfaConfigEntry
@@ -20,25 +22,23 @@ _LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
-    hass: HomeAssistant, config_entry: SinapsiAlfaConfigEntry, async_add_entities
-):
+    hass: HomeAssistant,
+    config_entry: SinapsiAlfaConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+) -> None:
     """Sensor Platform setup."""
 
     # This gets the data update coordinator from hass.data as specified in your __init__.py
     coordinator: SinapsiAlfaCoordinator = config_entry.runtime_data.coordinator
 
-    log_debug(
-        _LOGGER, "async_setup_entry", "Name", name=config_entry.data.get(CONF_NAME)
-    )
+    log_debug(_LOGGER, "async_setup_entry", "Name", name=config_entry.data.get(CONF_NAME))
     log_debug(
         _LOGGER,
         "async_setup_entry",
         "Manufacturer",
         manufacturer=coordinator.api.data["manufact"],
     )
-    log_debug(
-        _LOGGER, "async_setup_entry", "Model", model=coordinator.api.data["model"]
-    )
+    log_debug(_LOGGER, "async_setup_entry", "Model", model=coordinator.api.data["model"])
     log_debug(_LOGGER, "async_setup_entry", "Serial", serial=coordinator.api.data["sn"])
 
     sensors = [
@@ -50,6 +50,7 @@ async def async_setup_entry(
             sensor["device_class"],
             sensor["state_class"],
             sensor["unit"],
+            sensor.get("disabled_by_default", False),
         )
         for sensor in SENSOR_ENTITIES
         if coordinator.api.data[sensor["key"]] is not None
@@ -57,17 +58,26 @@ async def async_setup_entry(
 
     async_add_entities(sensors)
 
-    return True
-
 
 class SinapsiAlfaSensor(CoordinatorEntity, SensorEntity):
     """Representation of a Sinapsi Alfa sensor."""
 
-    def __init__(self, coordinator, name, key, icon, device_class, state_class, unit):
+    _attr_has_entity_name = True
+
+    def __init__(
+        self,
+        coordinator: SinapsiAlfaCoordinator,
+        name: str,
+        key: str,
+        icon: str | None,
+        device_class: SensorDeviceClass | None,
+        state_class: SensorStateClass | None,
+        unit: str | None,
+        disabled_by_default: bool = False,
+    ) -> None:
         """Class Initializitation."""
         super().__init__(coordinator)
         self._coordinator = coordinator
-        self._name = name
         self._key = key
         self._icon = icon
         self._device_class = device_class
@@ -78,6 +88,10 @@ class SinapsiAlfaSensor(CoordinatorEntity, SensorEntity):
         self._device_model = self._coordinator.api.data["model"]
         self._device_manufact = self._coordinator.api.data["manufact"]
         self._device_sn = self._coordinator.api.data["sn"]
+        # Use translation key for entity name (translations in translations/*.json)
+        self._attr_translation_key = key
+        # F1-F6 time band sensors disabled by default (users can enable if needed)
+        self._attr_entity_registry_enabled_default = not disabled_by_default
 
     @callback
     def _handle_coordinator_update(self) -> None:
@@ -85,53 +99,42 @@ class SinapsiAlfaSensor(CoordinatorEntity, SensorEntity):
         self._state = self._coordinator.api.data[self._key]
         self.async_write_ha_state()
         # write debug log only on first sensor to avoid spamming the log
-        if self.name == "Potenza Prelevata":
+        if self._key == "potenza_prelevata":
             log_debug(
                 _LOGGER,
                 "_handle_coordinator_update",
                 "Sensors state written to state machine",
             )
 
-    # when has_entity_name is True, the resulting entity name will be: {device_name}_{self._name}
     @property
-    def has_entity_name(self):
-        """Return the name state."""
-        return True
-
-    @property
-    def name(self):
-        """Return the name."""
-        return f"{self._name}"
-
-    @property
-    def native_unit_of_measurement(self):
+    def native_unit_of_measurement(self) -> str | None:
         """Return the unit of measurement."""
         return self._unit_of_measurement
 
     @property
-    def icon(self):
+    def icon(self) -> str | None:
         """Return the sensor icon."""
         return self._icon
 
     @property
-    def device_class(self):
+    def device_class(self) -> SensorDeviceClass | None:
         """Return the sensor device_class."""
         return self._device_class
 
     @property
-    def state_class(self):
+    def state_class(self) -> SensorStateClass | None:
         """Return the sensor state_class."""
         return self._state_class
 
     @property
-    def entity_category(self):
+    def entity_category(self) -> EntityCategory | None:
         """Return the sensor entity_category."""
         if self._state_class is None:
             return EntityCategory.DIAGNOSTIC
         return None
 
     @property
-    def native_value(self):
+    def native_value(self) -> Any:
         """Return the state of the sensor."""
         if self._key in self._coordinator.api.data:
             return self._coordinator.api.data[self._key]
@@ -153,21 +156,21 @@ class SinapsiAlfaSensor(CoordinatorEntity, SensorEntity):
         return self.coordinator.last_update_success
 
     @property
-    def unique_id(self):
+    def unique_id(self) -> str:
         """Return a unique ID to use for this entity."""
         return f"{DOMAIN}_{self._device_sn}_{self._key}"
 
     @property
-    def device_info(self):
+    def device_info(self) -> DeviceInfo:
         """Return device specific attributes."""
-        return {
-            "configuration_url": f"http://{self._device_host}",
-            "hw_version": None,
-            "identifiers": {(DOMAIN, self._device_sn)},
-            "manufacturer": self._device_manufact,
-            "model": self._device_model,
-            "name": self._device_name,
-            "serial_number": self._device_sn,
-            "sw_version": None,
-            "via_device": None,
-        }
+        return DeviceInfo(
+            configuration_url=f"http://{self._device_host}",
+            hw_version=None,
+            identifiers={(DOMAIN, self._device_sn)},
+            manufacturer=self._device_manufact,
+            model=self._device_model,
+            name=self._device_name,
+            serial_number=self._device_sn,
+            sw_version=None,
+            via_device=None,
+        )

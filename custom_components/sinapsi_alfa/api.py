@@ -11,7 +11,7 @@ import socket
 import time
 from typing import Any
 
-from getmac import getmac
+from getmac import getmac  # type: ignore[import-untyped]
 from modbuslink import (
     AsyncModbusClient,
     AsyncTcpTransport,
@@ -107,9 +107,7 @@ class SinapsiConnectionError(Exception):
 class SinapsiModbusError(Exception):
     """Sinapsi-specific Modbus error."""
 
-    def __init__(
-        self, message: str, address: int | None = None, operation: str | None = None
-    ):
+    def __init__(self, message: str, address: int | None = None, operation: str | None = None):
         """Initialize the Modbus error.
 
         Args:
@@ -167,11 +165,11 @@ class SinapsiAlfaAPI:
         )
         self._client = AsyncModbusClient(self._transport)
         self._uid = ""  # Initialize empty, will be set during first data fetch
-        self._sensors = []
-        self.data = {}
+        self._sensors: list[dict[str, Any]] = []
+        self.data: dict[str, Any] = {}
         # Connection health tracking
         self._connection_healthy = False
-        self._last_successful_read = None
+        self._last_successful_read: float | None = None
         # Protocol error tracking for early abort
         self._protocol_errors_this_cycle = 0
         # Initialize ModBus data structure before first read
@@ -191,17 +189,13 @@ class SinapsiAlfaAPI:
 
         """
         if not MIN_PORT <= port <= MAX_PORT:
-            raise ValueError(
-                f"Port {port} is out of valid range ({MIN_PORT}-{MAX_PORT})"
-            )
+            raise ValueError(f"Port {port} is out of valid range ({MIN_PORT}-{MAX_PORT})")
 
     def _initialize_data_structure(self) -> None:
         """Initialize the data structure with default values."""
         # Get sensor keys from SENSOR_ENTITIES, excluding calculated ones
         sensor_keys = [
-            sensor["key"]
-            for sensor in SENSOR_ENTITIES
-            if sensor["modbus_type"] != "calcolato"
+            sensor["key"] for sensor in SENSOR_ENTITIES if sensor["modbus_type"] != "calcolato"
         ]
 
         # Initialize sensor data with default values
@@ -277,9 +271,7 @@ class SinapsiAlfaAPI:
                         result="SUCCESS" if port_available else "FAILED",
                     )
 
-                mac_address = getmac.get_mac_address(
-                    hostname=self._host, network_request=True
-                )
+                mac_address = getmac.get_mac_address(hostname=self._host, network_request=True)
 
                 if mac_address:
                     mac_address = mac_address.replace(":", "").upper()
@@ -314,14 +306,10 @@ class SinapsiAlfaAPI:
                     delay = min(2**attempt + random.uniform(0, 1), 10)
                     await asyncio.sleep(delay)
 
-        log_debug(
-            _LOGGER, "get_mac_address", "MAC address not found after all attempts"
-        )
+        log_debug(_LOGGER, "get_mac_address", "MAC address not found after all attempts")
         # Return a fallback unique identifier based on host:port
         fallback_id = f"{self._host.replace('.', '')}_{self._port}"
-        log_debug(
-            _LOGGER, "get_mac_address", "Using fallback ID", fallback_id=fallback_id
-        )
+        log_debug(_LOGGER, "get_mac_address", "Using fallback ID", fallback_id=fallback_id)
         return fallback_id
 
     async def check_port(self) -> bool:
@@ -574,9 +562,7 @@ class SinapsiAlfaAPI:
         if reg_key == "data_evento":
             if value > MAX_EVENT_VALUE:
                 return "None"
-            return unix_timestamp_to_iso8601_local_tz(
-                value + self.data["tempo_residuo_distacco"]
-            )
+            return unix_timestamp_to_iso8601_local_tz(value + self.data["tempo_residuo_distacco"])
 
         if reg_key == "fascia_oraria_attuale":
             return f"F{value}"
@@ -732,9 +718,7 @@ class SinapsiAlfaAPI:
             # Calculate derived values
             self._calculate_derived_values()
         except Exception as error:
-            log_error(
-                _LOGGER, "read_modbus_alfa", "Failed to read modbus data", error=error
-            )
+            log_error(_LOGGER, "read_modbus_alfa", "Failed to read modbus data", error=error)
             raise SinapsiModbusError(f"Failed to read modbus data: {error}") from error
         else:
             return True

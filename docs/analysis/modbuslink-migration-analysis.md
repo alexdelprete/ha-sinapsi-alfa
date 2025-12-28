@@ -16,96 +16,102 @@ This document analyzes the feasibility of migrating the ha-sinapsi-alfa Home Ass
 
 ModbusLink is currently in **Alpha status** (Development Status 3). This migration prioritizes modern API design over production stability guarantees. A rollback strategy is included.
 
----
+______________________________________________________________________
 
 ## Library Comparison
 
-| Aspect | pymodbus | ModbusLink |
-|--------|----------|------------|
-| **Version** | 3.11.4 | 1.2.0 |
-| **Status** | Production/Stable (5) | Alpha (3) |
-| **Python** | 3.10+ | 3.9+ |
-| **First Release** | 2010+ | July 2025 |
-| **Maintainers** | 3 active | 1 |
-| **GitHub Stars** | 2000+ | 3 |
-| **HA Ecosystem** | Widely used | None |
-| **Async Support** | Yes | Native |
-| **Context Manager** | Manual | Built-in |
-| **Type Hints** | Partial | Full |
-| **Data Decoders** | Deprecated | Built-in |
+| Aspect              | pymodbus              | ModbusLink |
+| ------------------- | --------------------- | ---------- |
+| **Version**         | 3.11.4                | 1.2.0      |
+| **Status**          | Production/Stable (5) | Alpha (3)  |
+| **Python**          | 3.10+                 | 3.9+       |
+| **First Release**   | 2010+                 | July 2025  |
+| **Maintainers**     | 3 active              | 1          |
+| **GitHub Stars**    | 2000+                 | 3          |
+| **HA Ecosystem**    | Widely used           | None       |
+| **Async Support**   | Yes                   | Native     |
+| **Context Manager** | Manual                | Built-in   |
+| **Type Hints**      | Partial               | Full       |
+| **Data Decoders**   | Deprecated            | Built-in   |
 
----
+______________________________________________________________________
 
 ## Pros/Cons Analysis
 
 ### ModbusLink Advantages
 
 1. **Modern Async API Design**
+
    - Native async context manager: `async with client:`
    - Designed from ground up for asyncio
    - No legacy synchronous code paths
 
-2. **Built-in Data Type Methods**
+1. **Built-in Data Type Methods**
+
    - `read_float32()`, `read_int32()`, `read_holding_registers()`
    - No need for separate payload decoder classes
    - Configurable byte/word ordering built-in
 
-3. **Simplified Codebase**
+1. **Simplified Codebase**
+
    - Eliminates `pymodbus_payload.py` (516 lines)
    - Eliminates `pymodbus_constants.py` (147 lines)
    - Cleaner, more maintainable code
 
-4. **Clean Exception Hierarchy**
+1. **Clean Exception Hierarchy**
+
    - `ModbusLinkError` (base)
    - `ConnectionError`, `TimeoutError`
    - `CRCError`, `InvalidResponseError`
    - `ModbusException`
 
-5. **Full Type Hints**
+1. **Full Type Hints**
+
    - Complete typing throughout library
    - Better IDE support and error detection
 
-6. **Connection Pooling**
+1. **Connection Pooling**
+
    - Built-in async connection pool management
    - Better resource utilization for high-frequency polling
 
 ### ModbusLink Risks (Acknowledged)
 
 1. **Alpha Status** - Not officially production-ready
-2. **Very New Library** - First release July 2025 (~5 months old)
-3. **Minimal Adoption** - Only 3 GitHub stars
-4. **Single Maintainer** - Bus factor = 1
-5. **Limited Production Testing** - Not battle-tested
-6. **No HA Ecosystem Usage** - No other Home Assistant integrations use it
-7. **Documentation Gaps** - Some areas incomplete
-8. **Unknown Edge Cases** - May have undiscovered bugs
+1. **Very New Library** - First release July 2025 (~5 months old)
+1. **Minimal Adoption** - Only 3 GitHub stars
+1. **Single Maintainer** - Bus factor = 1
+1. **Limited Production Testing** - Not battle-tested
+1. **No HA Ecosystem Usage** - No other Home Assistant integrations use it
+1. **Documentation Gaps** - Some areas incomplete
+1. **Unknown Edge Cases** - May have undiscovered bugs
 
 ### pymodbus Advantages
 
 1. **Production Stable** - 10+ years of production use
-2. **Large Community** - Extensive testing and bug reports
-3. **HA Ecosystem Standard** - Used by many HA integrations
-4. **Active Maintenance** - 3 maintainers, regular releases
-5. **Comprehensive Documentation** - Well documented
-6. **Known Behavior** - Edge cases are documented and handled
+1. **Large Community** - Extensive testing and bug reports
+1. **HA Ecosystem Standard** - Used by many HA integrations
+1. **Active Maintenance** - 3 maintainers, regular releases
+1. **Comprehensive Documentation** - Well documented
+1. **Known Behavior** - Edge cases are documented and handled
 
 ### pymodbus Disadvantages
 
 1. **Deprecated APIs** - `BinaryPayloadDecoder` deprecated, requires local copies
-2. **Verbose Syntax** - Requires manual payload handling and decoding
-3. **Older API Design** - Not designed with modern async patterns in mind
+1. **Verbose Syntax** - Requires manual payload handling and decoding
+1. **Older API Design** - Not designed with modern async patterns in mind
 
----
+______________________________________________________________________
 
 ## Current Implementation Analysis
 
 ### Files Using pymodbus
 
-| File | Lines | Usage |
-|------|-------|-------|
-| [api.py](../../custom_components/sinapsi_alfa/api.py) | 560 | Main Modbus communication |
-| [pymodbus_constants.py](../../custom_components/sinapsi_alfa/pymodbus_constants.py) | 147 | Local copy of deprecated Endian enum |
-| [pymodbus_payload.py](../../custom_components/sinapsi_alfa/pymodbus_payload.py) | 516 | Local copy of deprecated BinaryPayloadDecoder |
+| File                                                                                | Lines | Usage                                         |
+| ----------------------------------------------------------------------------------- | ----- | --------------------------------------------- |
+| [api.py](../../custom_components/sinapsi_alfa/api.py)                               | 560   | Main Modbus communication                     |
+| [pymodbus_constants.py](../../custom_components/sinapsi_alfa/pymodbus_constants.py) | 147   | Local copy of deprecated Endian enum          |
+| [pymodbus_payload.py](../../custom_components/sinapsi_alfa/pymodbus_payload.py)     | 516   | Local copy of deprecated BinaryPayloadDecoder |
 
 ### Current Imports (api.py)
 
@@ -165,7 +171,7 @@ elif reg_type == "uint32":
     return round(float(decoder.decode_32bit_uint()), 2)
 ```
 
----
+______________________________________________________________________
 
 ## Surgical Migration Plan
 
@@ -474,27 +480,27 @@ Remove references to `pymodbus_constants.py` and `pymodbus_payload.py` from docu
 - [ ] No memory leaks
 - [ ] Error messages are clear and actionable
 
----
+______________________________________________________________________
 
 ## Risk Assessment & Mitigation
 
-| Risk | Severity | Likelihood | Mitigation |
-|------|----------|------------|------------|
-| Library bugs | HIGH | MEDIUM | Extensive testing, rollback plan |
-| API changes | MEDIUM | LOW | Pin version `>=1.2.0,<2.0.0` |
-| Maintainer abandonment | MEDIUM | LOW | Keep pymodbus branch ready |
-| HA compatibility | LOW | LOW | Test with HA betas |
-| Performance regression | LOW | LOW | Benchmark before/after |
+| Risk                   | Severity | Likelihood | Mitigation                       |
+| ---------------------- | -------- | ---------- | -------------------------------- |
+| Library bugs           | HIGH     | MEDIUM     | Extensive testing, rollback plan |
+| API changes            | MEDIUM   | LOW        | Pin version `>=1.2.0,<2.0.0`     |
+| Maintainer abandonment | MEDIUM   | LOW        | Keep pymodbus branch ready       |
+| HA compatibility       | LOW      | LOW        | Test with HA betas               |
+| Performance regression | LOW      | LOW        | Benchmark before/after           |
 
----
+______________________________________________________________________
 
 ## Rollback Strategy
 
 If critical issues arise:
 
 1. **Immediate**: Revert to previous release tag
-2. **Short-term**: Maintain `pymodbus-backup` branch
-3. **Long-term**: Keep pymodbus migration path documented
+1. **Short-term**: Maintain `pymodbus-backup` branch
+1. **Long-term**: Keep pymodbus migration path documented
 
 ### Rollback Commands
 
@@ -509,19 +515,19 @@ git tag -a v0.5.1 -m "Revert ModbusLink migration"
 git push --tags
 ```
 
----
+______________________________________________________________________
 
 ## Implementation Timeline
 
-| Phase | Description | Estimated Effort |
-|-------|-------------|------------------|
-| 1 | Preparation (branch, dependencies) | Minimal |
-| 2 | API refactoring | 2-3 hours |
-| 3 | Cleanup (delete files, update docs) | 30 minutes |
-| 4 | Testing | 2-4 hours |
-| **Total** | | **5-8 hours** |
+| Phase     | Description                         | Estimated Effort |
+| --------- | ----------------------------------- | ---------------- |
+| 1         | Preparation (branch, dependencies)  | Minimal          |
+| 2         | API refactoring                     | 2-3 hours        |
+| 3         | Cleanup (delete files, update docs) | 30 minutes       |
+| 4         | Testing                             | 2-4 hours        |
+| **Total** |                                     | **5-8 hours**    |
 
----
+______________________________________________________________________
 
 ## References
 
@@ -531,10 +537,10 @@ git push --tags
 - [pymodbus Documentation](https://pymodbus.readthedocs.io/)
 - [pymodbus PyPI](https://pypi.org/project/pymodbus/)
 
----
+______________________________________________________________________
 
 ## Document History
 
-| Date | Version | Changes |
-|------|---------|---------|
-| 2025-12-06 | 1.0 | Initial analysis document |
+| Date       | Version | Changes                   |
+| ---------- | ------- | ------------------------- |
+| 2025-12-06 | 1.0     | Initial analysis document |

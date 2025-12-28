@@ -28,6 +28,6 @@ Additional technical details, if needed
 
 Testing notes and recommendations
 
----
+______________________________________________________________________
 
 **Note:** Rename this file to `release-notes-vX.Y.Z.md` when complete and generate a fresh copy for the next release.

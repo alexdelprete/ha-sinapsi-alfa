@@ -1,0 +1,157 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Alfa-anslutningskonfiguration",
+        "description": "Om du behover hjalp med konfigurationen, besok: https://github.com/alexdelprete/ha-sinapsi-alfa",
+        "data": {
+          "name": "Enhetsnamn (anvands som sensorprefix)",
+          "host": "IP eller vardnamn",
+          "port": "TCP-port",
+          "scan_interval": "Avfragningsintervall (min: 30s max: 600s)",
+          "timeout": "Anslutningstimeout (min: 5s max: 60s)",
+          "skip_mac_detection": "Hoppa over MAC-detektering"
+        },
+        "data_description": {
+          "skip_mac_detection": "Aktivera for VPN-anslutningar. Anvander vardbaserat enhets-ID istallet for MAC-adress (snabbare start)."
+        }
+      },
+      "reconfigure": {
+        "title": "Omkonfigurera Alfa-anslutning",
+        "description": "Uppdatera enhetens anslutningsinstallningar",
+        "data": {
+          "name": "Enhetsnamn (anvands som sensorprefix)",
+          "host": "IP eller vardnamn",
+          "port": "TCP-port",
+          "skip_mac_detection": "Hoppa over MAC-detektering"
+        },
+        "data_description": {
+          "skip_mac_detection": "Aktivera for VPN-anslutningar. Anvander vardbaserat enhets-ID istallet for MAC-adress (snabbare start)."
+        }
+      }
+    },
+    "error": {
+      "already_configured": "Enheten ar redan konfigurerad",
+      "invalid_host": "Ogiltig vardadress",
+      "cannot_connect": "Kan inte ansluta till enheten"
+    },
+    "abort": {
+      "already_configured": "Enheten ar redan konfigurerad",
+      "reconfigure_successful": "Omkonfigurering lyckades"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Alfa korningsalternativ",
+        "description": "Justera avfragnings- och timeoutinstallningar",
+        "data": {
+          "scan_interval": "Avfragningsintervall (min: 30s max: 600s)",
+          "timeout": "Anslutningstimeout (min: 5s max: 60s)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "potenza_prelevata": {
+        "name": "Effekt fran nat"
+      },
+      "potenza_prelevata_media_15m": {
+        "name": "Effekt fran nat medel 15m"
+      },
+      "potenza_immessa": {
+        "name": "Effekt till nat"
+      },
+      "potenza_immessa_media_15m": {
+        "name": "Effekt till nat medel 15m"
+      },
+      "potenza_prodotta": {
+        "name": "Producerad effekt"
+      },
+      "energia_prelevata": {
+        "name": "Energi fran nat"
+      },
+      "energia_immessa": {
+        "name": "Energi till nat"
+      },
+      "energia_prodotta": {
+        "name": "Producerad energi"
+      },
+      "energia_prelevata_giornaliera_f1": {
+        "name": "Daglig energi fran nat F1"
+      },
+      "energia_prelevata_giornaliera_f2": {
+        "name": "Daglig energi fran nat F2"
+      },
+      "energia_prelevata_giornaliera_f3": {
+        "name": "Daglig energi fran nat F3"
+      },
+      "energia_prelevata_giornaliera_f4": {
+        "name": "Daglig energi fran nat F4"
+      },
+      "energia_prelevata_giornaliera_f5": {
+        "name": "Daglig energi fran nat F5"
+      },
+      "energia_prelevata_giornaliera_f6": {
+        "name": "Daglig energi fran nat F6"
+      },
+      "energia_immessa_giornaliera_f1": {
+        "name": "Daglig energi till nat F1"
+      },
+      "energia_immessa_giornaliera_f2": {
+        "name": "Daglig energi till nat F2"
+      },
+      "energia_immessa_giornaliera_f3": {
+        "name": "Daglig energi till nat F3"
+      },
+      "energia_immessa_giornaliera_f4": {
+        "name": "Daglig energi till nat F4"
+      },
+      "energia_immessa_giornaliera_f5": {
+        "name": "Daglig energi till nat F5"
+      },
+      "energia_immessa_giornaliera_f6": {
+        "name": "Daglig energi till nat F6"
+      },
+      "fascia_oraria_attuale": {
+        "name": "Aktuell tidszon"
+      },
+      "tempo_residuo_distacco": {
+        "name": "Frankopplingstimer"
+      },
+      "data_evento": {
+        "name": "Handelsedatum"
+      },
+      "potenza_consumata": {
+        "name": "Forbrukad effekt"
+      },
+      "potenza_auto_consumata": {
+        "name": "Egenforbrukad effekt"
+      },
+      "energia_consumata": {
+        "name": "Forbrukad energi"
+      },
+      "energia_auto_consumata": {
+        "name": "Egenforbrukad energi"
+      }
+    }
+  },
+  "exceptions": {
+    "connection_timeout": {
+      "message": "Timeout vid anslutning till {device_name}. Kontrollera att enheten ar paslagan och atkomlig pa den konfigurerade IP-adressen."
+    },
+    "connection_failed": {
+      "message": "Kunde inte ansluta till enheten pa {host}:{port}. Kontrollera att enheten ar online och att anslutningsinstallningarna ar korrekta."
+    },
+    "modbus_error": {
+      "message": "Modbus-kommunikationsfel med {device_name}. Enheten kan vara upptagen eller uppleva problem."
+    }
+  },
+  "issues": {
+    "connection_failed": {
+      "title": "Kan inte ansluta till {device_name}",
+      "description": "Integrationen kan inte ansluta till din Sinapsi Alfa-enhet pa {host}:{port}.\n\n**Mojliga orsaker:**\n- Enheten ar avstangd eller inte ansluten till natverket\n- IP-adressen har andrats\n- En brandvagg blockerar anslutningen\n- Modbus TCP-porten (502) ar inte atkomlig\n\n**For att losa:**\n1. Kontrollera att enheten ar paslagan och ansluten till ditt natverk\n2. Verifiera IP-adressen i din routers DHCP-tabell\n3. Forsok komma at enhetens webbgranssnitt direkt\n4. Om IP har andrats, konfigurera om integrationen med den nya adressen"
+    }
+  }
+}

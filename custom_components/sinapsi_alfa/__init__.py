@@ -41,7 +41,7 @@ class RuntimeData:
     coordinator: DataUpdateCoordinator
 
 
-async def async_setup_entry(hass: HomeAssistant, config_entry: SinapsiAlfaConfigEntry):
+async def async_setup_entry(hass: HomeAssistant, config_entry: SinapsiAlfaConfigEntry) -> bool:
     """Set up integration from a config entry."""
     log_info(_LOGGER, "async_setup_entry", STARTUP_MESSAGE)
     log_debug(_LOGGER, "async_setup_entry", "Setup config_entry", domain=DOMAIN)
@@ -59,7 +59,9 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: SinapsiAlfaConfig
     # Change this to match how your api will know if connected or successful update
     if not coordinator.api.data["sn"]:
         raise ConfigEntryNotReady(
-            f"Timeout connecting to {config_entry.data.get(CONF_NAME)}"
+            translation_domain=DOMAIN,
+            translation_key="connection_timeout",
+            translation_placeholders={"device_name": config_entry.data.get(CONF_NAME)},
         )
 
     # Store coordinator in runtime_data to make it accessible throughout the integration
@@ -78,9 +80,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: SinapsiAlfaConfig
 
 
 @callback
-def async_update_device_registry(
-    hass: HomeAssistant, config_entry: SinapsiAlfaConfigEntry
-) -> None:
+def async_update_device_registry(hass: HomeAssistant, config_entry: SinapsiAlfaConfigEntry) -> None:
     """Manual device registration."""
     coordinator: SinapsiAlfaCoordinator = config_entry.runtime_data.coordinator
     device_registry = dr.async_get(hass)
@@ -99,7 +99,7 @@ def async_update_device_registry(
 
 
 async def async_remove_config_entry_device(
-    hass: HomeAssistant, config_entry, device_entry
+    hass: HomeAssistant, config_entry: ConfigEntry, device_entry: dr.DeviceEntry
 ) -> bool:
     """Delete device if not entities."""
     if DOMAIN in device_entry.identifiers:
@@ -112,25 +112,19 @@ async def async_remove_config_entry_device(
     return True
 
 
-async def async_unload_entry(
-    hass: HomeAssistant, config_entry: SinapsiAlfaConfigEntry
-) -> bool:
+async def async_unload_entry(hass: HomeAssistant, config_entry: SinapsiAlfaConfigEntry) -> bool:
     """Unload a config entry."""
     log_debug(_LOGGER, "async_unload_entry", "Unload config_entry: started")
 
     # Unload platforms - only cleanup runtime_data if successful
     # ref.: https://developers.home-assistant.io/blog/2025/02/19/new-config-entry-states/
-    if unload_ok := await hass.config_entries.async_unload_platforms(
-        config_entry, PLATFORMS
-    ):
+    if unload_ok := await hass.config_entries.async_unload_platforms(config_entry, PLATFORMS):
         log_debug(_LOGGER, "async_unload_entry", "Platforms unloaded successfully")
         # Cleanup per-entry resources only if unload succeeded
         await config_entry.runtime_data.coordinator.api.close()
         log_debug(_LOGGER, "async_unload_entry", "Closed API connection")
     else:
-        log_debug(
-            _LOGGER, "async_unload_entry", "Platform unload failed, skipping cleanup"
-        )
+        log_debug(_LOGGER, "async_unload_entry", "Platform unload failed, skipping cleanup")
 
     log_debug(
         _LOGGER,

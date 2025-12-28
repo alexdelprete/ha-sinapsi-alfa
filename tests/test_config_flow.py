@@ -140,9 +140,7 @@ async def test_user_flow_cannot_connect(
         autospec=True,
     ) as mock_api_class:
         mock_api = mock_api_class.return_value
-        mock_api.async_get_data = AsyncMock(
-            side_effect=SinapsiConnectionError("Connection failed")
-        )
+        mock_api.async_get_data = AsyncMock(side_effect=SinapsiConnectionError("Connection failed"))
 
         result = await hass.config_entries.flow.async_init(
             DOMAIN, context={"source": config_entries.SOURCE_USER}
@@ -173,9 +171,7 @@ async def test_user_flow_modbus_error(
         autospec=True,
     ) as mock_api_class:
         mock_api = mock_api_class.return_value
-        mock_api.async_get_data = AsyncMock(
-            side_effect=SinapsiModbusError("Modbus read failed")
-        )
+        mock_api.async_get_data = AsyncMock(side_effect=SinapsiModbusError("Modbus read failed"))
 
         result = await hass.config_entries.flow.async_init(
             DOMAIN, context={"source": config_entries.SOURCE_USER}
@@ -394,9 +390,7 @@ async def test_reconfigure_flow_cannot_connect(
         autospec=True,
     ) as mock_api_class:
         mock_api = mock_api_class.return_value
-        mock_api.async_get_data = AsyncMock(
-            side_effect=SinapsiConnectionError("Connection failed")
-        )
+        mock_api.async_get_data = AsyncMock(side_effect=SinapsiConnectionError("Connection failed"))
 
         result = await hass.config_entries.flow.async_init(
             DOMAIN,

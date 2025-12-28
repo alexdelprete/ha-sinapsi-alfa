@@ -5,8 +5,8 @@
 **At every session start, you MUST:**
 
 1. Read this entire CLAUDE.md file for project context
-2. Review recent git commits to understand changes
-3. Run `git status` to see uncommitted work
+1. Review recent git commits to understand changes
+1. Run `git status` to see uncommitted work
 
 Skipping these steps causes violations of mandatory workflows, duplicated effort, and broken architectural patterns.
 
@@ -48,32 +48,37 @@ This integration is based on and aligned with [ha-abb-powerone-pvi-sunspec](http
 ### Core Components
 
 1. **`__init__.py`** - Integration lifecycle management
+
    - `async_setup_entry()` - Initialize coordinator and platforms
    - `async_unload_entry()` - Clean shutdown and resource cleanup
    - `async_migrate_entry()` - Config migration logic
    - Uses `runtime_data` for storing coordinator and update listener
 
-2. **`api.py`** - Modbus TCP communication layer (using ModbusLink)
+1. **`api.py`** - Modbus TCP communication layer (using ModbusLink)
+
    - `SinapsiAlfaAPI` class handles all Modbus operations
    - Uses `AsyncModbusClient` and `AsyncTcpTransport` from ModbusLink
    - Reads device-specific registers (power, energy, time band data)
    - Implements connection management and timeout handling
    - Custom exception handling: `SinapsiConnectionError`, `SinapsiModbusError`
 
-3. **`coordinator.py`** - Data update coordination
+1. **`coordinator.py`** - Data update coordination
+
    - `SinapsiAlfaCoordinator` manages polling cycles
    - Handles data refresh from API
    - Error handling and retry logic
    - Enforces MAX_SCAN_INTERVAL constraints
 
-4. **`config_flow.py`** - UI configuration (VERSION = 2)
+1. **`config_flow.py`** - UI configuration (VERSION = 2)
+
    - ConfigFlow for initial setup (stores data + options separately)
    - OptionsFlowWithReload for runtime options (scan_interval, timeout) - auto-reloads
    - Reconfigure flow for connection settings (name, host, port, skip_mac_detection)
    - Uses `vol.Clamp()` for better UX
    - Uses `async_update_reload_and_abort()` for reconfigure
 
-5. **`sensor.py`** - Entity platform
+1. **`sensor.py`** - Entity platform
+
    - Creates 24 sensor entities from coordinator data
    - Includes 4 calculated sensors (potenza_consumata, potenza_auto_consumata, energia_consumata, energia_auto_consumata)
    - Italian sensor names for local market
@@ -208,11 +213,11 @@ This integration tracks [Home Assistant Quality Scale](https://developers.home-a
 **When implementing new features or fixing bugs:**
 
 1. Check if the change affects any quality scale rules
-2. Update `quality_scale.yaml` status accordingly:
+1. Update `quality_scale.yaml` status accordingly:
    - `done` - Rule is fully implemented
    - `todo` - Rule needs implementation
    - `exempt` with `comment` - Rule doesn't apply (explain why)
-3. Aim to complete all Bronze tier rules first, then Silver, Gold, Platinum
+1. Aim to complete all Bronze tier rules first, then Silver, Gold, Platinum
 
 ### Pre-Push Linting (MANDATORY)
 
@@ -256,26 +261,26 @@ All commands must pass without errors before committing. This applies to ALL pus
 **Example workflow:**
 
 1. Current version is 1.1.8 (unreleased, after v1.1.7 was released)
-2. User asks for fix A → Add fix A to v1.1.8, commit, push
-3. User asks for fix B → Add fix B to v1.1.8 (same version!), commit, push
-4. User says "tag and release" → Create v1.1.8 tag and release
-5. After release: Bump version to 1.1.9 for next development cycle
+1. User asks for fix A → Add fix A to v1.1.8, commit, push
+1. User asks for fix B → Add fix B to v1.1.8 (same version!), commit, push
+1. User says "tag and release" → Create v1.1.8 tag and release
+1. After release: Bump version to 1.1.9 for next development cycle
 
 ### Complete Release Workflow
 
-| Step | Tool | Action |
-|------|------|--------|
-| 1 | Edit/Write | Create/update release notes in `docs/releases/vX.Y.Z.md` |
-| 2 | Edit | Update `CHANGELOG.md` with version summary |
-| 3 | Bash | Run linting: `ruff format`, `ruff check --fix`, `mypy`, `pymarkdown scan` |
-| 4 | `commit-commands:commit` skill | Stage and commit with proper format |
-| 5 | git CLI | `git push` |
-| 6 | **⏸️ STOP** | Wait for user "tag and release" command |
-| 7 | git CLI | `git tag -a vX.Y.Z -m "Release vX.Y.Z"` |
-| 8 | git CLI | `git push --tags` |
-| 9 | gh CLI | `gh release create vX.Y.Z --title "vX.Y.Z" --notes-file docs/releases/vX.Y.Z.md` |
-| 10 | GitHub Actions | Auto-uploads `sinapsi_alfa.zip` asset |
-| 11 | Edit | Bump versions in `manifest.json` and `const.py` to next version |
+| Step | Tool                           | Action                                                                           |
+| ---- | ------------------------------ | -------------------------------------------------------------------------------- |
+| 1    | Edit/Write                     | Create/update release notes in `docs/releases/vX.Y.Z.md`                         |
+| 2    | Edit                           | Update `CHANGELOG.md` with version summary                                       |
+| 3    | Bash                           | Run linting: `ruff format`, `ruff check --fix`, `mypy`, `pymarkdown scan`        |
+| 4    | `commit-commands:commit` skill | Stage and commit with proper format                                              |
+| 5    | git CLI                        | `git push`                                                                       |
+| 6    | **⏸️ STOP**                    | Wait for user "tag and release" command                                          |
+| 7    | git CLI                        | `git tag -a vX.Y.Z -m "Release vX.Y.Z"`                                          |
+| 8    | git CLI                        | `git push --tags`                                                                |
+| 9    | gh CLI                         | `gh release create vX.Y.Z --title "vX.Y.Z" --notes-file docs/releases/vX.Y.Z.md` |
+| 10   | GitHub Actions                 | Auto-uploads `sinapsi_alfa.zip` asset                                            |
+| 11   | Edit                           | Bump versions in `manifest.json` and `const.py` to next version                  |
 
 **Release notes content:**
 
@@ -285,14 +290,14 @@ All commands must pass without errors before committing. This applies to ALL pus
 
 **Tools summary:**
 
-| Tool | Used For |
-|------|----------|
-| Edit/Write | Code and documentation changes |
-| `commit-commands:commit` skill | Stage + commit with proper format and attribution |
-| git CLI | `push`, `tag`, `push --tags` (local repo operations) |
-| gh CLI | `release create` with notes from file |
-| GitHub Actions | Auto-adds ZIP asset after release published |
-| GitHub MCP | Read issues/PRs/releases, create issues, manage PRs |
+| Tool                           | Used For                                             |
+| ------------------------------ | ---------------------------------------------------- |
+| Edit/Write                     | Code and documentation changes                       |
+| `commit-commands:commit` skill | Stage + commit with proper format and attribution    |
+| git CLI                        | `push`, `tag`, `push --tags` (local repo operations) |
+| gh CLI                         | `release create` with notes from file                |
+| GitHub Actions                 | Auto-adds ZIP asset after release published          |
+| GitHub MCP                     | Read issues/PRs/releases, create issues, manage PRs  |
 
 **CRITICAL:** Never create git tags or GitHub releases without explicit user instruction.
 
@@ -307,8 +312,8 @@ When a release fixes a specific GitHub issue:
 ### After Publishing
 
 1. Immediately bump to next version
-2. Create new release notes file for next version
-3. Mark previous version's documentation as frozen
+1. Create new release notes file for next version
+1. Mark previous version's documentation as frozen
 
 ### Release Documentation Structure
 
@@ -401,8 +406,8 @@ Version 1 → 2 migration moves `scan_interval` and `timeout` from `data` to `op
 **Before updating any dependency version in `manifest.json`:**
 
 1. Verify the new version exists on PyPI: `https://pypi.org/project/PACKAGE_NAME/`
-2. Check release notes for breaking changes
-3. Test locally if possible
+1. Check release notes for breaking changes
+1. Test locally if possible
 
 > **⚠️ IMPORTANT**: Always verify PyPI availability before committing dependency updates. We've had issues where upstream maintainers created GitHub releases but forgot to publish to PyPI, breaking our integration for users.
 
