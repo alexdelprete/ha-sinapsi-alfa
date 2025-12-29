@@ -29,6 +29,9 @@ integration for Alfa devices. :)
 
 - Installation/Configuration through Config Flow UI
 - Sensor entities for all data provided by the device
+- **Translated sensor names**: Sensor names displayed in your Home Assistant
+  language (supports German, English, Spanish, Estonian, Finnish, French,
+  Italian, Norwegian, Portuguese, and Swedish)
 - **Options flow**: Adjust polling interval and connection timeout at runtime
 - **Reconfigure flow**: Change device name, host, port, and skip MAC detection
 - All changes apply immediately without Home Assistant restart
@@ -110,8 +113,8 @@ The Sinapsi Alfa integration enables several energy monitoring use cases:
 
 Monitor your home's energy flow in real-time using the power sensors:
 
-- **Power Drawn** (`potenza_prelevata`): Current power consumption from grid
-- **Power Fed** (`potenza_immessa`): Current power exported to grid (solar)
+- **Power Imported** (`potenza_prelevata`): Current power consumption from grid
+- **Power Exported** (`potenza_immessa`): Current power exported to grid (solar)
 - **Power Produced** (`potenza_prodotta`): Current solar production
 - **Power Consumed** (`potenza_consumata`): Total household consumption
 - **Power Self-Consumed** (`potenza_auto_consumata`): Solar power used directly
@@ -132,8 +135,8 @@ consumption per band.
 Add the integration's sensors to the HA Energy Dashboard for long-term tracking:
 
 1. Go to **Settings** > **Dashboards** > **Energy**
-1. Add `Energia Prelevata` as **Grid consumption**
-1. Add `Energia Immessa` as **Return to grid**
+1. Add `Energia Importata` as **Grid consumption**
+1. Add `Energia Esportata` as **Return to grid**
 1. Add `Energia Prodotta` as **Solar production**
 
 ## Automation Examples
@@ -250,11 +253,17 @@ Alternatively, you can access logs directly from the file system at:
 
 When [opening an issue][issues], please include:
 
+1. **Diagnostic file**: Download from Settings > Devices & Services >
+   Alfa by Sinapsi > three-dot menu (⋮) > Download diagnostics
 1. **Home Assistant version** (Settings > About)
 1. **Integration version** (Settings > Devices & Services > Alfa by Sinapsi)
 1. **Debug logs** with timestamps showing the error
 1. **Network setup** (local network, VPN, firewall, etc.)
 1. **Steps to reproduce** the issue
+
+The diagnostic file contains sanitized device information and configuration
+that helps identify issues quickly. Sensitive data like IP addresses and
+MAC addresses are automatically redacted.
 
 ## Coffee
 
