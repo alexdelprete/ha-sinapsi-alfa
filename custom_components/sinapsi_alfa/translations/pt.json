@@ -55,64 +55,64 @@
   "entity": {
     "sensor": {
       "potenza_prelevata": {
-        "name": "Potencia Consumida da Rede"
+        "name": "Potencia Importada"
       },
       "potenza_prelevata_media_15m": {
-        "name": "Potencia Consumida Media 15m"
+        "name": "Potencia Importada Media 15m"
       },
       "potenza_immessa": {
-        "name": "Potencia Injetada"
+        "name": "Potencia Exportada"
       },
       "potenza_immessa_media_15m": {
-        "name": "Potencia Injetada Media 15m"
+        "name": "Potencia Exportada Media 15m"
       },
       "potenza_prodotta": {
         "name": "Potencia Produzida"
       },
       "energia_prelevata": {
-        "name": "Energia Consumida da Rede"
+        "name": "Energia Importada"
       },
       "energia_immessa": {
-        "name": "Energia Injetada"
+        "name": "Energia Exportada"
       },
       "energia_prodotta": {
         "name": "Energia Produzida"
       },
       "energia_prelevata_giornaliera_f1": {
-        "name": "Energia Diaria Consumida F1"
+        "name": "Energia Diaria Importada F1"
       },
       "energia_prelevata_giornaliera_f2": {
-        "name": "Energia Diaria Consumida F2"
+        "name": "Energia Diaria Importada F2"
       },
       "energia_prelevata_giornaliera_f3": {
-        "name": "Energia Diaria Consumida F3"
+        "name": "Energia Diaria Importada F3"
       },
       "energia_prelevata_giornaliera_f4": {
-        "name": "Energia Diaria Consumida F4"
+        "name": "Energia Diaria Importada F4"
       },
       "energia_prelevata_giornaliera_f5": {
-        "name": "Energia Diaria Consumida F5"
+        "name": "Energia Diaria Importada F5"
       },
       "energia_prelevata_giornaliera_f6": {
-        "name": "Energia Diaria Consumida F6"
+        "name": "Energia Diaria Importada F6"
       },
       "energia_immessa_giornaliera_f1": {
-        "name": "Energia Diaria Injetada F1"
+        "name": "Energia Diaria Exportada F1"
       },
       "energia_immessa_giornaliera_f2": {
-        "name": "Energia Diaria Injetada F2"
+        "name": "Energia Diaria Exportada F2"
       },
       "energia_immessa_giornaliera_f3": {
-        "name": "Energia Diaria Injetada F3"
+        "name": "Energia Diaria Exportada F3"
       },
       "energia_immessa_giornaliera_f4": {
-        "name": "Energia Diaria Injetada F4"
+        "name": "Energia Diaria Exportada F4"
       },
       "energia_immessa_giornaliera_f5": {
-        "name": "Energia Diaria Injetada F5"
+        "name": "Energia Diaria Exportada F5"
       },
       "energia_immessa_giornaliera_f6": {
-        "name": "Energia Diaria Injetada F6"
+        "name": "Energia Diaria Exportada F6"
       },
       "fascia_oraria_attuale": {
         "name": "Periodo Horario Atual"

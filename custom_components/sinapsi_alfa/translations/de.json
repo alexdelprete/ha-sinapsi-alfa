@@ -55,64 +55,64 @@
   "entity": {
     "sensor": {
       "potenza_prelevata": {
-        "name": "Netzbezug Leistung"
+        "name": "Leistung Import"
       },
       "potenza_prelevata_media_15m": {
-        "name": "Netzbezug Leistung Mittel 15m"
+        "name": "Leistung Import Mittel 15m"
       },
       "potenza_immessa": {
-        "name": "Einspeisung Leistung"
+        "name": "Leistung Export"
       },
       "potenza_immessa_media_15m": {
-        "name": "Einspeisung Leistung Mittel 15m"
+        "name": "Leistung Export Mittel 15m"
       },
       "potenza_prodotta": {
         "name": "Erzeugte Leistung"
       },
       "energia_prelevata": {
-        "name": "Netzbezug Energie"
+        "name": "Energie Import"
       },
       "energia_immessa": {
-        "name": "Einspeisung Energie"
+        "name": "Energie Export"
       },
       "energia_prodotta": {
         "name": "Erzeugte Energie"
       },
       "energia_prelevata_giornaliera_f1": {
-        "name": "Tagesenergie Bezug F1"
+        "name": "Tagesenergie Import F1"
       },
       "energia_prelevata_giornaliera_f2": {
-        "name": "Tagesenergie Bezug F2"
+        "name": "Tagesenergie Import F2"
       },
       "energia_prelevata_giornaliera_f3": {
-        "name": "Tagesenergie Bezug F3"
+        "name": "Tagesenergie Import F3"
       },
       "energia_prelevata_giornaliera_f4": {
-        "name": "Tagesenergie Bezug F4"
+        "name": "Tagesenergie Import F4"
       },
       "energia_prelevata_giornaliera_f5": {
-        "name": "Tagesenergie Bezug F5"
+        "name": "Tagesenergie Import F5"
       },
       "energia_prelevata_giornaliera_f6": {
-        "name": "Tagesenergie Bezug F6"
+        "name": "Tagesenergie Import F6"
       },
       "energia_immessa_giornaliera_f1": {
-        "name": "Tagesenergie Einspeisung F1"
+        "name": "Tagesenergie Export F1"
       },
       "energia_immessa_giornaliera_f2": {
-        "name": "Tagesenergie Einspeisung F2"
+        "name": "Tagesenergie Export F2"
       },
       "energia_immessa_giornaliera_f3": {
-        "name": "Tagesenergie Einspeisung F3"
+        "name": "Tagesenergie Export F3"
       },
       "energia_immessa_giornaliera_f4": {
-        "name": "Tagesenergie Einspeisung F4"
+        "name": "Tagesenergie Export F4"
       },
       "energia_immessa_giornaliera_f5": {
-        "name": "Tagesenergie Einspeisung F5"
+        "name": "Tagesenergie Export F5"
       },
       "energia_immessa_giornaliera_f6": {
-        "name": "Tagesenergie Einspeisung F6"
+        "name": "Tagesenergie Export F6"
       },
       "fascia_oraria_attuale": {
         "name": "Aktuelles Zeitband"

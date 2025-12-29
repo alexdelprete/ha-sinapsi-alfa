@@ -55,64 +55,64 @@
   "entity": {
     "sensor": {
       "potenza_prelevata": {
-        "name": "Potenza Prelevata"
+        "name": "Potenza Importata"
       },
       "potenza_prelevata_media_15m": {
-        "name": "Potenza Prelevata Media 15m"
+        "name": "Potenza Importata Media 15m"
       },
       "potenza_immessa": {
-        "name": "Potenza Immessa"
+        "name": "Potenza Esportata"
       },
       "potenza_immessa_media_15m": {
-        "name": "Potenza Immessa Media 15m"
+        "name": "Potenza Esportata Media 15m"
       },
       "potenza_prodotta": {
         "name": "Potenza Prodotta"
       },
       "energia_prelevata": {
-        "name": "Energia Prelevata"
+        "name": "Energia Importata"
       },
       "energia_immessa": {
-        "name": "Energia Immessa"
+        "name": "Energia Esportata"
       },
       "energia_prodotta": {
         "name": "Energia Prodotta"
       },
       "energia_prelevata_giornaliera_f1": {
-        "name": "Energia Prelevata Giornaliera F1"
+        "name": "Energia Importata Giornaliera F1"
       },
       "energia_prelevata_giornaliera_f2": {
-        "name": "Energia Prelevata Giornaliera F2"
+        "name": "Energia Importata Giornaliera F2"
       },
       "energia_prelevata_giornaliera_f3": {
-        "name": "Energia Prelevata Giornaliera F3"
+        "name": "Energia Importata Giornaliera F3"
       },
       "energia_prelevata_giornaliera_f4": {
-        "name": "Energia Prelevata Giornaliera F4"
+        "name": "Energia Importata Giornaliera F4"
       },
       "energia_prelevata_giornaliera_f5": {
-        "name": "Energia Prelevata Giornaliera F5"
+        "name": "Energia Importata Giornaliera F5"
       },
       "energia_prelevata_giornaliera_f6": {
-        "name": "Energia Prelevata Giornaliera F6"
+        "name": "Energia Importata Giornaliera F6"
       },
       "energia_immessa_giornaliera_f1": {
-        "name": "Energia Immessa Giornaliera F1"
+        "name": "Energia Esportata Giornaliera F1"
       },
       "energia_immessa_giornaliera_f2": {
-        "name": "Energia Immessa Giornaliera F2"
+        "name": "Energia Esportata Giornaliera F2"
       },
       "energia_immessa_giornaliera_f3": {
-        "name": "Energia Immessa Giornaliera F3"
+        "name": "Energia Esportata Giornaliera F3"
       },
       "energia_immessa_giornaliera_f4": {
-        "name": "Energia Immessa Giornaliera F4"
+        "name": "Energia Esportata Giornaliera F4"
       },
       "energia_immessa_giornaliera_f5": {
-        "name": "Energia Immessa Giornaliera F5"
+        "name": "Energia Esportata Giornaliera F5"
       },
       "energia_immessa_giornaliera_f6": {
-        "name": "Energia Immessa Giornaliera F6"
+        "name": "Energia Esportata Giornaliera F6"
       },
       "fascia_oraria_attuale": {
         "name": "Fascia Oraria Attuale"

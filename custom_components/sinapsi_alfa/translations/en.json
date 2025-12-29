@@ -55,64 +55,64 @@
   "entity": {
     "sensor": {
       "potenza_prelevata": {
-        "name": "Power Drawn"
+        "name": "Power Imported"
       },
       "potenza_prelevata_media_15m": {
-        "name": "Power Drawn Avg 15m"
+        "name": "Power Imported Avg 15m"
       },
       "potenza_immessa": {
-        "name": "Power Fed"
+        "name": "Power Exported"
       },
       "potenza_immessa_media_15m": {
-        "name": "Power Fed Avg 15m"
+        "name": "Power Exported Avg 15m"
       },
       "potenza_prodotta": {
         "name": "Power Produced"
       },
       "energia_prelevata": {
-        "name": "Energy Drawn"
+        "name": "Energy Imported"
       },
       "energia_immessa": {
-        "name": "Energy Fed"
+        "name": "Energy Exported"
       },
       "energia_prodotta": {
         "name": "Energy Produced"
       },
       "energia_prelevata_giornaliera_f1": {
-        "name": "Daily Energy Drawn F1"
+        "name": "Daily Energy Imported F1"
       },
       "energia_prelevata_giornaliera_f2": {
-        "name": "Daily Energy Drawn F2"
+        "name": "Daily Energy Imported F2"
       },
       "energia_prelevata_giornaliera_f3": {
-        "name": "Daily Energy Drawn F3"
+        "name": "Daily Energy Imported F3"
       },
       "energia_prelevata_giornaliera_f4": {
-        "name": "Daily Energy Drawn F4"
+        "name": "Daily Energy Imported F4"
       },
       "energia_prelevata_giornaliera_f5": {
-        "name": "Daily Energy Drawn F5"
+        "name": "Daily Energy Imported F5"
       },
       "energia_prelevata_giornaliera_f6": {
-        "name": "Daily Energy Drawn F6"
+        "name": "Daily Energy Imported F6"
       },
       "energia_immessa_giornaliera_f1": {
-        "name": "Daily Energy Fed F1"
+        "name": "Daily Energy Exported F1"
       },
       "energia_immessa_giornaliera_f2": {
-        "name": "Daily Energy Fed F2"
+        "name": "Daily Energy Exported F2"
       },
       "energia_immessa_giornaliera_f3": {
-        "name": "Daily Energy Fed F3"
+        "name": "Daily Energy Exported F3"
       },
       "energia_immessa_giornaliera_f4": {
-        "name": "Daily Energy Fed F4"
+        "name": "Daily Energy Exported F4"
       },
       "energia_immessa_giornaliera_f5": {
-        "name": "Daily Energy Fed F5"
+        "name": "Daily Energy Exported F5"
       },
       "energia_immessa_giornaliera_f6": {
-        "name": "Daily Energy Fed F6"
+        "name": "Daily Energy Exported F6"
       },
       "fascia_oraria_attuale": {
         "name": "Current Time Band"

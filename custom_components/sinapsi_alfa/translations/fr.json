@@ -55,64 +55,64 @@
   "entity": {
     "sensor": {
       "potenza_prelevata": {
-        "name": "Puissance soutiree"
+        "name": "Puissance importee"
       },
       "potenza_prelevata_media_15m": {
-        "name": "Puissance soutiree moy 15m"
+        "name": "Puissance importee moy 15m"
       },
       "potenza_immessa": {
-        "name": "Puissance injectee"
+        "name": "Puissance exportee"
       },
       "potenza_immessa_media_15m": {
-        "name": "Puissance injectee moy 15m"
+        "name": "Puissance exportee moy 15m"
       },
       "potenza_prodotta": {
         "name": "Puissance produite"
       },
       "energia_prelevata": {
-        "name": "Energie soutiree"
+        "name": "Energie importee"
       },
       "energia_immessa": {
-        "name": "Energie injectee"
+        "name": "Energie exportee"
       },
       "energia_prodotta": {
         "name": "Energie produite"
       },
       "energia_prelevata_giornaliera_f1": {
-        "name": "Energie jour soutiree F1"
+        "name": "Energie jour importee F1"
       },
       "energia_prelevata_giornaliera_f2": {
-        "name": "Energie jour soutiree F2"
+        "name": "Energie jour importee F2"
       },
       "energia_prelevata_giornaliera_f3": {
-        "name": "Energie jour soutiree F3"
+        "name": "Energie jour importee F3"
       },
       "energia_prelevata_giornaliera_f4": {
-        "name": "Energie jour soutiree F4"
+        "name": "Energie jour importee F4"
       },
       "energia_prelevata_giornaliera_f5": {
-        "name": "Energie jour soutiree F5"
+        "name": "Energie jour importee F5"
       },
       "energia_prelevata_giornaliera_f6": {
-        "name": "Energie jour soutiree F6"
+        "name": "Energie jour importee F6"
       },
       "energia_immessa_giornaliera_f1": {
-        "name": "Energie jour injectee F1"
+        "name": "Energie jour exportee F1"
       },
       "energia_immessa_giornaliera_f2": {
-        "name": "Energie jour injectee F2"
+        "name": "Energie jour exportee F2"
       },
       "energia_immessa_giornaliera_f3": {
-        "name": "Energie jour injectee F3"
+        "name": "Energie jour exportee F3"
       },
       "energia_immessa_giornaliera_f4": {
-        "name": "Energie jour injectee F4"
+        "name": "Energie jour exportee F4"
       },
       "energia_immessa_giornaliera_f5": {
-        "name": "Energie jour injectee F5"
+        "name": "Energie jour exportee F5"
       },
       "energia_immessa_giornaliera_f6": {
-        "name": "Energie jour injectee F6"
+        "name": "Energie jour exportee F6"
       },
       "fascia_oraria_attuale": {
         "name": "Plage horaire actuelle"

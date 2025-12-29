@@ -55,64 +55,64 @@
   "entity": {
     "sensor": {
       "potenza_prelevata": {
-        "name": "Effekt fra nett"
+        "name": "Importert effekt"
       },
       "potenza_prelevata_media_15m": {
-        "name": "Effekt fra nett snitt 15m"
+        "name": "Importert effekt snitt 15m"
       },
       "potenza_immessa": {
-        "name": "Effekt til nett"
+        "name": "Eksportert effekt"
       },
       "potenza_immessa_media_15m": {
-        "name": "Effekt til nett snitt 15m"
+        "name": "Eksportert effekt snitt 15m"
       },
       "potenza_prodotta": {
         "name": "Produsert effekt"
       },
       "energia_prelevata": {
-        "name": "Energi fra nett"
+        "name": "Importert energi"
       },
       "energia_immessa": {
-        "name": "Energi til nett"
+        "name": "Eksportert energi"
       },
       "energia_prodotta": {
         "name": "Produsert energi"
       },
       "energia_prelevata_giornaliera_f1": {
-        "name": "Daglig energi fra nett F1"
+        "name": "Daglig importert energi F1"
       },
       "energia_prelevata_giornaliera_f2": {
-        "name": "Daglig energi fra nett F2"
+        "name": "Daglig importert energi F2"
       },
       "energia_prelevata_giornaliera_f3": {
-        "name": "Daglig energi fra nett F3"
+        "name": "Daglig importert energi F3"
       },
       "energia_prelevata_giornaliera_f4": {
-        "name": "Daglig energi fra nett F4"
+        "name": "Daglig importert energi F4"
       },
       "energia_prelevata_giornaliera_f5": {
-        "name": "Daglig energi fra nett F5"
+        "name": "Daglig importert energi F5"
       },
       "energia_prelevata_giornaliera_f6": {
-        "name": "Daglig energi fra nett F6"
+        "name": "Daglig importert energi F6"
       },
       "energia_immessa_giornaliera_f1": {
-        "name": "Daglig energi til nett F1"
+        "name": "Daglig eksportert energi F1"
       },
       "energia_immessa_giornaliera_f2": {
-        "name": "Daglig energi til nett F2"
+        "name": "Daglig eksportert energi F2"
       },
       "energia_immessa_giornaliera_f3": {
-        "name": "Daglig energi til nett F3"
+        "name": "Daglig eksportert energi F3"
       },
       "energia_immessa_giornaliera_f4": {
-        "name": "Daglig energi til nett F4"
+        "name": "Daglig eksportert energi F4"
       },
       "energia_immessa_giornaliera_f5": {
-        "name": "Daglig energi til nett F5"
+        "name": "Daglig eksportert energi F5"
       },
       "energia_immessa_giornaliera_f6": {
-        "name": "Daglig energi til nett F6"
+        "name": "Daglig eksportert energi F6"
       },
       "fascia_oraria_attuale": {
         "name": "Gjeldende tidssone"
