@@ -270,13 +270,14 @@ MAC addresses are automatically redacted.
 _If you like this integration, I'll gladly accept some quality coffee,
 but please don't feel obliged._ :)
 
-[![BuyMeCoffee][buymecoffee-shield]][buymecoffee]
+[![BuyMeCoffee][buymecoffee-button]][buymecoffee]
 
 ______________________________________________________________________
 
 [alfa]: https://www.alfabysinapsi.it/
 [buymecoffee]: https://www.buymeacoffee.com/alexdelprete
-[buymecoffee-shield]: https://img.shields.io/badge/buy%20me%20a%20coffee-donate-white?style=for-the-badge
+[buymecoffee-button]: https://img.buymeacoffee.com/button-api/?text=Buy%20me%20a%20coffee&emoji=%E2%98%95&slug=alexdelprete&button_colour=FFDD00&font_colour=000000&font_family=Lato&outline_colour=000000&coffee_colour=ffffff
+[buymecoffee-shield]: https://img.shields.io/badge/buy%20me%20a%20coffee-donate-white?style=for-the-badge&logo=buymeacoffee&logoColor=white
 [coverage]: https://codecov.io/github/alexdelprete/ha-sinapsi-alfa
 [coverage-shield]: https://img.shields.io/codecov/c/github/alexdelprete/ha-sinapsi-alfa?style=for-the-badge
 [downloads]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases
@@ -291,5 +292,5 @@ ______________________________________________________________________
 [my-hacs]: https://my.home-assistant.io/redirect/hacs_repository/?owner=alexdelprete&repository=ha-sinapsi-alfa&category=integration
 [releases]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases
 [releases-shield]: https://img.shields.io/github/v/release/alexdelprete/ha-sinapsi-alfa?style=for-the-badge&color=darkgreen
-[tests]: https://github.com/alexdelprete/ha-sinapsi-alfa/actions/workflows/tests.yml
-[tests-shield]: https://img.shields.io/github/actions/workflow/status/alexdelprete/ha-sinapsi-alfa/tests.yml?style=for-the-badge&label=Tests
+[tests]: https://github.com/alexdelprete/ha-sinapsi-alfa/actions/workflows/test.yml
+[tests-shield]: https://img.shields.io/github/actions/workflow/status/alexdelprete/ha-sinapsi-alfa/test.yml?style=for-the-badge&label=Tests
