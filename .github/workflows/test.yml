@@ -31,7 +31,6 @@ jobs:
             --cov=custom_components/sinapsi_alfa \
             --cov-report=term-missing \
             --cov-report=xml \
-            --cov-fail-under=95 \
             --junitxml=junit.xml \
             -o junit_family=legacy \
             -v

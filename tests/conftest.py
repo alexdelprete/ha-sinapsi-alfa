@@ -53,6 +53,8 @@ def mock_config_entry_options() -> dict:
 def mock_api_data() -> dict:
     """Return mock data from SinapsiAlfaAPI."""
     return {
+        "manufact": "Sinapsi",
+        "model": "Alfa",
         "sn": TEST_MAC,
         "potenza_prelevata": 1.5,
         "potenza_immessa": 0.0,

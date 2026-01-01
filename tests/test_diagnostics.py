@@ -38,6 +38,8 @@ class MockConfigEntry(ConfigEntry):
         kwargs.setdefault("source", "user")
         kwargs.setdefault("title", TEST_NAME)
         kwargs.setdefault("unique_id", TEST_MAC)
+        kwargs.setdefault("discovery_keys", {})
+        kwargs.setdefault("subentries_data", {})
         super().__init__(**kwargs)
 
 

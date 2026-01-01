@@ -215,7 +215,7 @@ class TestSensorEntityDefinitions:
 
     def test_sensor_entities_count(self):
         """Test correct number of sensor entities defined."""
-        assert len(SENSOR_ENTITIES) == 24
+        assert len(SENSOR_ENTITIES) == 27
 
     def test_all_sensors_have_required_fields(self):
         """Test all sensors have required fields."""

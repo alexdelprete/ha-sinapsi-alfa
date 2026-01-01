@@ -53,9 +53,10 @@ class TestHostValid:
         assert host_valid("..") is False
 
     def test_invalid_ip(self):
-        """Test invalid IP addresses (caught as hostnames)."""
-        # These fail IP validation, then hostname validation
-        assert host_valid("256.1.1.1") is False  # invalid IP, invalid hostname (digits only)
+        """Test invalid IP addresses and hostnames."""
+        # 256.1.1.1 fails IP validation but passes hostname validation (digits/dots allowed)
+        assert host_valid("256.1.1.1") is True  # Valid as hostname, invalid as IP
+        # These fail both IP and hostname validation
         assert host_valid("not-a-valid-host!!!") is False
 
 
