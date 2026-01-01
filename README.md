@@ -36,6 +36,22 @@ integration for Alfa devices. :)
 - **Reconfigure flow**: Change device name, host, port, and skip MAC detection
 - All changes apply immediately without Home Assistant restart
 
+## Technical Architecture
+
+This integration uses a fully async Modbus implementation via `ModbusLink`
+to communicate with the Sinapsi Alfa device:
+
+- **Async I/O**: All Modbus operations are fully async, preventing Home
+  Assistant event loop blocking
+- **Connection Management**: Connections use configurable timeouts with
+  automatic retry on failure
+- **Protocol Error Recovery**: Early abort when multiple protocol errors
+  occur to prevent cascade delays
+- **Graceful Error Handling**: Custom exceptions (`SinapsiConnectionError`,
+  `SinapsiModbusError`) provide clear error context
+- **Repair Notifications**: Connection issues are surfaced in Home Assistant's
+  repair system after repeated failures
+
 ## Installation through HACS
 
 This integration is available in [HACS] official repository.
@@ -264,6 +280,29 @@ When [opening an issue][issues], please include:
 The diagnostic file contains sanitized device information and configuration
 that helps identify issues quickly. Sensitive data like IP addresses and
 MAC addresses are automatically redacted.
+
+## Development
+
+This project uses a comprehensive test suite with 98% code coverage:
+
+```bash
+# Install development dependencies
+pip install -e ".[dev]"
+
+# Run tests with coverage
+pytest tests/ --cov=custom_components/sinapsi_alfa --cov-report=term-missing -v
+
+# Run linting
+ruff format .
+ruff check . --fix
+```
+
+**CI/CD Workflows:**
+
+- **Tests**: Runs pytest with coverage on every push/PR to master
+- **Lint**: Runs ruff format, ruff check, and ty type checker
+- **Validate**: Runs hassfest and HACS validation
+- **Release**: Automatically creates ZIP on GitHub release publish
 
 ## Coffee
 

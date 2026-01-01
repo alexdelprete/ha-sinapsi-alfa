@@ -111,6 +111,8 @@ extend-exclude = [
     ".vscode",
     ".devcontainer",
     ".github",
+    "build",
+    "dist",
 ]
 
 [tool.ruff.format]

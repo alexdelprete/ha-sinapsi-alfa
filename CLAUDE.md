@@ -2,13 +2,25 @@
 
 ## Critical Initial Steps
 
+> **MANDATORY: At the START of EVERY session, you MUST read this entire CLAUDE.md file.**
+>
+> This file contains project-specific directives, workflows, and patterns that override default behavior.
+> Failure to read this file results in violations of mandatory workflows (e.g., missing release documentation),
+> duplicated effort, and broken architectural patterns.
+
 **At every session start, you MUST:**
 
-1. Read this entire CLAUDE.md file for project context
-1. Review recent git commits to understand changes
-1. Run `git status` to see uncommitted work
+1. **Read this entire CLAUDE.md file** for project context and mandatory procedures
+2. Review recent git commits to understand changes (`git log --oneline -10`)
+3. Run `git status` to see uncommitted work
 
-Skipping these steps causes violations of mandatory workflows, duplicated effort, and broken architectural patterns.
+**Key mandatory workflows documented here:**
+
+- Release documentation (CHANGELOG.md + docs/releases/)
+- Version bumping (manifest.json + const.py)
+- Logging patterns (helpers.py functions)
+- Error handling (custom exceptions)
+- Code quality checks (ruff, ty)
 
 ## Context7 for Documentation
 
@@ -528,6 +540,44 @@ Follow pymarkdown rules (configured in `pyproject.toml` under `[tool.pymarkdown]
 - Use blocking calls in async context
 - Close GitHub issues without explicit user instruction
 - Create git tags or GitHub releases without explicit user instruction
+
+---
+
+## Release History
+
+### v1.2.0 - Test Coverage & CI Improvements
+
+**Date:** January 1, 2026
+
+- Achieved 98% test coverage (api.py 97%, coordinator.py 100%, config_flow.py 100%)
+- Added comprehensive test suite with 188+ tests
+- Fixed type annotations and DeviceInfo typing
+- Updated CI workflows with Codecov integration
+- All changes are CI/testing improvements - no functional changes
+
+### v1.1.0 - ModbusLink Migration
+
+**Date:** December 2025
+
+- Migrated from pymodbus to ModbusLink for modern async Modbus operations
+- Native asyncio with context manager support
+- Cleaner code without separate payload decoder classes
+- English-only error messages with `set_language(Language.EN)`
+- Protocol error recovery with early abort on cascade failures
+
+### v1.0.0 - First Stable Release
+
+**Date:** October 2025
+
+- Full async I/O with ModbusLink
+- Complete sensor coverage (24 sensors including 4 calculated)
+- Options flow for runtime tuning (scan_interval, timeout)
+- Reconfigure flow for connection settings
+- Config entry migration (v1 → v2)
+- Repair notifications for connection issues
+- Italian time band support (F1-F6)
+
+---
 
 ## Differences from ABB PowerOne Integration
 
