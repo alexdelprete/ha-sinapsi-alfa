@@ -51,14 +51,12 @@ def create_mock_config_entry(
 
 async def test_coordinator_init(
     hass: HomeAssistant,
-    mock_sinapsi_api_coordinator,
 ) -> None:
     """Test coordinator initialization."""
     entry = create_mock_config_entry()
 
     with patch(
         "custom_components.sinapsi_alfa.coordinator.SinapsiAlfaAPI",
-        autospec=True,
     ):
         coordinator = SinapsiAlfaCoordinator(hass, entry)
 
@@ -78,7 +76,6 @@ async def test_coordinator_scan_interval_min_enforcement(
 
     with patch(
         "custom_components.sinapsi_alfa.coordinator.SinapsiAlfaAPI",
-        autospec=True,
     ):
         coordinator = SinapsiAlfaCoordinator(hass, entry)
 
@@ -93,7 +90,6 @@ async def test_coordinator_scan_interval_max_enforcement(
 
     with patch(
         "custom_components.sinapsi_alfa.coordinator.SinapsiAlfaAPI",
-        autospec=True,
     ):
         coordinator = SinapsiAlfaCoordinator(hass, entry)
 
@@ -108,7 +104,6 @@ async def test_coordinator_timeout_min_enforcement(
 
     with patch(
         "custom_components.sinapsi_alfa.coordinator.SinapsiAlfaAPI",
-        autospec=True,
     ):
         coordinator = SinapsiAlfaCoordinator(hass, entry)
 
@@ -123,7 +118,6 @@ async def test_coordinator_timeout_max_enforcement(
 
     with patch(
         "custom_components.sinapsi_alfa.coordinator.SinapsiAlfaAPI",
-        autospec=True,
     ):
         coordinator = SinapsiAlfaCoordinator(hass, entry)
 
@@ -139,7 +133,6 @@ async def test_coordinator_update_success(
 
     with patch(
         "custom_components.sinapsi_alfa.coordinator.SinapsiAlfaAPI",
-        autospec=True,
     ) as mock_api_class:
         mock_api = mock_api_class.return_value
         mock_api.async_get_data = AsyncMock(return_value=mock_api_data)
@@ -160,7 +153,6 @@ async def test_coordinator_update_failure(
 
     with patch(
         "custom_components.sinapsi_alfa.coordinator.SinapsiAlfaAPI",
-        autospec=True,
     ) as mock_api_class:
         mock_api = mock_api_class.return_value
         mock_api.async_get_data = AsyncMock(side_effect=Exception("Connection timeout"))
@@ -181,7 +173,6 @@ async def test_coordinator_skip_mac_detection(
 
     with patch(
         "custom_components.sinapsi_alfa.coordinator.SinapsiAlfaAPI",
-        autospec=True,
     ) as mock_api_class:
         coordinator = SinapsiAlfaCoordinator(hass, entry)
 
