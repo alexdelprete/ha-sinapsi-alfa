@@ -4,9 +4,9 @@
 [![BuyMeCoffee][buymecoffee-shield]][buymecoffee]
 [![Community Forum][forum-shield]][forum]
 
-[![GitHub Activity][commits-shield]][commits]
-![Project Maintenance][maintenance-shield]
-[![hacs][hacs-shield]][hacs]
+[![Tests][tests-shield]][tests]
+[![Code Coverage][coverage-shield]][coverage]
+[![Downloads][downloads-shield]][downloads]
 
 _This project is not endorsed by, directly affiliated with, maintained,
 authorized, or sponsored by Sinapsi_
@@ -277,18 +277,19 @@ ______________________________________________________________________
 [alfa]: https://www.alfabysinapsi.it/
 [buymecoffee]: https://www.buymeacoffee.com/alexdelprete
 [buymecoffee-shield]: https://img.shields.io/badge/buy%20me%20a%20coffee-donate-white?style=for-the-badge
-[commits]: https://github.com/alexdelprete/ha-sinapsi-alfa/commits/master
-[commits-shield]: https://img.shields.io/github/commit-activity/y/alexdelprete/ha-sinapsi-alfa.svg?style=for-the-badge
+[coverage]: https://codecov.io/github/alexdelprete/ha-sinapsi-alfa
+[coverage-shield]: https://img.shields.io/codecov/c/github/alexdelprete/ha-sinapsi-alfa?style=for-the-badge
+[downloads]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases
+[downloads-shield]: https://img.shields.io/github/downloads/alexdelprete/ha-sinapsi-alfa/total?style=for-the-badge
 [forum]: https://community.home-assistant.io/t/custom-integration-alfa-by-sinapsi-data-integration/705294
 [forum-shield]: https://img.shields.io/badge/community-forum-darkred?style=for-the-badge
-[hacs]: https://github.com/hacs/integration
 [hacs-badge]: https://my.home-assistant.io/badges/hacs_repository.svg
-[hacs-shield]: https://img.shields.io/badge/HACS-Default-blue.svg?style=for-the-badge
 [img-config]: https://raw.githubusercontent.com/alexdelprete/ha-sinapsi-alfa/master/gfxfiles/alfaconfig.png
 [img-device]: https://raw.githubusercontent.com/alexdelprete/ha-sinapsi-alfa/master/gfxfiles/alfadevice.png
 [img-sensors]: https://raw.githubusercontent.com/alexdelprete/ha-sinapsi-alfa/master/gfxfiles/alfasensors.gif
 [issues]: https://github.com/alexdelprete/ha-sinapsi-alfa/issues
-[maintenance-shield]: https://img.shields.io/badge/maintainer-%40alexdelprete-blue.svg?style=for-the-badge
 [my-hacs]: https://my.home-assistant.io/redirect/hacs_repository/?owner=alexdelprete&repository=ha-sinapsi-alfa&category=integration
 [releases]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases
 [releases-shield]: https://img.shields.io/github/v/release/alexdelprete/ha-sinapsi-alfa?style=for-the-badge&color=darkgreen
+[tests]: https://github.com/alexdelprete/ha-sinapsi-alfa/actions/workflows/tests.yml
+[tests-shield]: https://img.shields.io/github/actions/workflow/status/alexdelprete/ha-sinapsi-alfa/tests.yml?style=for-the-badge&label=Tests
