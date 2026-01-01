@@ -147,3 +147,17 @@ def mock_config_entry(
     entry.title = TEST_NAME
     entry.version = 2
     return entry
+
+
+@pytest.fixture
+def mock_hass() -> MagicMock:
+    """Create a mock HomeAssistant instance for direct unit tests.
+
+    This fixture is used for tests that don't require full HA integration loading.
+    It provides a minimal mock that can be used to test config flow logic directly.
+    """
+    hass = MagicMock()
+    hass.config_entries = MagicMock()
+    hass.config_entries.async_entries = MagicMock(return_value=[])
+    hass.data = {}
+    return hass
