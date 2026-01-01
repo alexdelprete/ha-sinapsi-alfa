@@ -4,7 +4,7 @@ https://github.com/alexdelprete/ha-sinapsi-alfa
 """
 
 import logging
-from typing import Any
+from typing import Any, cast
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity, SensorStateClass
 from homeassistant.core import HomeAssistant, callback
@@ -41,20 +41,22 @@ async def async_setup_entry(
         serial_number=coordinator.api.data["sn"],
     )
 
-    sensors = [
-        SinapsiAlfaSensor(
-            coordinator,
-            sensor["name"],
-            sensor["key"],
-            sensor["icon"],
-            sensor["device_class"],
-            sensor["state_class"],
-            sensor["unit"],
-            sensor.get("disabled_by_default", False),
-        )
-        for sensor in SENSOR_ENTITIES
-        if coordinator.api.data[sensor["key"]] is not None
-    ]
+    sensors = []
+    for sensor in SENSOR_ENTITIES:
+        sensor_def = cast(dict[str, Any], sensor)
+        if coordinator.api.data[sensor_def["key"]] is not None:
+            sensors.append(
+                SinapsiAlfaSensor(
+                    coordinator,
+                    sensor_def["name"],
+                    sensor_def["key"],
+                    sensor_def["icon"],
+                    sensor_def["device_class"],
+                    sensor_def["state_class"],
+                    sensor_def["unit"],
+                    sensor_def.get("disabled_by_default", False),
+                )
+            )
 
     async_add_entities(sensors)
 

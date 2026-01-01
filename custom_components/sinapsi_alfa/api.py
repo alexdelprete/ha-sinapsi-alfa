@@ -9,7 +9,7 @@ import logging
 import random
 import socket
 import time
-from typing import Any
+from typing import Any, cast
 
 from getmac import getmac  # type: ignore[import-untyped]
 from modbuslink import (
@@ -66,16 +66,17 @@ def _build_sensor_map() -> dict[str, tuple[int, int, str]]:
     sensor_map: dict[str, tuple[int, int, str]] = {}
 
     for sensor in SENSOR_ENTITIES:
-        if sensor["modbus_type"] == "calcolato":
+        sensor_def = cast(dict[str, Any], sensor)
+        if sensor_def["modbus_type"] == "calcolato":
             continue  # Skip calculated sensors
 
-        addr = sensor["modbus_addr"]
+        addr = sensor_def["modbus_addr"]
         # Skip sensors without a modbus address (shouldn't happen after calcolato check)
-        if addr is None:
+        if addr is None or not isinstance(addr, int):
             continue
 
-        key = sensor["key"]
-        modbus_type = sensor["modbus_type"]
+        key = str(sensor_def["key"])
+        modbus_type = str(sensor_def["modbus_type"])
 
         # Find which batch contains this address
         for batch_id, (start, count) in enumerate(REGISTER_BATCHES):
@@ -198,8 +199,8 @@ class SinapsiAlfaAPI:
     def _initialize_data_structure(self) -> None:
         """Initialize the data structure with default values."""
         # Get sensor keys from SENSOR_ENTITIES, excluding calculated ones
-        sensor_keys = [
-            sensor["key"] for sensor in SENSOR_ENTITIES if sensor["modbus_type"] != "calcolato"
+        sensor_keys: list[str] = [
+            str(sensor["key"]) for sensor in SENSOR_ENTITIES if sensor["modbus_type"] != "calcolato"
         ]
 
         # Initialize sensor data with default values
@@ -702,12 +703,13 @@ class SinapsiAlfaAPI:
 
             # Extract and process all sensor values
             for sensor in SENSOR_ENTITIES:
-                if sensor["modbus_type"] == "calcolato":
+                sensor_def = cast(dict[str, Any], sensor)
+                if sensor_def["modbus_type"] == "calcolato":
                     continue  # Skip calculated sensors
 
-                key = sensor["key"]
+                key = str(sensor_def["key"])
                 raw_value = self._extract_sensor_value(batches, key)
-                processed_value = self._process_sensor_value(raw_value, sensor)
+                processed_value = self._process_sensor_value(raw_value, sensor_def)
                 self.data[key] = processed_value
 
                 log_debug(
@@ -715,7 +717,7 @@ class SinapsiAlfaAPI:
                     "read_modbus_alfa",
                     "Sensor processed",
                     sensor=key,
-                    address=sensor["modbus_addr"],
+                    address=sensor_def["modbus_addr"],
                     value=processed_value,
                 )
 

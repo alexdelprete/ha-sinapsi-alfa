@@ -77,8 +77,8 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg
         scan_interval: int,
         timeout: int,
         skip_mac_detection: bool,
-    ) -> str | bool:
-        """Test connection and return serial number or False on failure."""
+    ) -> str | None:
+        """Test connection and return serial number or None on failure."""
         log_debug(_LOGGER, "_test_connection", "Test connection", host=host, port=port)
         try:
             log_debug(_LOGGER, "_test_connection", "Creating API Client")
@@ -89,7 +89,7 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg
             await api.async_get_data()
             log_debug(_LOGGER, "_test_connection", "API Client: get data")
             log_debug(_LOGGER, "_test_connection", "API Client Data", data=api.data)
-            return api.data["sn"]
+            return str(api.data["sn"])
         except (
             SinapsiConnectionError,
             SinapsiModbusError,
@@ -102,7 +102,7 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg
                 port=port,
                 error=connerr,
             )
-            return False
+            return None
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Handle the initial step."""
@@ -124,7 +124,7 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg
                 uid = await self._test_connection(
                     name, host, port, scan_interval, timeout, skip_mac_detection
                 )
-                if uid is not False:
+                if uid is not None:
                     log_debug(_LOGGER, "async_step_user", "Device unique id", uid=uid)
                     await self.async_set_unique_id(uid)
                     self._abort_if_unique_id_configured()
@@ -220,7 +220,7 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg
                 uid = await self._test_connection(
                     name, host, port, scan_interval, timeout, skip_mac_detection
                 )
-                if uid is not False:
+                if uid is not None:
                     # Verify unique ID matches before updating (per HA best practice)
                     await self.async_set_unique_id(uid)
                     self._abort_if_unique_id_mismatch()

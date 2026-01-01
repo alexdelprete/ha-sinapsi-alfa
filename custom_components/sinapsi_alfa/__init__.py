@@ -60,7 +60,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: SinapsiAlfaConfig
         raise ConfigEntryNotReady(
             translation_domain=DOMAIN,
             translation_key="connection_timeout",
-            translation_placeholders={"device_name": config_entry.data.get(CONF_NAME)},
+            translation_placeholders={"device_name": str(config_entry.data.get(CONF_NAME, ""))},
         )
 
     # Store coordinator in runtime_data to make it accessible throughout the integration
