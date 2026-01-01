@@ -11,7 +11,6 @@ from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .const import (
     CONF_HOST,
@@ -38,7 +37,7 @@ type SinapsiAlfaConfigEntry = ConfigEntry[RuntimeData]
 class RuntimeData:
     """Class to hold your data."""
 
-    coordinator: DataUpdateCoordinator
+    coordinator: SinapsiAlfaCoordinator
 
 
 async def async_setup_entry(hass: HomeAssistant, config_entry: SinapsiAlfaConfigEntry) -> bool:
@@ -82,17 +81,17 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: SinapsiAlfaConfig
 @callback
 def async_update_device_registry(hass: HomeAssistant, config_entry: SinapsiAlfaConfigEntry) -> None:
     """Manual device registration."""
-    coordinator: SinapsiAlfaCoordinator = config_entry.runtime_data.coordinator
+    coordinator = config_entry.runtime_data.coordinator
     device_registry = dr.async_get(hass)
     device_registry.async_get_or_create(
         config_entry_id=config_entry.entry_id,
         hw_version=None,
         configuration_url=f"http://{config_entry.data.get(CONF_HOST)}",
-        identifiers={(DOMAIN, coordinator.api.data["sn"])},
-        manufacturer=coordinator.api.data["manufact"],
-        model=coordinator.api.data["model"],
+        identifiers={(DOMAIN, str(coordinator.api.data.get("sn", "")))},
+        manufacturer=str(coordinator.api.data.get("manufact", "")),
+        model=str(coordinator.api.data.get("model", "")),
         name=config_entry.data.get(CONF_NAME),
-        serial_number=coordinator.api.data["sn"],
+        serial_number=str(coordinator.api.data.get("sn", "")),
         sw_version=None,
         via_device=None,
     )
@@ -102,7 +101,8 @@ async def async_remove_config_entry_device(
     hass: HomeAssistant, config_entry: ConfigEntry, device_entry: dr.DeviceEntry
 ) -> bool:
     """Delete device if not entities."""
-    if DOMAIN in device_entry.identifiers:
+    # identifiers is a set of tuples like {("domain", "id")} - check if any tuple has DOMAIN
+    if any(identifier[0] == DOMAIN for identifier in device_entry.identifiers):
         log_error(
             _LOGGER,
             "async_remove_config_entry_device",

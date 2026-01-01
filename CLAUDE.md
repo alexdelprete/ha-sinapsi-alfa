@@ -230,8 +230,8 @@ Before pushing any commits, run these checks and fix all errors:
 ruff format .
 ruff check . --fix
 
-# Type checking
-mypy custom_components/
+# Type checking (using ty - Rust-based, faster than mypy)
+ty check custom_components/sinapsi_alfa
 
 # Markdown formatting and linting
 mdformat .
@@ -268,19 +268,24 @@ All commands must pass without errors before committing. This applies to ALL pus
 
 ### Complete Release Workflow
 
+> **⚠️ IMPORTANT: Version Validation**
+> The release workflow now VALIDATES that tag, manifest.json, and const.py versions all match.
+> You MUST update versions BEFORE creating the release, not after.
+
 | Step | Tool                           | Action                                                                           |
 | ---- | ------------------------------ | -------------------------------------------------------------------------------- |
 | 1    | Edit/Write                     | Create/update release notes in `docs/releases/vX.Y.Z.md`                         |
 | 2    | Edit                           | Update `CHANGELOG.md` with version summary                                       |
-| 3    | Bash                           | Run linting: `ruff format`, `ruff check --fix`, `mypy`, `pymarkdown scan`        |
-| 4    | `commit-commands:commit` skill | Stage and commit with proper format                                              |
-| 5    | git CLI                        | `git push`                                                                       |
-| 6    | **⏸️ STOP**                    | Wait for user "tag and release" command                                          |
-| 7    | git CLI                        | `git tag -a vX.Y.Z -m "Release vX.Y.Z"`                                          |
-| 8    | git CLI                        | `git push --tags`                                                                |
-| 9    | gh CLI                         | `gh release create vX.Y.Z --title "vX.Y.Z" --notes-file docs/releases/vX.Y.Z.md` |
-| 10   | GitHub Actions                 | Auto-uploads `sinapsi_alfa.zip` asset                                            |
-| 11   | Edit                           | Bump versions in `manifest.json` and `const.py` to next version                  |
+| 3    | Edit                           | Ensure `manifest.json` and `const.py` have correct version                       |
+| 4    | Bash                           | Run linting: `ruff format`, `ruff check --fix`, `ty check`, `pymarkdown scan`    |
+| 5    | `commit-commands:commit` skill | Stage and commit with proper format                                              |
+| 6    | git CLI                        | `git push`                                                                       |
+| 7    | **⏸️ STOP**                    | Wait for user "tag and release" command                                          |
+| 8    | git CLI                        | `git tag -a vX.Y.Z -m "Release vX.Y.Z"`                                          |
+| 9    | git CLI                        | `git push --tags`                                                                |
+| 10   | gh CLI                         | `gh release create vX.Y.Z --title "vX.Y.Z" --notes-file docs/releases/vX.Y.Z.md` |
+| 11   | GitHub Actions                 | Validates versions match, then auto-uploads `sinapsi_alfa.zip` asset             |
+| 12   | Edit                           | Bump versions in `manifest.json` and `const.py` to next version                  |
 
 **Release notes content:**
 

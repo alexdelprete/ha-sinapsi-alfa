@@ -67,9 +67,7 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg
 
     def _host_in_configuration_exists(self, host: str | None) -> bool:
         """Return True if host exists in configuration."""
-        if host in get_host_from_config(self.hass):
-            return True
-        return False
+        return host in get_host_from_config(self.hass)
 
     async def _test_connection(
         self,

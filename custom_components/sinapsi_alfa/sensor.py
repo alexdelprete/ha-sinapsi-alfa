@@ -31,15 +31,15 @@ async def async_setup_entry(
     # This gets the data update coordinator from hass.data as specified in your __init__.py
     coordinator: SinapsiAlfaCoordinator = config_entry.runtime_data.coordinator
 
-    log_debug(_LOGGER, "async_setup_entry", "Name", name=config_entry.data.get(CONF_NAME))
     log_debug(
         _LOGGER,
         "async_setup_entry",
-        "Manufacturer",
+        "Setting up sensors",
+        name=config_entry.data.get(CONF_NAME),
         manufacturer=coordinator.api.data["manufact"],
+        model=coordinator.api.data["model"],
+        serial_number=coordinator.api.data["sn"],
     )
-    log_debug(_LOGGER, "async_setup_entry", "Model", model=coordinator.api.data["model"])
-    log_debug(_LOGGER, "async_setup_entry", "Serial", serial=coordinator.api.data["sn"])
 
     sensors = [
         SinapsiAlfaSensor(
