@@ -41,7 +41,6 @@ from .const import (
     MODEL,
     REGISTER_BATCHES,
     SENSOR_ENTITIES,
-    SensorEntityDefinition,
 )
 from .helpers import log_debug, log_error, log_warning, unix_timestamp_to_iso8601_local_tz
 
@@ -545,7 +544,7 @@ class SinapsiAlfaAPI:
             return float(self._extract_uint32(registers, offset))
         raise ValueError(f"Unknown register type: {reg_type}")
 
-    def _process_sensor_value(self, value: float, sensor: SensorEntityDefinition) -> Any:
+    def _process_sensor_value(self, value: float, sensor: dict[str, Any]) -> Any:
         """Process sensor value with unit conversion and special handling."""
         reg_key = sensor["key"]
         reg_dev_class = sensor["device_class"]
