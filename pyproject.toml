@@ -92,7 +92,7 @@ show_missing = true
 # ty type checker configuration (Rust-based, faster than mypy)
 [tool.ty.environment]
 python-version = "3.13"
-python-platform = "linux"
+python = ".venv"
 
 [tool.ty.rules]
 # Promote warnings to errors for strictness
