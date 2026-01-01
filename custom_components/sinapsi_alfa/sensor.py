@@ -143,11 +143,6 @@ class SinapsiAlfaSensor(CoordinatorEntity, SensorEntity):
         return None
 
     @property
-    def state_attributes(self) -> dict[str, Any] | None:
-        """Return the attributes."""
-        return None
-
-    @property
     def should_poll(self) -> bool:
         """No need to poll. Coordinator notifies entity of updates."""
         return False
@@ -167,12 +162,9 @@ class SinapsiAlfaSensor(CoordinatorEntity, SensorEntity):
         """Return device specific attributes."""
         return DeviceInfo(
             configuration_url=f"http://{self._device_host}",
-            hw_version=None,
             identifiers={(DOMAIN, self._device_sn)},
             manufacturer=self._device_manufact,
             model=self._device_model,
             name=self._device_name,
             serial_number=self._device_sn,
-            sw_version=None,
-            via_device=None,
         )
