@@ -48,9 +48,9 @@ class TestAsyncSetupEntry:
         mock_config_entry_with_runtime.runtime_data.coordinator = mock_coordinator
         async_add_entities = MagicMock()
 
-        result = await async_setup_entry(hass, mock_config_entry_with_runtime, async_add_entities)
+        # Platform setup functions return None (not bool)
+        await async_setup_entry(hass, mock_config_entry_with_runtime, async_add_entities)
 
-        assert result is True
         async_add_entities.assert_called_once()
         # Check that sensors were created
         sensors = async_add_entities.call_args[0][0]

@@ -9,6 +9,7 @@ from datetime import timedelta
 from unittest.mock import MagicMock
 
 import pytest
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.sinapsi_alfa.const import (
     CONF_HOST,
@@ -21,26 +22,9 @@ from custom_components.sinapsi_alfa.const import (
     VERSION,
 )
 from custom_components.sinapsi_alfa.diagnostics import async_get_config_entry_diagnostics
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
 from .conftest import TEST_HOST, TEST_MAC, TEST_NAME, TEST_PORT, TEST_SCAN_INTERVAL, TEST_TIMEOUT
-
-
-class MockConfigEntry(ConfigEntry):
-    """Mock ConfigEntry for testing."""
-
-    def __init__(self, **kwargs) -> None:
-        """Initialize mock config entry."""
-        kwargs.setdefault("entry_id", "test_entry_id")
-        kwargs.setdefault("version", 2)
-        kwargs.setdefault("minor_version", 1)
-        kwargs.setdefault("source", "user")
-        kwargs.setdefault("title", TEST_NAME)
-        kwargs.setdefault("unique_id", TEST_MAC)
-        kwargs.setdefault("discovery_keys", {})
-        kwargs.setdefault("subentries_data", {})
-        super().__init__(**kwargs)
 
 
 @pytest.fixture
