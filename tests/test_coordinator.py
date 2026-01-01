@@ -18,7 +18,10 @@ from custom_components.sinapsi_alfa.const import (
     MIN_SCAN_INTERVAL,
     MIN_TIMEOUT,
 )
-from custom_components.sinapsi_alfa.coordinator import SinapsiAlfaCoordinator
+from custom_components.sinapsi_alfa.coordinator import (
+    FAILURES_BEFORE_REPAIR_ISSUE,
+    SinapsiAlfaCoordinator,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import UpdateFailed
 
@@ -187,3 +190,200 @@ async def test_coordinator_skip_mac_detection(
             TEST_TIMEOUT,
             True,  # skip_mac_detection
         )
+
+
+async def test_coordinator_update_resets_failure_counter(
+    hass: HomeAssistant,
+    mock_api_data: dict,
+) -> None:
+    """Test successful update resets consecutive failure counter."""
+    entry = create_mock_config_entry()
+
+    with patch(
+        "custom_components.sinapsi_alfa.coordinator.SinapsiAlfaAPI",
+    ) as mock_api_class:
+        mock_api = mock_api_class.return_value
+        mock_api.async_get_data = AsyncMock(return_value=mock_api_data)
+
+        coordinator = SinapsiAlfaCoordinator(hass, entry)
+        # Simulate previous failures
+        coordinator._consecutive_failures = 2
+
+        await coordinator.async_update_data()
+
+        assert coordinator._consecutive_failures == 0
+
+
+async def test_coordinator_update_increments_failure_counter(
+    hass: HomeAssistant,
+) -> None:
+    """Test failed update increments consecutive failure counter."""
+    entry = create_mock_config_entry()
+
+    with patch(
+        "custom_components.sinapsi_alfa.coordinator.SinapsiAlfaAPI",
+    ) as mock_api_class:
+        mock_api = mock_api_class.return_value
+        mock_api.async_get_data = AsyncMock(side_effect=Exception("Connection failed"))
+
+        coordinator = SinapsiAlfaCoordinator(hass, entry)
+        assert coordinator._consecutive_failures == 0
+
+        with pytest.raises(UpdateFailed):
+            await coordinator.async_update_data()
+
+        assert coordinator._consecutive_failures == 1
+
+
+async def test_coordinator_creates_repair_issue_after_repeated_failures(
+    hass: HomeAssistant,
+) -> None:
+    """Test repair issue is created after repeated failures."""
+    entry = create_mock_config_entry()
+
+    with (
+        patch(
+            "custom_components.sinapsi_alfa.coordinator.SinapsiAlfaAPI",
+        ) as mock_api_class,
+        patch(
+            "custom_components.sinapsi_alfa.coordinator.create_connection_issue",
+        ) as mock_create_issue,
+    ):
+        mock_api = mock_api_class.return_value
+        mock_api.async_get_data = AsyncMock(side_effect=Exception("Connection failed"))
+
+        coordinator = SinapsiAlfaCoordinator(hass, entry)
+        # Set failures just below threshold
+        coordinator._consecutive_failures = FAILURES_BEFORE_REPAIR_ISSUE - 1
+
+        with pytest.raises(UpdateFailed):
+            await coordinator.async_update_data()
+
+        # Now at threshold, issue should be created
+        assert coordinator._consecutive_failures == FAILURES_BEFORE_REPAIR_ISSUE
+        mock_create_issue.assert_called_once_with(
+            hass,
+            entry.entry_id,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+        )
+        assert coordinator._repair_issue_created is True
+
+
+async def test_coordinator_does_not_create_duplicate_repair_issue(
+    hass: HomeAssistant,
+) -> None:
+    """Test repair issue is not created if already exists."""
+    entry = create_mock_config_entry()
+
+    with (
+        patch(
+            "custom_components.sinapsi_alfa.coordinator.SinapsiAlfaAPI",
+        ) as mock_api_class,
+        patch(
+            "custom_components.sinapsi_alfa.coordinator.create_connection_issue",
+        ) as mock_create_issue,
+    ):
+        mock_api = mock_api_class.return_value
+        mock_api.async_get_data = AsyncMock(side_effect=Exception("Connection failed"))
+
+        coordinator = SinapsiAlfaCoordinator(hass, entry)
+        # Simulate issue already created
+        coordinator._consecutive_failures = FAILURES_BEFORE_REPAIR_ISSUE
+        coordinator._repair_issue_created = True
+
+        with pytest.raises(UpdateFailed):
+            await coordinator.async_update_data()
+
+        # Should not create another issue
+        mock_create_issue.assert_not_called()
+
+
+async def test_coordinator_deletes_repair_issue_on_success(
+    hass: HomeAssistant,
+    mock_api_data: dict,
+) -> None:
+    """Test repair issue is deleted when connection is restored."""
+    entry = create_mock_config_entry()
+
+    with (
+        patch(
+            "custom_components.sinapsi_alfa.coordinator.SinapsiAlfaAPI",
+        ) as mock_api_class,
+        patch(
+            "custom_components.sinapsi_alfa.coordinator.delete_connection_issue",
+        ) as mock_delete_issue,
+    ):
+        mock_api = mock_api_class.return_value
+        mock_api.async_get_data = AsyncMock(return_value=mock_api_data)
+
+        coordinator = SinapsiAlfaCoordinator(hass, entry)
+        # Simulate repair issue was previously created
+        coordinator._repair_issue_created = True
+        coordinator._consecutive_failures = FAILURES_BEFORE_REPAIR_ISSUE
+
+        await coordinator.async_update_data()
+
+        # Issue should be deleted on successful update
+        mock_delete_issue.assert_called_once_with(hass, entry.entry_id)
+        assert coordinator._repair_issue_created is False
+        assert coordinator._consecutive_failures == 0
+
+
+async def test_coordinator_does_not_delete_nonexistent_repair_issue(
+    hass: HomeAssistant,
+    mock_api_data: dict,
+) -> None:
+    """Test no deletion attempted if repair issue wasn't created."""
+    entry = create_mock_config_entry()
+
+    with (
+        patch(
+            "custom_components.sinapsi_alfa.coordinator.SinapsiAlfaAPI",
+        ) as mock_api_class,
+        patch(
+            "custom_components.sinapsi_alfa.coordinator.delete_connection_issue",
+        ) as mock_delete_issue,
+    ):
+        mock_api = mock_api_class.return_value
+        mock_api.async_get_data = AsyncMock(return_value=mock_api_data)
+
+        coordinator = SinapsiAlfaCoordinator(hass, entry)
+        # No repair issue was created
+        coordinator._repair_issue_created = False
+
+        await coordinator.async_update_data()
+
+        # Should not attempt to delete
+        mock_delete_issue.assert_not_called()
+
+
+async def test_coordinator_failure_below_threshold_no_issue(
+    hass: HomeAssistant,
+) -> None:
+    """Test no repair issue created when failures below threshold."""
+    entry = create_mock_config_entry()
+
+    with (
+        patch(
+            "custom_components.sinapsi_alfa.coordinator.SinapsiAlfaAPI",
+        ) as mock_api_class,
+        patch(
+            "custom_components.sinapsi_alfa.coordinator.create_connection_issue",
+        ) as mock_create_issue,
+    ):
+        mock_api = mock_api_class.return_value
+        mock_api.async_get_data = AsyncMock(side_effect=Exception("Connection failed"))
+
+        coordinator = SinapsiAlfaCoordinator(hass, entry)
+        # Start at 0 failures
+        assert coordinator._consecutive_failures == 0
+
+        # Fail once - should not create issue yet
+        with pytest.raises(UpdateFailed):
+            await coordinator.async_update_data()
+
+        assert coordinator._consecutive_failures == 1
+        mock_create_issue.assert_not_called()
+        assert coordinator._repair_issue_created is False

@@ -2,18 +2,34 @@
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
+from modbuslink import (
+    ConnectionError as ModbusConnectionError,
+    CRCError,
+    InvalidResponseError,
+    ModbusException,
+    ModbusLinkError,
+    TimeoutError as ModbusTimeoutError,
+)
 import pytest
 
+from custom_components.sinapsi_alfa import api as api_module
 from custom_components.sinapsi_alfa.api import (
+    BATCH_MAX_RETRIES,
+    MAX_PROTOCOL_ERRORS_PER_CYCLE,
+    SENSOR_MAP,
     SinapsiAlfaAPI,
     SinapsiConnectionError,
     SinapsiModbusError,
+    _build_sensor_map,
 )
 from custom_components.sinapsi_alfa.const import (
     DEFAULT_SCAN_INTERVAL,
     DEFAULT_TIMEOUT,
     MANUFACTURER,
+    MAX_EVENT_VALUE,
     MODEL,
+    REGISTER_BATCHES,
+    SENSOR_ENTITIES,
 )
 
 from .conftest import TEST_HOST, TEST_NAME, TEST_PORT
@@ -412,3 +428,748 @@ class TestAsyncGetData:
         expected_uid = f"{TEST_HOST.replace('.', '')}_{TEST_PORT}"
         assert api._uid == expected_uid
         assert api.data["sn"] == expected_uid
+
+    async def test_async_get_data_with_mac_detection(self, mock_hass, mock_transport, mock_client):
+        """Test async_get_data with MAC detection enabled."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+            skip_mac_detection=False,
+        )
+
+        with (
+            patch.object(api, "check_port", return_value=True),
+            patch.object(api, "get_mac_address", return_value="AABBCCDDEEFF"),
+            patch.object(api, "read_modbus_alfa", return_value=True),
+        ):
+            result = await api.async_get_data()
+
+        assert result is True
+        assert api._uid == "AABBCCDDEEFF"
+        assert api.data["sn"] == "AABBCCDDEEFF"
+        assert api._connection_healthy is True
+
+    async def test_async_get_data_modbus_connection_error(
+        self, mock_hass, mock_transport, mock_client
+    ):
+        """Test async_get_data handles ModbusConnectionError."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+            skip_mac_detection=True,
+        )
+
+        # Simulate connection error when entering client context
+        mock_client.__aenter__ = AsyncMock(side_effect=ModbusConnectionError("Connection lost"))
+
+        with (
+            patch.object(api, "check_port", return_value=True),
+            pytest.raises(SinapsiConnectionError) as exc_info,
+        ):
+            await api.async_get_data()
+
+        assert "Connection failed" in str(exc_info.value)
+        assert api._connection_healthy is False
+
+    async def test_async_get_data_modbus_timeout_error(
+        self, mock_hass, mock_transport, mock_client
+    ):
+        """Test async_get_data handles ModbusTimeoutError."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+            skip_mac_detection=True,
+        )
+
+        mock_client.__aenter__ = AsyncMock(side_effect=ModbusTimeoutError("Timeout"))
+
+        with (
+            patch.object(api, "check_port", return_value=True),
+            pytest.raises(SinapsiConnectionError) as exc_info,
+        ):
+            await api.async_get_data()
+
+        assert "Connection failed" in str(exc_info.value)
+
+
+class TestSensorMapBuilding:
+    """Tests for sensor map building."""
+
+    def test_build_sensor_map_returns_dict(self):
+        """Test that _build_sensor_map returns a dictionary."""
+        sensor_map = _build_sensor_map()
+        assert isinstance(sensor_map, dict)
+
+    def test_build_sensor_map_excludes_calculated(self):
+        """Test that calculated sensors are excluded from map."""
+        sensor_map = _build_sensor_map()
+        # Calculated sensors should not be in the map
+        assert "potenza_consumata" not in sensor_map
+        assert "potenza_auto_consumata" not in sensor_map
+        assert "energia_consumata" not in sensor_map
+        assert "energia_auto_consumata" not in sensor_map
+
+    def test_build_sensor_map_includes_modbus_sensors(self):
+        """Test that modbus sensors are included in map."""
+        sensor_map = _build_sensor_map()
+        # Check some known modbus sensors
+        assert "potenza_prelevata" in sensor_map
+        assert "energia_prelevata" in sensor_map
+        assert "fascia_oraria_attuale" in sensor_map
+
+    def test_sensor_map_structure(self):
+        """Test sensor map entry structure."""
+        sensor_map = _build_sensor_map()
+        # Each entry should be (batch_index, offset, modbus_type)
+        for value in sensor_map.values():
+            assert isinstance(value, tuple)
+            assert len(value) == 3
+            batch_idx, offset, modbus_type = value
+            assert isinstance(batch_idx, int)
+            assert isinstance(offset, int)
+            assert modbus_type in ("uint16", "uint32")
+
+    def test_sensor_map_global_constant(self):
+        """Test that SENSOR_MAP constant is populated."""
+        assert len(SENSOR_MAP) > 0
+        # Should have all non-calculated sensors
+        non_calc_count = sum(1 for s in SENSOR_ENTITIES if s["modbus_type"] != "calcolato")
+        assert len(SENSOR_MAP) == non_calc_count
+
+
+class TestConnectionReset:
+    """Tests for connection reset functionality."""
+
+    async def test_reset_connection_success(self, mock_hass, mock_transport, mock_client):
+        """Test successful connection reset."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        mock_transport.open = AsyncMock()
+
+        with patch("asyncio.sleep", new_callable=AsyncMock):
+            await api._reset_connection()
+
+        mock_transport.close.assert_called()
+        mock_transport.open.assert_called_once()
+
+    async def test_reset_connection_reconnect_fails(self, mock_hass, mock_transport, mock_client):
+        """Test connection reset when reconnect fails."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        mock_transport.open = AsyncMock(side_effect=OSError("Connection refused"))
+
+        with patch("asyncio.sleep", new_callable=AsyncMock), pytest.raises(OSError):
+            await api._reset_connection()
+
+
+class TestGetMacAddress:
+    """Tests for MAC address retrieval."""
+
+    async def test_get_mac_address_success_first_attempt(
+        self, mock_hass, mock_transport, mock_client
+    ):
+        """Test successful MAC retrieval on first attempt."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        with (
+            patch.object(api, "check_port", return_value=True),
+            patch("custom_components.sinapsi_alfa.api.getmac") as mock_getmac,
+        ):
+            mock_getmac.get_mac_address.return_value = "aa:bb:cc:dd:ee:ff"
+            result = await api.get_mac_address()
+
+        assert result == "AABBCCDDEEFF"
+
+    async def test_get_mac_address_retry_success(self, mock_hass, mock_transport, mock_client):
+        """Test MAC retrieval succeeds after retry."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        with (
+            patch.object(api, "check_port", return_value=True),
+            patch("custom_components.sinapsi_alfa.api.getmac") as mock_getmac,
+            patch("asyncio.sleep", new_callable=AsyncMock),
+        ):
+            # Fail first two attempts, succeed on third
+            mock_getmac.get_mac_address.side_effect = [None, None, "aa:bb:cc:dd:ee:ff"]
+            result = await api.get_mac_address()
+
+        assert result == "AABBCCDDEEFF"
+
+    async def test_get_mac_address_fallback_to_host_id(
+        self, mock_hass, mock_transport, mock_client
+    ):
+        """Test fallback to host-based ID when MAC not found."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        with (
+            patch.object(api, "check_port", return_value=True),
+            patch("custom_components.sinapsi_alfa.api.getmac") as mock_getmac,
+            patch("asyncio.sleep", new_callable=AsyncMock),
+        ):
+            mock_getmac.get_mac_address.return_value = None
+            result = await api.get_mac_address()
+
+        expected = f"{TEST_HOST.replace('.', '')}_{TEST_PORT}"
+        assert result == expected
+
+    async def test_get_mac_address_oserror_retry(self, mock_hass, mock_transport, mock_client):
+        """Test MAC retrieval retries on OSError."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        with (
+            patch.object(api, "check_port", return_value=True),
+            patch("custom_components.sinapsi_alfa.api.getmac") as mock_getmac,
+            patch("asyncio.sleep", new_callable=AsyncMock),
+        ):
+            # OSError then success
+            mock_getmac.get_mac_address.side_effect = [
+                OSError("Network error"),
+                "aa:bb:cc:dd:ee:ff",
+            ]
+            result = await api.get_mac_address()
+
+        assert result == "AABBCCDDEEFF"
+
+
+class TestReadBatch:
+    """Tests for batch reading functionality."""
+
+    async def test_read_batch_success(self, mock_hass, mock_transport, mock_client):
+        """Test successful batch read."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        expected_data = [100, 200, 300, 400, 500]
+        mock_client.read_holding_registers = AsyncMock(return_value=expected_data)
+
+        result = await api._read_batch(2, 5)
+
+        assert result == expected_data
+
+    async def test_read_batch_connection_error_retries(
+        self, mock_hass, mock_transport, mock_client
+    ):
+        """Test batch read retries on connection error."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        expected_data = [100, 200, 300]
+        mock_client.read_holding_registers = AsyncMock(
+            side_effect=[
+                ModbusConnectionError("Connection lost"),
+                ModbusConnectionError("Connection lost"),
+                expected_data,
+            ]
+        )
+
+        with patch("asyncio.sleep", new_callable=AsyncMock):
+            result = await api._read_batch(2, 3)
+
+        assert result == expected_data
+        assert mock_client.read_holding_registers.call_count == 3
+
+    async def test_read_batch_connection_error_exhausted(
+        self, mock_hass, mock_transport, mock_client
+    ):
+        """Test batch read fails after all retries exhausted."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        mock_client.read_holding_registers = AsyncMock(
+            side_effect=ModbusConnectionError("Connection lost")
+        )
+
+        with (
+            patch("asyncio.sleep", new_callable=AsyncMock),
+            pytest.raises(SinapsiConnectionError) as exc_info,
+        ):
+            await api._read_batch(2, 3)
+
+        assert f"Batch read failed after {BATCH_MAX_RETRIES} attempts" in str(exc_info.value)
+        assert api._connection_healthy is False
+
+    async def test_read_batch_timeout_error_retries(self, mock_hass, mock_transport, mock_client):
+        """Test batch read retries on timeout error."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        expected_data = [100, 200]
+        mock_client.read_holding_registers = AsyncMock(
+            side_effect=[
+                ModbusTimeoutError("Timeout"),
+                expected_data,
+            ]
+        )
+
+        with patch("asyncio.sleep", new_callable=AsyncMock):
+            result = await api._read_batch(2, 2)
+
+        assert result == expected_data
+
+    async def test_read_batch_invalid_response_resets_connection(
+        self, mock_hass, mock_transport, mock_client
+    ):
+        """Test batch read resets connection on InvalidResponseError."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        expected_data = [100]
+        mock_client.read_holding_registers = AsyncMock(
+            side_effect=[
+                InvalidResponseError("Transaction ID mismatch"),
+                expected_data,
+            ]
+        )
+
+        with (
+            patch("asyncio.sleep", new_callable=AsyncMock),
+            patch.object(api, "_reset_connection", new_callable=AsyncMock) as mock_reset,
+        ):
+            result = await api._read_batch(2, 1)
+
+        assert result == expected_data
+        mock_reset.assert_called_once()
+        assert api._protocol_errors_this_cycle == 1
+
+    async def test_read_batch_crc_error_resets_connection(
+        self, mock_hass, mock_transport, mock_client
+    ):
+        """Test batch read resets connection on CRCError."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        expected_data = [100]
+        mock_client.read_holding_registers = AsyncMock(
+            side_effect=[
+                CRCError("CRC mismatch"),
+                expected_data,
+            ]
+        )
+
+        with (
+            patch("asyncio.sleep", new_callable=AsyncMock),
+            patch.object(api, "_reset_connection", new_callable=AsyncMock) as mock_reset,
+        ):
+            result = await api._read_batch(2, 1)
+
+        assert result == expected_data
+        mock_reset.assert_called_once()
+
+    async def test_read_batch_modbus_exception_fails_immediately(
+        self, mock_hass, mock_transport, mock_client
+    ):
+        """Test batch read fails immediately on ModbusException."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        mock_client.read_holding_registers = AsyncMock(
+            side_effect=ModbusException("Illegal function")
+        )
+
+        with pytest.raises(SinapsiModbusError) as exc_info:
+            await api._read_batch(2, 1)
+
+        assert "Modbus error at address 2" in str(exc_info.value)
+        # Should fail immediately, not retry
+        assert mock_client.read_holding_registers.call_count == 1
+
+    async def test_read_batch_modbuslink_error_fails_immediately(
+        self, mock_hass, mock_transport, mock_client
+    ):
+        """Test batch read fails immediately on generic ModbusLinkError."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        mock_client.read_holding_registers = AsyncMock(side_effect=ModbusLinkError("Unknown error"))
+
+        with pytest.raises(SinapsiModbusError) as exc_info:
+            await api._read_batch(2, 1)
+
+        assert "ModbusLink error at address 2" in str(exc_info.value)
+
+
+class TestProtocolErrorLimit:
+    """Tests for protocol error limit checking."""
+
+    def test_check_protocol_error_limit_below_threshold(
+        self, mock_hass, mock_transport, mock_client
+    ):
+        """Test no exception when below threshold."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        api._protocol_errors_this_cycle = MAX_PROTOCOL_ERRORS_PER_CYCLE - 1
+        # Should not raise
+        api._check_protocol_error_limit()
+
+    def test_check_protocol_error_limit_at_threshold(self, mock_hass, mock_transport, mock_client):
+        """Test exception raised at threshold."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        api._protocol_errors_this_cycle = MAX_PROTOCOL_ERRORS_PER_CYCLE
+
+        with pytest.raises(SinapsiModbusError) as exc_info:
+            api._check_protocol_error_limit()
+
+        assert "Too many protocol errors" in str(exc_info.value)
+
+
+class TestExtractSensorValue:
+    """Tests for sensor value extraction."""
+
+    def test_extract_sensor_value_uint16(self, mock_hass, mock_transport, mock_client):
+        """Test extracting uint16 sensor value."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        # Create fake batch results
+        batches = [[1000, 2000, 3000] + [0] * 15]  # Batch 0 has 18 registers
+        batches.extend([[0] * 40 for _ in range(len(REGISTER_BATCHES) - 1)])
+
+        # potenza_prelevata is at addr 2, batch 0, offset 0
+        result = api._extract_sensor_value(batches, "potenza_prelevata")
+        assert result == 1000.0
+
+    def test_extract_sensor_value_uint32(self, mock_hass, mock_transport, mock_client):
+        """Test extracting uint32 sensor value."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        # energia_prelevata is at addr 5, batch 0, offset 3 (addr 5 - start 2 = 3)
+        # uint32: high word at offset 3, low word at offset 4
+        batches = [[0, 0, 0, 1, 0] + [0] * 13]  # High=1, Low=0 -> 65536
+        batches.extend([[0] * 40 for _ in range(len(REGISTER_BATCHES) - 1)])
+
+        result = api._extract_sensor_value(batches, "energia_prelevata")
+        assert result == 65536.0
+
+    def test_extract_sensor_value_unknown_type_raises(self, mock_hass, mock_transport, mock_client):
+        """Test that unknown register type raises ValueError."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        # Temporarily modify SENSOR_MAP to test error path
+        original_value = SENSOR_MAP.get("potenza_prelevata")
+        try:
+            # Inject an invalid type
+            api_module.SENSOR_MAP["potenza_prelevata"] = (0, 0, "invalid_type")
+
+            batches = [[0] * 18]
+            batches.extend([[0] * 40 for _ in range(len(REGISTER_BATCHES) - 1)])
+
+            with pytest.raises(ValueError, match="Unknown register type"):
+                api._extract_sensor_value(batches, "potenza_prelevata")
+        finally:
+            # Restore original
+            if original_value:
+                api_module.SENSOR_MAP["potenza_prelevata"] = original_value
+
+
+class TestProcessSensorValue:
+    """Tests for sensor value processing."""
+
+    def test_process_sensor_value_power_conversion(self, mock_hass, mock_transport, mock_client):
+        """Test power values are converted from W to kW."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        # Find a power sensor definition
+        power_sensor = next(s for s in SENSOR_ENTITIES if s["key"] == "potenza_prelevata")
+
+        result = api._process_sensor_value(1500.0, power_sensor)
+        assert result == 1.5  # 1500 W = 1.5 kW
+
+    def test_process_sensor_value_energy_conversion(self, mock_hass, mock_transport, mock_client):
+        """Test energy values are converted from Wh to kWh."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        energy_sensor = next(s for s in SENSOR_ENTITIES if s["key"] == "energia_prelevata")
+
+        result = api._process_sensor_value(2500000.0, energy_sensor)
+        assert result == 2500.0  # 2500000 Wh = 2500 kWh
+
+    def test_process_sensor_value_non_energy_integer(self, mock_hass, mock_transport, mock_client):
+        """Test non-energy values are converted to int."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        # fascia_oraria_attuale has no device class for energy/power
+        fascia_sensor = next(s for s in SENSOR_ENTITIES if s["key"] == "fascia_oraria_attuale")
+
+        result = api._process_sensor_value(3.7, fascia_sensor)
+        assert result == "F3"  # Converted to int (3), then F3
+
+
+class TestApplySpecialValueRules:
+    """Tests for special value rules."""
+
+    def test_data_evento_max_value_returns_none(self, mock_hass, mock_transport, mock_client):
+        """Test data_evento returns 'None' for MAX_EVENT_VALUE."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        result = api._apply_special_value_rules(MAX_EVENT_VALUE + 1, "data_evento")
+        assert result == "None"
+
+    def test_data_evento_valid_timestamp(self, mock_hass, mock_transport, mock_client):
+        """Test data_evento converts valid timestamp."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        # Set tempo_residuo_distacco for calculation
+        api.data["tempo_residuo_distacco"] = 0
+
+        # Use a known timestamp
+        result = api._apply_special_value_rules(
+            1704067200, "data_evento"
+        )  # 2024-01-01 00:00:00 UTC
+        assert isinstance(result, str)
+        assert "2024" in result
+
+    def test_normal_value_passthrough(self, mock_hass, mock_transport, mock_client):
+        """Test normal values pass through unchanged."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        result = api._apply_special_value_rules(12345, "some_other_key")
+        assert result == 12345
+
+
+class TestReadModbusAlfa:
+    """Tests for read_modbus_alfa method."""
+
+    async def test_read_modbus_alfa_success(self, mock_hass, mock_transport, mock_client):
+        """Test successful modbus read."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        # Return enough registers for each batch
+        mock_client.read_holding_registers = AsyncMock(return_value=[0] * 40)
+
+        result = await api.read_modbus_alfa()
+
+        assert result is True
+        assert api._protocol_errors_this_cycle == 0
+        # Verify derived values were calculated
+        assert "potenza_consumata" in api.data
+        assert "energia_consumata" in api.data
+
+    async def test_read_modbus_alfa_batch_failure(self, mock_hass, mock_transport, mock_client):
+        """Test modbus read fails when batch read fails."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        mock_client.read_holding_registers = AsyncMock(
+            side_effect=ModbusConnectionError("Connection lost")
+        )
+
+        with (
+            patch("asyncio.sleep", new_callable=AsyncMock),
+            pytest.raises(SinapsiModbusError) as exc_info,
+        ):
+            await api.read_modbus_alfa()
+
+        assert "Failed to read modbus data" in str(exc_info.value)
+
+    async def test_read_modbus_alfa_aborts_on_protocol_errors(
+        self, mock_hass, mock_transport, mock_client
+    ):
+        """Test modbus read aborts early on too many protocol errors."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        # Simulate protocol errors being accumulated
+        api._protocol_errors_this_cycle = MAX_PROTOCOL_ERRORS_PER_CYCLE
+
+        with pytest.raises(SinapsiModbusError) as exc_info:
+            await api.read_modbus_alfa()
+
+        assert "Too many protocol errors" in str(exc_info.value)
