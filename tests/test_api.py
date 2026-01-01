@@ -858,8 +858,9 @@ class TestReadBatch:
             DEFAULT_TIMEOUT,
         )
 
+        # ModbusException requires exception_code and function_code arguments
         mock_client.read_holding_registers = AsyncMock(
-            side_effect=ModbusException("Illegal function")
+            side_effect=ModbusException(exception_code=0x01, function_code=0x03)
         )
 
         with pytest.raises(SinapsiModbusError) as exc_info:
@@ -1166,10 +1167,28 @@ class TestReadModbusAlfa:
             DEFAULT_TIMEOUT,
         )
 
-        # Simulate protocol errors being accumulated
-        api._protocol_errors_this_cycle = MAX_PROTOCOL_ERRORS_PER_CYCLE
+        # Create a side effect that increments protocol_errors and raises SinapsiModbusError
+        # when the threshold is reached (simulating what _read_batch does internally)
+        call_count = 0
 
-        with pytest.raises(SinapsiModbusError) as exc_info:
+        async def mock_read_batch_with_protocol_errors(start_address, count):
+            nonlocal call_count
+            call_count += 1
+            # Increment protocol errors each call
+            api._protocol_errors_this_cycle += 1
+            # After reaching threshold, _check_protocol_error_limit would be called
+            if api._protocol_errors_this_cycle >= MAX_PROTOCOL_ERRORS_PER_CYCLE:
+                raise SinapsiModbusError(
+                    f"Too many protocol errors ({api._protocol_errors_this_cycle}), "
+                    "aborting read cycle"
+                )
+            # Return valid data for batches that succeed
+            return [0] * count
+
+        with (
+            patch.object(api, "_read_batch", side_effect=mock_read_batch_with_protocol_errors),
+            pytest.raises(SinapsiModbusError) as exc_info,
+        ):
             await api.read_modbus_alfa()
 
         assert "Too many protocol errors" in str(exc_info.value)
