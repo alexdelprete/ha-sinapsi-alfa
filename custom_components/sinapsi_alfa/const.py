@@ -3,8 +3,25 @@
 https://github.com/alexdelprete/ha-sinapsi-alfa
 """
 
+from typing import TypedDict
+
 from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
 from homeassistant.const import UnitOfEnergy, UnitOfPower
+
+
+class SensorEntityDefinition(TypedDict, total=False):
+    """Type definition for sensor entity configuration."""
+
+    name: str
+    key: str
+    icon: str
+    device_class: SensorDeviceClass | None
+    state_class: SensorStateClass | None
+    unit: str | None
+    modbus_type: str
+    modbus_addr: int | None
+    disabled_by_default: bool
+
 
 # Base component constants
 NAME = "Sinapsi Alfa"
@@ -65,7 +82,7 @@ If you have any issues with this you need to open an issue here:
 """
 
 # Sensor definitions
-SENSOR_ENTITIES = [
+SENSOR_ENTITIES: list[SensorEntityDefinition] = [
     {
         "name": "Potenza Prelevata",
         "key": "potenza_prelevata",

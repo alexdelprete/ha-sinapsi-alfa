@@ -38,4 +38,4 @@ jobs:
         run: uv pip install -e ".[dev]" --system
 
       - name: Run ty
-        run: uvx ty check custom_components/sinapsi_alfa
+        run: uvx ty check custom_components/sinapsi_alfa --python $(which python)
