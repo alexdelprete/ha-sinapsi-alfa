@@ -34,8 +34,9 @@ jobs:
         run: uvx ruff check .
 
       # ty needs dependencies installed to resolve imports (homeassistant, modbuslink, etc.)
+      # Use uv sync to create venv with all dependencies, then uv run uses that venv
       - name: Install dependencies for ty
-        run: uv pip install -e ".[dev]" --system
+        run: uv sync --all-extras
 
       - name: Run ty
         run: uv run ty check custom_components/sinapsi_alfa
