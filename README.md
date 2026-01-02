@@ -32,8 +32,18 @@ integration for Alfa devices. :)
 - **Translated sensor names**: Sensor names displayed in your Home Assistant
   language (supports German, English, Spanish, Estonian, Finnish, French,
   Italian, Norwegian, Portuguese, and Swedish)
-- **Options flow**: Adjust polling interval and connection timeout at runtime
+- **Options flow**: Adjust polling interval, connection timeout, and repair
+  notification settings at runtime
 - **Reconfigure flow**: Change device name, host, port, and skip MAC detection
+- **Repair notifications**: Connection issues are surfaced in Home Assistant's
+  repair system with configurable threshold
+- **Recovery notifications**: Detailed timing info (downtime, script execution)
+  when device recovers
+- **Device triggers**: Automate based on device connection events (unreachable,
+  not responding, recovered)
+- **Recovery script**: Optionally execute a script when connection failures
+  reach the threshold
+- **Diagnostics**: Downloadable diagnostics file for troubleshooting
 - All changes apply immediately without Home Assistant restart
 
 ## Technical Architecture
@@ -102,7 +112,13 @@ After installation, you can adjust runtime settings without restart:
 
 1. Go to **Settings** > **Devices & Services** > **Alfa by Sinapsi**
 1. Click **Configure** to open the options dialog
-1. Adjust **Polling interval** and **Connection timeout**
+1. Adjust the available options:
+   - **Recovery script**: Script to execute when failure threshold is reached
+   - **Enable repair notifications**: Toggle repair issue creation on/off
+   - **Failures before notification**: Number of failures before creating
+     repair issue (1-10)
+   - **Polling interval**: How often to read data (30-600 seconds)
+   - **Connection timeout**: How long to wait for response (5-60 seconds)
 1. Click **Submit** - changes apply immediately
 
 ### Reconfiguring Connection Settings
@@ -120,6 +136,122 @@ device name or host will not affect your historical data or automations.
 ## Sensor View
 
 ![Sensors][img-sensors]
+
+## Device Triggers
+
+The integration provides device triggers that allow you to create automations
+based on device connection events. These triggers fire when the Sinapsi Alfa
+device experiences connectivity issues or recovers from them.
+
+### Available Triggers
+
+| Trigger | Description |
+|---------|-------------|
+| **Device unreachable** | Fires when the device cannot be reached (network/connection issue) |
+| **Device not responding** | Fires when Modbus communication fails |
+| **Device recovered** | Fires when the device starts responding again after a failure |
+
+### How to Use Device Triggers
+
+1. Go to **Settings > Automations & Scenes > Create Automation**
+2. Click **Add Trigger** and select **Device**
+3. Select your Sinapsi Alfa device
+4. Choose from the available triggers (e.g., "Device unreachable")
+
+### Device Trigger Automation Example
+
+Get notified when your Sinapsi Alfa device goes offline and comes back online:
+
+```yaml
+automation:
+  - alias: "Sinapsi Alfa Device Offline Alert"
+    trigger:
+      - platform: device
+        domain: sinapsi_alfa
+        device_id: YOUR_DEVICE_ID
+        type: device_unreachable
+    action:
+      - service: notify.mobile_app
+        data:
+          title: "Sinapsi Alfa Offline"
+          message: "The Sinapsi Alfa device is unreachable. Check network connection."
+
+  - alias: "Sinapsi Alfa Device Recovered"
+    trigger:
+      - platform: device
+        domain: sinapsi_alfa
+        device_id: YOUR_DEVICE_ID
+        type: device_recovered
+    action:
+      - service: notify.mobile_app
+        data:
+          title: "Sinapsi Alfa Online"
+          message: "The Sinapsi Alfa device is back online and responding."
+```
+
+## Recovery Script
+
+You can configure a Home Assistant script to run automatically when connection
+failures reach the configured threshold. This is useful for automated recovery
+actions like restarting a smart plug that powers the device.
+
+### Configuration
+
+1. Go to **Settings > Devices & Services > Alfa by Sinapsi**
+2. Click **Configure** to open the options dialog
+3. Select a script from the **Recovery script** dropdown
+4. The script will run when the failure threshold is reached
+
+### Script Variables
+
+When the recovery script is executed, it receives these variables:
+
+| Variable | Description |
+|----------|-------------|
+| `device_name` | Device name as configured in the integration |
+| `host` | IP address or hostname of the device |
+| `port` | TCP port (usually 502) |
+| `serial_number` | Device serial number |
+| `mac_address` | Device MAC address |
+| `failures_count` | Number of consecutive failures |
+
+### Example Recovery Script
+
+Create a script that restarts a smart plug and sends a notification:
+
+```yaml
+script:
+  alfa_recovery:
+    alias: "Alfa Recovery Script"
+    sequence:
+      - service: notify.mobile_app
+        data:
+          title: "Alfa Recovery"
+          message: >
+            Device {{ device_name }} at {{ host }}:{{ port }} failed
+            {{ failures_count }} times. Restarting power...
+      - service: switch.turn_off
+        target:
+          entity_id: switch.alfa_smart_plug
+      - delay:
+          seconds: 10
+      - service: switch.turn_on
+        target:
+          entity_id: switch.alfa_smart_plug
+```
+
+## Recovery Notifications
+
+When the device recovers from a failure, the integration creates a persistent
+repair notification with detailed timing information:
+
+- **Failure started**: When the issue began
+- **Script executed**: When the recovery script ran (if configured)
+- **Recovery time**: When the device became responsive again
+- **Total downtime**: Duration of the outage (e.g., "5m 23s")
+
+These notifications appear in **Settings > System > Repairs** and require
+user acknowledgment to dismiss.
 
 ## Use Cases
 

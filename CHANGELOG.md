@@ -9,6 +9,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 TBD
 
+## [1.2.1] - 2026-01-02
+
+**Stable release** - Feature alignment with ha-4noks-elios4you v1.1.0.
+
+### ✨ New Features
+
+- **Device triggers** - Home Assistant device automation triggers for connectivity events:
+  - `device_unreachable` - Network/connection issues
+  - `device_not_responding` - Modbus communication errors
+  - `device_recovered` - Device back online
+- **Configurable repair notifications** - New options in integration settings:
+  - Toggle to enable/disable repair notifications
+  - Configurable failure threshold (1-10)
+  - Optional recovery script execution
+- **Recovery script support** - Execute a script when failure threshold is reached
+- **Recovery notifications** - Informative notification when device recovers with downtime details
+- **Enhanced Options Flow UI** - Modern selectors (EntitySelector, NumberSelector)
+
+### 🔧 Improvements
+
+- **Config Entry VERSION 3** - Automatic migration from v2 with new options
+- **Downtime tracking** - Track failure start time for accurate downtime reporting
+
+**Full Release Notes:** [docs/releases/v1.2.1.md](docs/releases/v1.2.1.md)
+
+**Full Changelog:** [v1.2.0...v1.2.1](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.2.0...v1.2.1)
+
 ## [1.2.0] - 2025-12-29
 
 **Stable release** - Gold tier Quality Scale compliance with enterprise-grade features.

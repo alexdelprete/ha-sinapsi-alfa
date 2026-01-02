@@ -44,10 +44,13 @@
     "step": {
       "init": {
         "title": "Opzioni Runtime Alfa",
-        "description": "Regola le impostazioni di polling e timeout",
+        "description": "Configura le opzioni di runtime.\n\n**Variabili Script di Recupero:**\nQuando configurato, lo script di recupero riceve queste variabili:\n- `device_name`: Nome dispositivo\n- `host`: Indirizzo IP/hostname\n- `port`: Porta TCP\n- `serial_number`: Numero seriale\n- `mac_address`: Indirizzo MAC\n- `failures_count`: Numero di errori consecutivi",
         "data": {
-          "scan_interval": "Intervallo di polling (min: 30s max: 600s)",
-          "timeout": "Timeout connessione (min: 5s max: 60s)"
+          "scan_interval": "Intervallo di polling (secondi)",
+          "timeout": "Timeout connessione (secondi)",
+          "enable_repair_notification": "Abilita notifiche di riparazione",
+          "failures_threshold": "Errori prima della notifica (1-10)",
+          "recovery_script": "Script di recupero (opzionale, eseguito quando il dispositivo smette di rispondere)"
         }
       }
     }
@@ -152,6 +155,21 @@
     "connection_failed": {
       "title": "Impossibile connettersi a {device_name}",
       "description": "L'integrazione non riesce a connettersi al dispositivo Sinapsi Alfa su {host}:{port}.\n\n**Possibili cause:**\n- Il dispositivo e spento o non connesso alla rete\n- L'indirizzo IP e cambiato\n- Un firewall sta bloccando la connessione\n- La porta Modbus TCP (502) non e accessibile\n\n**Per risolvere:**\n1. Verificare che il dispositivo sia acceso e connesso alla rete\n2. Controllare l'indirizzo IP nella tabella DHCP del router\n3. Provare ad accedere direttamente all'interfaccia web del dispositivo\n4. Se l'IP e cambiato, riconfigurare l'integrazione con il nuovo indirizzo"
+    },
+    "recovery_success": {
+      "title": "{device_name} si è ripreso",
+      "description": "Il dispositivo Sinapsi Alfa sta rispondendo di nuovo.\n\n**Inizio errore:** {started_at}\n**Script eseguito:** {script_executed_at}\n**Ora ripristino:** {ended_at}\n**Tempo di inattività:** {downtime}\n\nLo script di recupero **{script_name}** è stato eseguito.\n\nChiudi questa notifica per confermare."
+    },
+    "recovery_success_no_script": {
+      "title": "{device_name} si è ripreso",
+      "description": "Il dispositivo Sinapsi Alfa sta rispondendo di nuovo.\n\n**Inizio errore:** {started_at}\n**Ora ripristino:** {ended_at}\n**Tempo di inattività:** {downtime}\n\nChiudi questa notifica per confermare."
+    }
+  },
+  "device_automation": {
+    "trigger_type": {
+      "device_unreachable": "{device_name} non raggiungibile (problema di rete)",
+      "device_not_responding": "{device_name} non risponde (errore Modbus)",
+      "device_recovered": "{device_name} ripristinato"
     }
   }
 }

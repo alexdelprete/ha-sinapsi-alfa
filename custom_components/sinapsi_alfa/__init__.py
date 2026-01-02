@@ -13,10 +13,16 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr
 
 from .const import (
+    CONF_ENABLE_REPAIR_NOTIFICATION,
+    CONF_FAILURES_THRESHOLD,
     CONF_HOST,
     CONF_NAME,
+    CONF_RECOVERY_SCRIPT,
     CONF_SCAN_INTERVAL,
     CONF_TIMEOUT,
+    DEFAULT_ENABLE_REPAIR_NOTIFICATION,
+    DEFAULT_FAILURES_THRESHOLD,
+    DEFAULT_RECOVERY_SCRIPT,
     DEFAULT_SCAN_INTERVAL,
     DEFAULT_TIMEOUT,
     DOMAIN,
@@ -96,6 +102,18 @@ def async_update_device_registry(hass: HomeAssistant, config_entry: SinapsiAlfaC
         via_device=None,
     )
 
+    # Store device_id in coordinator for device triggers
+    serial_number = str(coordinator.api.data.get("sn", ""))
+    device = device_registry.async_get_device(identifiers={(DOMAIN, serial_number)})
+    if device:
+        coordinator.device_id = device.id
+        log_debug(
+            _LOGGER,
+            "async_update_device_registry",
+            "Device ID stored in coordinator",
+            device_id=device.id,
+        )
+
 
 async def async_remove_config_entry_device(
     hass: HomeAssistant, config_entry: ConfigEntry, device_entry: dr.DeviceEntry
@@ -136,15 +154,20 @@ async def async_unload_entry(hass: HomeAssistant, config_entry: SinapsiAlfaConfi
 
 
 async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
-    """Migrate old config entry to new format."""
+    """Migrate old config entry to new format.
+
+    This function handles migration of config entries when the schema version changes.
+    """
+    current_version = 3
+
     # Handle downgrade scenario (per HA best practice)
-    if config_entry.version > 2:
+    if config_entry.version > current_version:
         log_error(
             _LOGGER,
             "async_migrate_entry",
             "Cannot downgrade from future version",
             from_version=config_entry.version,
-            current_version=2,
+            current_version=current_version,
         )
         return False
 
@@ -153,7 +176,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
         "async_migrate_entry",
         "Starting migration",
         from_version=config_entry.version,
-        target_version=2,
+        target_version=current_version,
     )
 
     if config_entry.version == 1:
@@ -206,13 +229,25 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
             options=new_options,
             version=2,
         )
+        log_info(_LOGGER, "async_migrate_entry", "Migration to version 2 complete")
 
-        log_info(
-            _LOGGER,
-            "async_migrate_entry",
-            "Migration complete",
-            data_keys=list(new_data.keys()),
-            options_keys=list(new_options.keys()),
+    if config_entry.version == 2:
+        # Migrate from v2 to v3: add new repair notification options with defaults
+        new_options = {**config_entry.options}
+
+        # Add new options with defaults if not present
+        if CONF_ENABLE_REPAIR_NOTIFICATION not in new_options:
+            new_options[CONF_ENABLE_REPAIR_NOTIFICATION] = DEFAULT_ENABLE_REPAIR_NOTIFICATION
+        if CONF_FAILURES_THRESHOLD not in new_options:
+            new_options[CONF_FAILURES_THRESHOLD] = DEFAULT_FAILURES_THRESHOLD
+        if CONF_RECOVERY_SCRIPT not in new_options:
+            new_options[CONF_RECOVERY_SCRIPT] = DEFAULT_RECOVERY_SCRIPT
+
+        hass.config_entries.async_update_entry(
+            config_entry,
+            options=new_options,
+            version=3,
         )
+        log_info(_LOGGER, "async_migrate_entry", "Migration to version 3 complete")
 
     return True

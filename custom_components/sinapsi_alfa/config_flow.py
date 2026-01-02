@@ -17,24 +17,39 @@ from homeassistant.config_entries import (
 )
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers.selector import (
+    EntitySelector,
+    EntitySelectorConfig,
+    NumberSelector,
+    NumberSelectorConfig,
+    NumberSelectorMode,
+)
 
 from .api import SinapsiAlfaAPI, SinapsiConnectionError, SinapsiModbusError
 from .const import (
+    CONF_ENABLE_REPAIR_NOTIFICATION,
+    CONF_FAILURES_THRESHOLD,
     CONF_HOST,
     CONF_NAME,
     CONF_PORT,
+    CONF_RECOVERY_SCRIPT,
     CONF_SCAN_INTERVAL,
     CONF_SKIP_MAC_DETECTION,
     CONF_TIMEOUT,
+    DEFAULT_ENABLE_REPAIR_NOTIFICATION,
+    DEFAULT_FAILURES_THRESHOLD,
     DEFAULT_NAME,
     DEFAULT_PORT,
+    DEFAULT_RECOVERY_SCRIPT,
     DEFAULT_SCAN_INTERVAL,
     DEFAULT_SKIP_MAC_DETECTION,
     DEFAULT_TIMEOUT,
     DOMAIN,
+    MAX_FAILURES_THRESHOLD,
     MAX_PORT,
     MAX_SCAN_INTERVAL,
     MAX_TIMEOUT,
+    MIN_FAILURES_THRESHOLD,
     MIN_PORT,
     MIN_SCAN_INTERVAL,
     MIN_TIMEOUT,
@@ -56,7 +71,7 @@ def get_host_from_config(hass: HomeAssistant) -> set[str | None]:
 class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg]
     """Sinapsi Alfa config flow."""
 
-    VERSION = 2
+    VERSION = 3
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
 
     @staticmethod
@@ -285,28 +300,72 @@ class SinapsiAlfaOptionsFlow(OptionsFlowWithReload):
                 "Options updated",
                 scan_interval=user_input.get(CONF_SCAN_INTERVAL),
                 timeout=user_input.get(CONF_TIMEOUT),
+                enable_repair_notification=user_input.get(CONF_ENABLE_REPAIR_NOTIFICATION),
+                failures_threshold=user_input.get(CONF_FAILURES_THRESHOLD),
+                recovery_script=user_input.get(CONF_RECOVERY_SCRIPT),
             )
             return self.async_create_entry(data=user_input)
+
+        # Get current options with defaults
+        current_options = self.config_entry.options
+        enable_repair = current_options.get(
+            CONF_ENABLE_REPAIR_NOTIFICATION, DEFAULT_ENABLE_REPAIR_NOTIFICATION
+        )
+        failures_threshold = current_options.get(
+            CONF_FAILURES_THRESHOLD, DEFAULT_FAILURES_THRESHOLD
+        )
+        recovery_script = current_options.get(CONF_RECOVERY_SCRIPT, DEFAULT_RECOVERY_SCRIPT)
 
         return self.async_show_form(
             step_id="init",
             data_schema=vol.Schema(
                 {
+                    # 1. Recovery script (right after variables description)
+                    vol.Optional(
+                        CONF_RECOVERY_SCRIPT,
+                        default=recovery_script,
+                    ): EntitySelector(
+                        EntitySelectorConfig(domain="script"),
+                    ),
+                    # 2. Enable repair notifications checkbox
+                    vol.Required(
+                        CONF_ENABLE_REPAIR_NOTIFICATION,
+                        default=enable_repair,
+                    ): cv.boolean,
+                    # 3. Failures threshold as input box (not slider)
+                    vol.Required(
+                        CONF_FAILURES_THRESHOLD,
+                        default=failures_threshold,
+                    ): NumberSelector(
+                        NumberSelectorConfig(
+                            min=MIN_FAILURES_THRESHOLD,
+                            max=MAX_FAILURES_THRESHOLD,
+                            mode=NumberSelectorMode.BOX,
+                        )
+                    ),
+                    # 4. Polling period
                     vol.Required(
                         CONF_SCAN_INTERVAL,
-                        default=self.config_entry.options.get(
-                            CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
-                        ),
-                    ): vol.All(
-                        vol.Coerce(int),
-                        vol.Clamp(min=MIN_SCAN_INTERVAL, max=MAX_SCAN_INTERVAL),
+                        default=current_options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL),
+                    ): NumberSelector(
+                        NumberSelectorConfig(
+                            min=MIN_SCAN_INTERVAL,
+                            max=MAX_SCAN_INTERVAL,
+                            mode=NumberSelectorMode.BOX,
+                            unit_of_measurement="seconds",
+                        )
                     ),
+                    # 5. Connection timeout
                     vol.Required(
                         CONF_TIMEOUT,
-                        default=self.config_entry.options.get(CONF_TIMEOUT, DEFAULT_TIMEOUT),
-                    ): vol.All(
-                        vol.Coerce(int),
-                        vol.Clamp(min=MIN_TIMEOUT, max=MAX_TIMEOUT),
+                        default=current_options.get(CONF_TIMEOUT, DEFAULT_TIMEOUT),
+                    ): NumberSelector(
+                        NumberSelectorConfig(
+                            min=MIN_TIMEOUT,
+                            max=MAX_TIMEOUT,
+                            mode=NumberSelectorMode.BOX,
+                            unit_of_measurement="seconds",
+                        )
                     ),
                 },
             ),

@@ -44,10 +44,13 @@
     "step": {
       "init": {
         "title": "Alfa Runtime Options",
-        "description": "Adjust polling and timeout settings",
+        "description": "Configure runtime options.\n\n**Recovery Script Variables:**\nWhen configured, the recovery script receives these variables:\n- `device_name`: Device name\n- `host`: IP address/hostname\n- `port`: TCP port\n- `serial_number`: Device serial number\n- `mac_address`: Device MAC address\n- `failures_count`: Number of consecutive failures",
         "data": {
-          "scan_interval": "Polling interval (min: 30s max: 600s)",
-          "timeout": "Connection timeout (min: 5s max: 60s)"
+          "scan_interval": "Polling interval (seconds)",
+          "timeout": "Connection timeout (seconds)",
+          "enable_repair_notification": "Enable repair notifications",
+          "failures_threshold": "Failures before notification (1-10)",
+          "recovery_script": "Recovery script (optional, runs when device stops responding)"
         }
       }
     }
@@ -152,6 +155,21 @@
     "connection_failed": {
       "title": "Cannot connect to {device_name}",
       "description": "The integration cannot connect to your Sinapsi Alfa device at {host}:{port}.\n\n**Possible causes:**\n- The device is powered off or not connected to the network\n- The IP address has changed\n- A firewall is blocking the connection\n- The Modbus TCP port (502) is not accessible\n\n**To resolve:**\n1. Check that the device is powered on and connected to your network\n2. Verify the IP address in your router's DHCP table\n3. Try accessing the device's web interface directly\n4. If the IP has changed, reconfigure the integration with the new address"
+    },
+    "recovery_success": {
+      "title": "{device_name} has recovered",
+      "description": "Your Sinapsi Alfa device is now responding again.\n\n**Failure started:** {started_at}\n**Script executed:** {script_executed_at}\n**Recovery time:** {ended_at}\n**Total downtime:** {downtime}\n\nThe recovery script **{script_name}** was executed.\n\nPlease dismiss this notification to acknowledge."
+    },
+    "recovery_success_no_script": {
+      "title": "{device_name} has recovered",
+      "description": "Your Sinapsi Alfa device is now responding again.\n\n**Failure started:** {started_at}\n**Recovery time:** {ended_at}\n**Total downtime:** {downtime}\n\nPlease dismiss this notification to acknowledge."
+    }
+  },
+  "device_automation": {
+    "trigger_type": {
+      "device_unreachable": "{device_name} is unreachable (network issue)",
+      "device_not_responding": "{device_name} is not responding (Modbus error)",
+      "device_recovered": "{device_name} recovered"
     }
   }
 }
