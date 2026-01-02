@@ -6,22 +6,25 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from custom_components.sinapsi_alfa.const import (
+    CONF_ENABLE_REPAIR_NOTIFICATION,
+    CONF_FAILURES_THRESHOLD,
     CONF_HOST,
     CONF_NAME,
     CONF_PORT,
+    CONF_RECOVERY_SCRIPT,
     CONF_SCAN_INTERVAL,
     CONF_SKIP_MAC_DETECTION,
     CONF_TIMEOUT,
+    DEFAULT_ENABLE_REPAIR_NOTIFICATION,
+    DEFAULT_FAILURES_THRESHOLD,
+    DEFAULT_RECOVERY_SCRIPT,
     DOMAIN,
     MAX_SCAN_INTERVAL,
     MAX_TIMEOUT,
     MIN_SCAN_INTERVAL,
     MIN_TIMEOUT,
 )
-from custom_components.sinapsi_alfa.coordinator import (
-    FAILURES_BEFORE_REPAIR_ISSUE,
-    SinapsiAlfaCoordinator,
-)
+from custom_components.sinapsi_alfa.coordinator import SinapsiAlfaCoordinator
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import UpdateFailed
 
@@ -32,6 +35,9 @@ def create_mock_config_entry(
     scan_interval: int = TEST_SCAN_INTERVAL,
     timeout: int = TEST_TIMEOUT,
     skip_mac_detection: bool = False,
+    enable_repair_notification: bool = DEFAULT_ENABLE_REPAIR_NOTIFICATION,
+    failures_threshold: int = DEFAULT_FAILURES_THRESHOLD,
+    recovery_script: str = DEFAULT_RECOVERY_SCRIPT,
 ) -> MagicMock:
     """Create a mock config entry."""
     entry = MagicMock()
@@ -48,6 +54,9 @@ def create_mock_config_entry(
     entry.options = {
         CONF_SCAN_INTERVAL: scan_interval,
         CONF_TIMEOUT: timeout,
+        CONF_ENABLE_REPAIR_NOTIFICATION: enable_repair_notification,
+        CONF_FAILURES_THRESHOLD: failures_threshold,
+        CONF_RECOVERY_SCRIPT: recovery_script,
     }
     return entry
 
@@ -253,14 +262,14 @@ async def test_coordinator_creates_repair_issue_after_repeated_failures(
         mock_api.async_get_data = AsyncMock(side_effect=Exception("Connection failed"))
 
         coordinator = SinapsiAlfaCoordinator(hass, entry)
-        # Set failures just below threshold
-        coordinator._consecutive_failures = FAILURES_BEFORE_REPAIR_ISSUE - 1
+        # Set failures just below threshold (uses configurable _failures_threshold)
+        coordinator._consecutive_failures = DEFAULT_FAILURES_THRESHOLD - 1
 
         with pytest.raises(UpdateFailed):
             await coordinator.async_update_data()
 
         # Now at threshold, issue should be created
-        assert coordinator._consecutive_failures == FAILURES_BEFORE_REPAIR_ISSUE
+        assert coordinator._consecutive_failures == DEFAULT_FAILURES_THRESHOLD
         mock_create_issue.assert_called_once_with(
             hass,
             entry.entry_id,
@@ -290,7 +299,7 @@ async def test_coordinator_does_not_create_duplicate_repair_issue(
 
         coordinator = SinapsiAlfaCoordinator(hass, entry)
         # Simulate issue already created
-        coordinator._consecutive_failures = FAILURES_BEFORE_REPAIR_ISSUE
+        coordinator._consecutive_failures = DEFAULT_FAILURES_THRESHOLD
         coordinator._repair_issue_created = True
 
         with pytest.raises(UpdateFailed):
@@ -314,6 +323,9 @@ async def test_coordinator_deletes_repair_issue_on_success(
         patch(
             "custom_components.sinapsi_alfa.coordinator.delete_connection_issue",
         ) as mock_delete_issue,
+        patch(
+            "custom_components.sinapsi_alfa.coordinator.create_recovery_notification",
+        ),
     ):
         mock_api = mock_api_class.return_value
         mock_api.async_get_data = AsyncMock(return_value=mock_api_data)
@@ -321,7 +333,7 @@ async def test_coordinator_deletes_repair_issue_on_success(
         coordinator = SinapsiAlfaCoordinator(hass, entry)
         # Simulate repair issue was previously created
         coordinator._repair_issue_created = True
-        coordinator._consecutive_failures = FAILURES_BEFORE_REPAIR_ISSUE
+        coordinator._consecutive_failures = DEFAULT_FAILURES_THRESHOLD
 
         await coordinator.async_update_data()
 
