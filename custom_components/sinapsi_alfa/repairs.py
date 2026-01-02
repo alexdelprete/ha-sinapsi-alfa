@@ -3,8 +3,11 @@
 https://github.com/alexdelprete/ha-sinapsi-alfa
 """
 
+from __future__ import annotations
+
 import logging
 
+from homeassistant.components.repairs import ConfirmRepairFlow, RepairsFlow
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import issue_registry as ir
 
@@ -16,6 +19,30 @@ _LOGGER = logging.getLogger(__name__)
 ISSUE_CONNECTION_FAILED = "connection_failed"
 ISSUE_RECOVERY_SUCCESS = "recovery_success"
 ISSUE_RECOVERY_SUCCESS_NO_SCRIPT = "recovery_success_no_script"
+
+
+async def async_create_fix_flow(
+    hass: HomeAssistant,
+    issue_id: str,
+    data: dict[str, str | int | float | None] | None,
+) -> RepairsFlow:
+    """Create flow to handle fixing a repair issue.
+
+    This is called when a user clicks on a fixable repair issue.
+    For recovery notifications, we use ConfirmRepairFlow which shows
+    a simple confirmation dialog to acknowledge and dismiss the issue.
+
+    Args:
+        hass: HomeAssistant instance
+        issue_id: The issue ID (e.g., "recovery_success_<entry_id>")
+        data: Optional data associated with the issue
+
+    Returns:
+        A RepairsFlow instance to handle the fix
+
+    """
+    # All our fixable issues use ConfirmRepairFlow for simple acknowledgment
+    return ConfirmRepairFlow()
 
 
 def create_connection_issue(

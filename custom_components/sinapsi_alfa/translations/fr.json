@@ -157,12 +157,28 @@
       "description": "L'integration ne peut pas se connecter a votre appareil Sinapsi Alfa sur {host}:{port}.\n\n**Causes possibles:**\n- L'appareil est eteint ou non connecte au reseau\n- L'adresse IP a change\n- Un pare-feu bloque la connexion\n- Le port Modbus TCP (502) n'est pas accessible\n\n**Pour resoudre:**\n1. Verifiez que l'appareil est allume et connecte a votre reseau\n2. Verifiez l'adresse IP dans la table DHCP de votre routeur\n3. Essayez d'acceder directement a l'interface web de l'appareil\n4. Si l'IP a change, reconfigurez l'integration avec la nouvelle adresse"
     },
     "recovery_success": {
-      "title": "{device_name} has recovered",
-      "description": "Your Sinapsi Alfa device is now responding again.\n\n**Failure started:** {started_at}\n**Script executed:** {script_executed_at}\n**Recovery time:** {ended_at}\n**Total downtime:** {downtime}\n\nThe recovery script **{script_name}** was executed."
+      "title": "{device_name} a recupere",
+      "description": "Votre appareil Sinapsi Alfa repond a nouveau.\n\n**Debut de la panne:** {started_at}\n**Script execute:** {script_executed_at}\n**Heure de recuperation:** {ended_at}\n**Temps d'arret total:** {downtime}\n\nLe script de recuperation **{script_name}** a ete execute.\n\nVeuillez fermer cette notification pour confirmer.",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Confirmer la Recuperation",
+            "description": "Cliquez sur Soumettre pour fermer cette notification."
+          }
+        }
+      }
     },
     "recovery_success_no_script": {
-      "title": "{device_name} has recovered",
-      "description": "Your Sinapsi Alfa device is now responding again.\n\n**Failure started:** {started_at}\n**Recovery time:** {ended_at}\n**Total downtime:** {downtime}"
+      "title": "{device_name} a recupere",
+      "description": "Votre appareil Sinapsi Alfa repond a nouveau.\n\n**Debut de la panne:** {started_at}\n**Heure de recuperation:** {ended_at}\n**Temps d'arret total:** {downtime}\n\nVeuillez fermer cette notification pour confirmer.",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Confirmer la Recuperation",
+            "description": "Cliquez sur Soumettre pour fermer cette notification."
+          }
+        }
+      }
     }
   },
   "device_automation": {

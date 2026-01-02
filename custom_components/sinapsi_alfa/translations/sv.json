@@ -157,12 +157,28 @@
       "description": "Integrationen kan inte ansluta till din Sinapsi Alfa-enhet pa {host}:{port}.\n\n**Mojliga orsaker:**\n- Enheten ar avstangd eller inte ansluten till natverket\n- IP-adressen har andrats\n- En brandvagg blockerar anslutningen\n- Modbus TCP-porten (502) ar inte atkomlig\n\n**For att losa:**\n1. Kontrollera att enheten ar paslagan och ansluten till ditt natverk\n2. Verifiera IP-adressen i din routers DHCP-tabell\n3. Forsok komma at enhetens webbgranssnitt direkt\n4. Om IP har andrats, konfigurera om integrationen med den nya adressen"
     },
     "recovery_success": {
-      "title": "{device_name} has recovered",
-      "description": "Your Sinapsi Alfa device is now responding again.\n\n**Failure started:** {started_at}\n**Script executed:** {script_executed_at}\n**Recovery time:** {ended_at}\n**Total downtime:** {downtime}\n\nThe recovery script **{script_name}** was executed."
+      "title": "{device_name} har aterhämtat sig",
+      "description": "Din Sinapsi Alfa-enhet svarar igen.\n\n**Fel startade:** {started_at}\n**Skript kordes:** {script_executed_at}\n**Aterhamtningstid:** {ended_at}\n**Total nedtid:** {downtime}\n\nAterhämtningsskriptet **{script_name}** kordes.\n\nVar god stang denna avisering for att bekrafta.",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Bekrafta Aterhämtning",
+            "description": "Klicka pa Skicka for att stanga denna avisering."
+          }
+        }
+      }
     },
     "recovery_success_no_script": {
-      "title": "{device_name} has recovered",
-      "description": "Your Sinapsi Alfa device is now responding again.\n\n**Failure started:** {started_at}\n**Recovery time:** {ended_at}\n**Total downtime:** {downtime}"
+      "title": "{device_name} har aterhämtat sig",
+      "description": "Din Sinapsi Alfa-enhet svarar igen.\n\n**Fel startade:** {started_at}\n**Aterhamtningstid:** {ended_at}\n**Total nedtid:** {downtime}\n\nVar god stang denna avisering for att bekrafta.",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Bekrafta Aterhämtning",
+            "description": "Klicka pa Skicka for att stanga denna avisering."
+          }
+        }
+      }
     }
   },
   "device_automation": {

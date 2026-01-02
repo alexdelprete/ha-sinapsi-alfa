@@ -157,12 +157,28 @@
       "description": "Integratsioon ei saa uhendust teie Sinapsi Alfa seadmega aadressil {host}:{port}.\n\n**Voimalikud pohjused:**\n- Seade on valja lulitatud voi ei ole vorku uhendatud\n- IP-aadress on muutunud\n- Tulemuur blokeerib uhendust\n- Modbus TCP port (502) ei ole ligipaasetav\n\n**Lahendamiseks:**\n1. Kontrollige, kas seade on sisse lulitatud ja teie vorku uhendatud\n2. Kontrollige IP-aadressi oma ruuteri DHCP-tabelis\n3. Proovige seadme veebiliidesele otse ligi paaseda\n4. Kui IP on muutunud, seadistage integratsioon uue aadressiga umber"
     },
     "recovery_success": {
-      "title": "{device_name} has recovered",
-      "description": "Your Sinapsi Alfa device is now responding again.\n\n**Failure started:** {started_at}\n**Script executed:** {script_executed_at}\n**Recovery time:** {ended_at}\n**Total downtime:** {downtime}\n\nThe recovery script **{script_name}** was executed."
+      "title": "{device_name} on taastunud",
+      "description": "Teie Sinapsi Alfa seade vastab taas.\n\n**Torkealge:** {started_at}\n**Skript kaivitatudki:** {script_executed_at}\n**Taastumisaeg:** {ended_at}\n**Kogu seisaku aeg:** {downtime}\n\nTaastamisskript **{script_name}** kaivitatudki.\n\nPalun sulgege see teade kinnitamiseks.",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Kinnita Taastumine",
+            "description": "Klopsake Saada, et sulgeda see teade."
+          }
+        }
+      }
     },
     "recovery_success_no_script": {
-      "title": "{device_name} has recovered",
-      "description": "Your Sinapsi Alfa device is now responding again.\n\n**Failure started:** {started_at}\n**Recovery time:** {ended_at}\n**Total downtime:** {downtime}"
+      "title": "{device_name} on taastunud",
+      "description": "Teie Sinapsi Alfa seade vastab taas.\n\n**Torkealge:** {started_at}\n**Taastumisaeg:** {ended_at}\n**Kogu seisaku aeg:** {downtime}\n\nPalun sulgege see teade kinnitamiseks.",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Kinnita Taastumine",
+            "description": "Klopsake Saada, et sulgeda see teade."
+          }
+        }
+      }
     }
   },
   "device_automation": {

@@ -158,11 +158,27 @@
     },
     "recovery_success": {
       "title": "{device_name} si è ripreso",
-      "description": "Il dispositivo Sinapsi Alfa sta rispondendo di nuovo.\n\n**Inizio errore:** {started_at}\n**Script eseguito:** {script_executed_at}\n**Ora ripristino:** {ended_at}\n**Tempo di inattività:** {downtime}\n\nLo script di recupero **{script_name}** è stato eseguito.\n\nChiudi questa notifica per confermare."
+      "description": "Il dispositivo Sinapsi Alfa sta rispondendo di nuovo.\n\n**Inizio errore:** {started_at}\n**Script eseguito:** {script_executed_at}\n**Ora ripristino:** {ended_at}\n**Tempo di inattività:** {downtime}\n\nLo script di recupero **{script_name}** è stato eseguito.\n\nChiudi questa notifica per confermare.",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Conferma Ripristino",
+            "description": "Clicca su Invia per chiudere questa notifica."
+          }
+        }
+      }
     },
     "recovery_success_no_script": {
       "title": "{device_name} si è ripreso",
-      "description": "Il dispositivo Sinapsi Alfa sta rispondendo di nuovo.\n\n**Inizio errore:** {started_at}\n**Ora ripristino:** {ended_at}\n**Tempo di inattività:** {downtime}\n\nChiudi questa notifica per confermare."
+      "description": "Il dispositivo Sinapsi Alfa sta rispondendo di nuovo.\n\n**Inizio errore:** {started_at}\n**Ora ripristino:** {ended_at}\n**Tempo di inattività:** {downtime}\n\nChiudi questa notifica per confermare.",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Conferma Ripristino",
+            "description": "Clicca su Invia per chiudere questa notifica."
+          }
+        }
+      }
     }
   },
   "device_automation": {

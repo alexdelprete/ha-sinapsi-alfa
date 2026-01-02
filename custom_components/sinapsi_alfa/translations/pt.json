@@ -157,12 +157,28 @@
       "description": "A integracao nao consegue ligar ao seu dispositivo Sinapsi Alfa em {host}:{port}.\n\n**Possiveis causas:**\n- O dispositivo esta desligado ou nao ligado a rede\n- O endereco IP mudou\n- Uma firewall esta a bloquear a ligacao\n- A porta Modbus TCP (502) nao esta acessivel\n\n**Para resolver:**\n1. Verifique se o dispositivo esta ligado e conectado a sua rede\n2. Verifique o endereco IP na tabela DHCP do seu router\n3. Tente aceder diretamente a interface web do dispositivo\n4. Se o IP mudou, reconfigure a integracao com o novo endereco"
     },
     "recovery_success": {
-      "title": "{device_name} has recovered",
-      "description": "Your Sinapsi Alfa device is now responding again.\n\n**Failure started:** {started_at}\n**Script executed:** {script_executed_at}\n**Recovery time:** {ended_at}\n**Total downtime:** {downtime}\n\nThe recovery script **{script_name}** was executed."
+      "title": "{device_name} recuperou",
+      "description": "O seu dispositivo Sinapsi Alfa esta a responder novamente.\n\n**Inicio da falha:** {started_at}\n**Script executado:** {script_executed_at}\n**Hora de recuperacao:** {ended_at}\n**Tempo de inatividade total:** {downtime}\n\nO script de recuperacao **{script_name}** foi executado.\n\nPor favor feche esta notificacao para confirmar.",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Confirmar Recuperacao",
+            "description": "Clique em Submeter para fechar esta notificacao."
+          }
+        }
+      }
     },
     "recovery_success_no_script": {
-      "title": "{device_name} has recovered",
-      "description": "Your Sinapsi Alfa device is now responding again.\n\n**Failure started:** {started_at}\n**Recovery time:** {ended_at}\n**Total downtime:** {downtime}"
+      "title": "{device_name} recuperou",
+      "description": "O seu dispositivo Sinapsi Alfa esta a responder novamente.\n\n**Inicio da falha:** {started_at}\n**Hora de recuperacao:** {ended_at}\n**Tempo de inatividade total:** {downtime}\n\nPor favor feche esta notificacao para confirmar.",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Confirmar Recuperacao",
+            "description": "Clique em Submeter para fechar esta notificacao."
+          }
+        }
+      }
     }
   },
   "device_automation": {
