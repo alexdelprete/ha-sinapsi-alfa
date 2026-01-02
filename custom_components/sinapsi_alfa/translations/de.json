@@ -158,27 +158,11 @@
     },
     "recovery_success": {
       "title": "{device_name} hat sich erholt",
-      "description": "Ihr Sinapsi Alfa-Gerat antwortet wieder.\n\n**Fehler begann:** {started_at}\n**Skript ausgefuhrt:** {script_executed_at}\n**Wiederherstellungszeit:** {ended_at}\n**Gesamte Ausfallzeit:** {downtime}\n\nDas Wiederherstellungsskript **{script_name}** wurde ausgefuhrt.",
-      "fix_flow": {
-        "step": {
-          "confirm": {
-            "title": "Wiederherstellung bestatigen",
-            "description": "Klicken Sie auf Absenden, um diese Benachrichtigung zu schliessen."
-          }
-        }
-      }
+      "description": "Ihr Sinapsi Alfa-Gerat antwortet wieder.\n\n**Fehler begann:** {started_at}\n**Skript ausgefuhrt:** {script_executed_at}\n**Wiederherstellungszeit:** {ended_at}\n**Gesamte Ausfallzeit:** {downtime}\n\nDas Wiederherstellungsskript **{script_name}** wurde ausgefuhrt."
     },
     "recovery_success_no_script": {
       "title": "{device_name} hat sich erholt",
-      "description": "Ihr Sinapsi Alfa-Gerat antwortet wieder.\n\n**Fehler begann:** {started_at}\n**Wiederherstellungszeit:** {ended_at}\n**Gesamte Ausfallzeit:** {downtime}",
-      "fix_flow": {
-        "step": {
-          "confirm": {
-            "title": "Wiederherstellung bestatigen",
-            "description": "Klicken Sie auf Absenden, um diese Benachrichtigung zu schliessen."
-          }
-        }
-      }
+      "description": "Ihr Sinapsi Alfa-Gerat antwortet wieder.\n\n**Fehler begann:** {started_at}\n**Wiederherstellungszeit:** {ended_at}\n**Gesamte Ausfallzeit:** {downtime}"
     }
   },
   "device_automation": {

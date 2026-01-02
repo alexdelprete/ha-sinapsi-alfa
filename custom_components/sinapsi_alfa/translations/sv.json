@@ -158,27 +158,11 @@
     },
     "recovery_success": {
       "title": "{device_name} har aterhämtat sig",
-      "description": "Din Sinapsi Alfa-enhet svarar igen.\n\n**Fel startade:** {started_at}\n**Skript kordes:** {script_executed_at}\n**Aterhamtningstid:** {ended_at}\n**Total nedtid:** {downtime}\n\nAterhämtningsskriptet **{script_name}** kordes.",
-      "fix_flow": {
-        "step": {
-          "confirm": {
-            "title": "Bekrafta Aterhämtning",
-            "description": "Klicka pa Skicka for att stanga denna avisering."
-          }
-        }
-      }
+      "description": "Din Sinapsi Alfa-enhet svarar igen.\n\n**Fel startade:** {started_at}\n**Skript kordes:** {script_executed_at}\n**Aterhamtningstid:** {ended_at}\n**Total nedtid:** {downtime}\n\nAterhämtningsskriptet **{script_name}** kordes."
     },
     "recovery_success_no_script": {
       "title": "{device_name} har aterhämtat sig",
-      "description": "Din Sinapsi Alfa-enhet svarar igen.\n\n**Fel startade:** {started_at}\n**Aterhamtningstid:** {ended_at}\n**Total nedtid:** {downtime}",
-      "fix_flow": {
-        "step": {
-          "confirm": {
-            "title": "Bekrafta Aterhämtning",
-            "description": "Klicka pa Skicka for att stanga denna avisering."
-          }
-        }
-      }
+      "description": "Din Sinapsi Alfa-enhet svarar igen.\n\n**Fel startade:** {started_at}\n**Aterhamtningstid:** {ended_at}\n**Total nedtid:** {downtime}"
     }
   },
   "device_automation": {

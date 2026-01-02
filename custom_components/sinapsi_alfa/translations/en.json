@@ -158,27 +158,11 @@
     },
     "recovery_success": {
       "title": "{device_name} has recovered",
-      "description": "Your Sinapsi Alfa device is now responding again.\n\n**Failure started:** {started_at}\n**Script executed:** {script_executed_at}\n**Recovery time:** {ended_at}\n**Total downtime:** {downtime}\n\nThe recovery script **{script_name}** was executed.",
-      "fix_flow": {
-        "step": {
-          "confirm": {
-            "title": "Acknowledge Recovery",
-            "description": "Click Submit to dismiss this notification."
-          }
-        }
-      }
+      "description": "Your Sinapsi Alfa device is now responding again.\n\n**Failure started:** {started_at}\n**Script executed:** {script_executed_at}\n**Recovery time:** {ended_at}\n**Total downtime:** {downtime}\n\nThe recovery script **{script_name}** was executed."
     },
     "recovery_success_no_script": {
       "title": "{device_name} has recovered",
-      "description": "Your Sinapsi Alfa device is now responding again.\n\n**Failure started:** {started_at}\n**Recovery time:** {ended_at}\n**Total downtime:** {downtime}",
-      "fix_flow": {
-        "step": {
-          "confirm": {
-            "title": "Acknowledge Recovery",
-            "description": "Click Submit to dismiss this notification."
-          }
-        }
-      }
+      "description": "Your Sinapsi Alfa device is now responding again.\n\n**Failure started:** {started_at}\n**Recovery time:** {ended_at}\n**Total downtime:** {downtime}"
     }
   },
   "device_automation": {

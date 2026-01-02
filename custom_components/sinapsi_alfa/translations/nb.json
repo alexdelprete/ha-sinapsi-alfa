@@ -158,27 +158,11 @@
     },
     "recovery_success": {
       "title": "{device_name} har gjenopprettet",
-      "description": "Din Sinapsi Alfa-enhet svarer igjen.\n\n**Feil startet:** {started_at}\n**Skript utfort:** {script_executed_at}\n**Gjenopprettingstid:** {ended_at}\n**Total nedetid:** {downtime}\n\nGjenopprettingsskriptet **{script_name}** ble utfort.",
-      "fix_flow": {
-        "step": {
-          "confirm": {
-            "title": "Bekreft Gjenoppretting",
-            "description": "Klikk pa Send for a lukke dette varselet."
-          }
-        }
-      }
+      "description": "Din Sinapsi Alfa-enhet svarer igjen.\n\n**Feil startet:** {started_at}\n**Skript utfort:** {script_executed_at}\n**Gjenopprettingstid:** {ended_at}\n**Total nedetid:** {downtime}\n\nGjenopprettingsskriptet **{script_name}** ble utfort."
     },
     "recovery_success_no_script": {
       "title": "{device_name} har gjenopprettet",
-      "description": "Din Sinapsi Alfa-enhet svarer igjen.\n\n**Feil startet:** {started_at}\n**Gjenopprettingstid:** {ended_at}\n**Total nedetid:** {downtime}",
-      "fix_flow": {
-        "step": {
-          "confirm": {
-            "title": "Bekreft Gjenoppretting",
-            "description": "Klikk pa Send for a lukke dette varselet."
-          }
-        }
-      }
+      "description": "Din Sinapsi Alfa-enhet svarer igjen.\n\n**Feil startet:** {started_at}\n**Gjenopprettingstid:** {ended_at}\n**Total nedetid:** {downtime}"
     }
   },
   "device_automation": {

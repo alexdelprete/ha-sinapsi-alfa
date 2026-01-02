@@ -158,27 +158,11 @@
     },
     "recovery_success": {
       "title": "{device_name} on taastunud",
-      "description": "Teie Sinapsi Alfa seade vastab taas.\n\n**Torkealge:** {started_at}\n**Skript kaivitatudki:** {script_executed_at}\n**Taastumisaeg:** {ended_at}\n**Kogu seisaku aeg:** {downtime}\n\nTaastamisskript **{script_name}** kaivitatudki.",
-      "fix_flow": {
-        "step": {
-          "confirm": {
-            "title": "Kinnita Taastumine",
-            "description": "Klopsake Saada, et sulgeda see teade."
-          }
-        }
-      }
+      "description": "Teie Sinapsi Alfa seade vastab taas.\n\n**Torkealge:** {started_at}\n**Skript kaivitatudki:** {script_executed_at}\n**Taastumisaeg:** {ended_at}\n**Kogu seisaku aeg:** {downtime}\n\nTaastamisskript **{script_name}** kaivitatudki."
     },
     "recovery_success_no_script": {
       "title": "{device_name} on taastunud",
-      "description": "Teie Sinapsi Alfa seade vastab taas.\n\n**Torkealge:** {started_at}\n**Taastumisaeg:** {ended_at}\n**Kogu seisaku aeg:** {downtime}",
-      "fix_flow": {
-        "step": {
-          "confirm": {
-            "title": "Kinnita Taastumine",
-            "description": "Klopsake Saada, et sulgeda see teade."
-          }
-        }
-      }
+      "description": "Teie Sinapsi Alfa seade vastab taas.\n\n**Torkealge:** {started_at}\n**Taastumisaeg:** {ended_at}\n**Kogu seisaku aeg:** {downtime}"
     }
   },
   "device_automation": {
