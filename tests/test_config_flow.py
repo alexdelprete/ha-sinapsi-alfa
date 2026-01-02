@@ -436,7 +436,7 @@ async def test_reconfigure_flow_cannot_connect(
 
 async def test_config_flow_version() -> None:
     """Test that config flow version is correct."""
-    assert SinapsiAlfaConfigFlow.VERSION == 2
+    assert SinapsiAlfaConfigFlow.VERSION == 3
 
 
 # =============================================================================
@@ -928,7 +928,7 @@ class TestConfigFlowAttributes:
 
     def test_config_flow_version(self) -> None:
         """Test ConfigFlow VERSION is set correctly."""
-        assert SinapsiAlfaConfigFlow.VERSION == 2
+        assert SinapsiAlfaConfigFlow.VERSION == 3
 
     def test_config_flow_connection_class(self) -> None:
         """Test ConfigFlow CONNECTION_CLASS is set correctly."""
