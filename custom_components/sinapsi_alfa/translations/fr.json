@@ -1,121 +1,175 @@
 {
-    "config": {
-        "step": {
-            "user": {
-                "title": "Configuration de la connexion Alfa",
-                "description": "Si vous avez besoin d'aide pour la configuration, visitez: https://github.com/alexdelprete/ha-sinapsi-alfa",
-                "data": {
-                    "name": "Nom de l'appareil (utilise comme prefixe des capteurs)",
-                    "host": "IP ou nom d'hote",
-                    "port": "Port TCP",
-                    "scan_interval": "Intervalle d'interrogation (min: 30s max: 600s)",
-                    "timeout": "Delai de connexion (min: 5s max: 60s)",
-                    "skip_mac_detection": "Ignorer la detection MAC",
-                },
-                "data_description": {
-                    "skip_mac_detection": "Activer pour les connexions VPN. Utilise l'ID base sur l'hote au lieu de l'adresse MAC (demarrage plus rapide)."
-                },
-            },
-            "reconfigure": {
-                "title": "Reconfigurer la connexion Alfa",
-                "description": "Mettre a jour les parametres de connexion de l'appareil",
-                "data": {
-                    "name": "Nom de l'appareil (utilise comme prefixe des capteurs)",
-                    "host": "IP ou nom d'hote",
-                    "port": "Port TCP",
-                    "skip_mac_detection": "Ignorer la detection MAC",
-                },
-                "data_description": {
-                    "skip_mac_detection": "Activer pour les connexions VPN. Utilise l'ID base sur l'hote au lieu de l'adresse MAC (demarrage plus rapide)."
-                },
-            },
+  "config": {
+    "step": {
+      "user": {
+        "title": "Configuration de la connexion Alfa",
+        "description": "Si vous avez besoin d'aide pour la configuration, visitez: https://github.com/alexdelprete/ha-sinapsi-alfa",
+        "data": {
+          "name": "Nom de l'appareil (utilise comme prefixe des capteurs)",
+          "host": "IP ou nom d'hote",
+          "port": "Port TCP",
+          "scan_interval": "Intervalle d'interrogation (min: 30s max: 600s)",
+          "timeout": "Delai de connexion (min: 5s max: 60s)",
+          "skip_mac_detection": "Ignorer la detection MAC"
         },
-        "error": {
-            "already_configured": "L'appareil est deja configure",
-            "invalid_host": "Adresse d'hote invalide",
-            "cannot_connect": "Impossible de se connecter a l'appareil",
-        },
-        "abort": {
-            "already_configured": "L'appareil est deja configure",
-            "reconfigure_successful": "Reconfiguration reussie",
-        },
-    },
-    "options": {
-        "step": {
-            "init": {
-                "title": "Options Alfa",
-                "description": "Configure runtime options.\n\n**Recovery Script Variables:**\nWhen configured, the recovery script receives these variables:\n\n- `device_name` : Device name\n- `host` : IP address/hostname\n- `port` : TCP port\n- `serial_number` : Device serial number\n- `mac_address` : Device MAC address\n- `failures_count` : Number of consecutive failures",
-                "data": {
-                    "recovery_script": "Recovery script (optional, runs when device stops responding)",
-                    "enable_repair_notification": "Enable repair notifications",
-                    "failures_threshold": "Failures before notification (1-10)",
-                    "scan_interval": "Polling Period in seconds (30-600)",
-                    "timeout": "Connection timeout in seconds (5-60)",
-                },
-            }
+        "data_description": {
+          "skip_mac_detection": "Activer pour les connexions VPN. Utilise l'ID base sur l'hote au lieu de l'adresse MAC (demarrage plus rapide)."
         }
-    },
-    "entity": {
-        "sensor": {
-            "potenza_prelevata": {"name": "Puissance importee"},
-            "potenza_prelevata_media_15m": {"name": "Puissance importee moy 15m"},
-            "potenza_immessa": {"name": "Puissance exportee"},
-            "potenza_immessa_media_15m": {"name": "Puissance exportee moy 15m"},
-            "potenza_prodotta": {"name": "Puissance produite"},
-            "energia_prelevata": {"name": "Energie importee"},
-            "energia_immessa": {"name": "Energie exportee"},
-            "energia_prodotta": {"name": "Energie produite"},
-            "energia_prelevata_giornaliera_f1": {"name": "Energie jour importee F1"},
-            "energia_prelevata_giornaliera_f2": {"name": "Energie jour importee F2"},
-            "energia_prelevata_giornaliera_f3": {"name": "Energie jour importee F3"},
-            "energia_prelevata_giornaliera_f4": {"name": "Energie jour importee F4"},
-            "energia_prelevata_giornaliera_f5": {"name": "Energie jour importee F5"},
-            "energia_prelevata_giornaliera_f6": {"name": "Energie jour importee F6"},
-            "energia_immessa_giornaliera_f1": {"name": "Energie jour exportee F1"},
-            "energia_immessa_giornaliera_f2": {"name": "Energie jour exportee F2"},
-            "energia_immessa_giornaliera_f3": {"name": "Energie jour exportee F3"},
-            "energia_immessa_giornaliera_f4": {"name": "Energie jour exportee F4"},
-            "energia_immessa_giornaliera_f5": {"name": "Energie jour exportee F5"},
-            "energia_immessa_giornaliera_f6": {"name": "Energie jour exportee F6"},
-            "fascia_oraria_attuale": {"name": "Plage horaire actuelle"},
-            "tempo_residuo_distacco": {"name": "Minuterie de deconnexion"},
-            "data_evento": {"name": "Date de l'evenement"},
-            "potenza_consumata": {"name": "Puissance consommee"},
-            "potenza_auto_consumata": {"name": "Puissance autoconsommee"},
-            "energia_consumata": {"name": "Energie consommee"},
-            "energia_auto_consumata": {"name": "Energie autoconsommee"},
+      },
+      "reconfigure": {
+        "title": "Reconfigurer la connexion Alfa",
+        "description": "Mettre a jour les parametres de connexion de l'appareil",
+        "data": {
+          "name": "Nom de l'appareil (utilise comme prefixe des capteurs)",
+          "host": "IP ou nom d'hote",
+          "port": "Port TCP",
+          "skip_mac_detection": "Ignorer la detection MAC"
+        },
+        "data_description": {
+          "skip_mac_detection": "Activer pour les connexions VPN. Utilise l'ID base sur l'hote au lieu de l'adresse MAC (demarrage plus rapide)."
         }
+      }
     },
-    "exceptions": {
-        "connection_timeout": {
-            "message": "Delai d'attente depasse lors de la connexion a {device_name}. Verifiez que l'appareil est allume et accessible a l'adresse IP configuree."
-        },
-        "connection_failed": {
-            "message": "Echec de la connexion a l'appareil sur {host}:{port}. Verifiez que l'appareil est en ligne et que les parametres de connexion sont corrects."
-        },
-        "modbus_error": {
-            "message": "Erreur de communication Modbus avec {device_name}. L'appareil peut etre occupe ou rencontrer des problemes."
-        },
+    "error": {
+      "already_configured": "L'appareil est deja configure",
+      "invalid_host": "Adresse d'hote invalide",
+      "cannot_connect": "Impossible de se connecter a l'appareil"
     },
-    "issues": {
-        "connection_failed": {
-            "title": "Impossible de se connecter a {device_name}",
-            "description": "L'integration ne peut pas se connecter a votre appareil Sinapsi Alfa sur {host}:{port}.\n\n**Causes possibles:**\n- L'appareil est eteint ou non connecte au reseau\n- L'adresse IP a change\n- Un pare-feu bloque la connexion\n- Le port Modbus TCP (502) n'est pas accessible\n\n**Pour resoudre:**\n1. Verifiez que l'appareil est allume et connecte a votre reseau\n2. Verifiez l'adresse IP dans la table DHCP de votre routeur\n3. Essayez d'acceder directement a l'interface web de l'appareil\n4. Si l'IP a change, reconfigurez l'integration avec la nouvelle adresse",
-        },
-        "recovery_success": {
-            "title": "{device_name} has recovered",
-            "description": "Your Sinapsi Alfa device is now responding again.\n\n**Failure started:** {started_at}\n**Script executed:** {script_executed_at}\n**Recovery time:** {ended_at}\n**Total downtime:** {downtime}\n\nThe recovery script **{script_name}** was executed.",
-        },
-        "recovery_success_no_script": {
-            "title": "{device_name} has recovered",
-            "description": "Your Sinapsi Alfa device is now responding again.\n\n**Failure started:** {started_at}\n**Recovery time:** {ended_at}\n**Total downtime:** {downtime}",
-        },
-    },
-    "device_automation": {
-        "trigger_type": {
-            "device_unreachable": "{device_name} is unreachable (network issue)",
-            "device_not_responding": "{device_name} is not responding (Modbus error)",
-            "device_recovered": "{device_name} recovered",
+    "abort": {
+      "already_configured": "L'appareil est deja configure",
+      "reconfigure_successful": "Reconfiguration reussie"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Options d'execution Alfa",
+        "description": "Configure runtime options.\n\n**Recovery Script Variables:**\nWhen configured, the recovery script receives these variables:\n- `device_name`: Device name\n- `host`: IP address/hostname\n- `port`: TCP port\n- `serial_number`: Device serial number\n- `mac_address`: Device MAC address\n- `failures_count`: Number of consecutive failures",
+        "data": {
+          "recovery_script": "Recovery script (optional)",
+          "enable_repair_notification": "Enable repair notifications",
+          "failures_threshold": "Failures before notification (1-10)",
+          "scan_interval": "Polling interval (seconds)",
+          "timeout": "Connection timeout (seconds)"
         }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "potenza_prelevata": {
+        "name": "Puissance importee"
+      },
+      "potenza_prelevata_media_15m": {
+        "name": "Puissance importee moy 15m"
+      },
+      "potenza_immessa": {
+        "name": "Puissance exportee"
+      },
+      "potenza_immessa_media_15m": {
+        "name": "Puissance exportee moy 15m"
+      },
+      "potenza_prodotta": {
+        "name": "Puissance produite"
+      },
+      "energia_prelevata": {
+        "name": "Energie importee"
+      },
+      "energia_immessa": {
+        "name": "Energie exportee"
+      },
+      "energia_prodotta": {
+        "name": "Energie produite"
+      },
+      "energia_prelevata_giornaliera_f1": {
+        "name": "Energie jour importee F1"
+      },
+      "energia_prelevata_giornaliera_f2": {
+        "name": "Energie jour importee F2"
+      },
+      "energia_prelevata_giornaliera_f3": {
+        "name": "Energie jour importee F3"
+      },
+      "energia_prelevata_giornaliera_f4": {
+        "name": "Energie jour importee F4"
+      },
+      "energia_prelevata_giornaliera_f5": {
+        "name": "Energie jour importee F5"
+      },
+      "energia_prelevata_giornaliera_f6": {
+        "name": "Energie jour importee F6"
+      },
+      "energia_immessa_giornaliera_f1": {
+        "name": "Energie jour exportee F1"
+      },
+      "energia_immessa_giornaliera_f2": {
+        "name": "Energie jour exportee F2"
+      },
+      "energia_immessa_giornaliera_f3": {
+        "name": "Energie jour exportee F3"
+      },
+      "energia_immessa_giornaliera_f4": {
+        "name": "Energie jour exportee F4"
+      },
+      "energia_immessa_giornaliera_f5": {
+        "name": "Energie jour exportee F5"
+      },
+      "energia_immessa_giornaliera_f6": {
+        "name": "Energie jour exportee F6"
+      },
+      "fascia_oraria_attuale": {
+        "name": "Plage horaire actuelle"
+      },
+      "tempo_residuo_distacco": {
+        "name": "Minuterie de deconnexion"
+      },
+      "data_evento": {
+        "name": "Date de l'evenement"
+      },
+      "potenza_consumata": {
+        "name": "Puissance consommee"
+      },
+      "potenza_auto_consumata": {
+        "name": "Puissance autoconsommee"
+      },
+      "energia_consumata": {
+        "name": "Energie consommee"
+      },
+      "energia_auto_consumata": {
+        "name": "Energie autoconsommee"
+      }
+    }
+  },
+  "exceptions": {
+    "connection_timeout": {
+      "message": "Delai d'attente depasse lors de la connexion a {device_name}. Verifiez que l'appareil est allume et accessible a l'adresse IP configuree."
     },
+    "connection_failed": {
+      "message": "Echec de la connexion a l'appareil sur {host}:{port}. Verifiez que l'appareil est en ligne et que les parametres de connexion sont corrects."
+    },
+    "modbus_error": {
+      "message": "Erreur de communication Modbus avec {device_name}. L'appareil peut etre occupe ou rencontrer des problemes."
+    }
+  },
+  "issues": {
+    "connection_failed": {
+      "title": "Impossible de se connecter a {device_name}",
+      "description": "L'integration ne peut pas se connecter a votre appareil Sinapsi Alfa sur {host}:{port}.\n\n**Causes possibles:**\n- L'appareil est eteint ou non connecte au reseau\n- L'adresse IP a change\n- Un pare-feu bloque la connexion\n- Le port Modbus TCP (502) n'est pas accessible\n\n**Pour resoudre:**\n1. Verifiez que l'appareil est allume et connecte a votre reseau\n2. Verifiez l'adresse IP dans la table DHCP de votre routeur\n3. Essayez d'acceder directement a l'interface web de l'appareil\n4. Si l'IP a change, reconfigurez l'integration avec la nouvelle adresse"
+    },
+    "recovery_success": {
+      "title": "{device_name} has recovered",
+      "description": "Your Sinapsi Alfa device is now responding again.\n\n**Failure started:** {started_at}\n**Script executed:** {script_executed_at}\n**Recovery time:** {ended_at}\n**Total downtime:** {downtime}\n\nThe recovery script **{script_name}** was executed."
+    },
+    "recovery_success_no_script": {
+      "title": "{device_name} has recovered",
+      "description": "Your Sinapsi Alfa device is now responding again.\n\n**Failure started:** {started_at}\n**Recovery time:** {ended_at}\n**Total downtime:** {downtime}"
+    }
+  },
+  "device_automation": {
+    "trigger_type": {
+      "device_unreachable": "{device_name} is unreachable (network issue)",
+      "device_not_responding": "{device_name} is not responding (Modbus error)",
+      "device_recovered": "{device_name} recovered"
+    }
+  }
 }
