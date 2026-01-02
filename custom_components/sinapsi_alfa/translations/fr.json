@@ -158,7 +158,7 @@
     },
     "recovery_success": {
       "title": "{device_name} a recupere",
-      "description": "Votre appareil Sinapsi Alfa repond a nouveau.\n\n**Debut de la panne:** {started_at}\n**Script execute:** {script_executed_at}\n**Heure de recuperation:** {ended_at}\n**Temps d'arret total:** {downtime}\n\nLe script de recuperation **{script_name}** a ete execute.\n\nVeuillez fermer cette notification pour confirmer.",
+      "description": "Votre appareil Sinapsi Alfa repond a nouveau.\n\n**Debut de la panne:** {started_at}\n**Script execute:** {script_executed_at}\n**Heure de recuperation:** {ended_at}\n**Temps d'arret total:** {downtime}\n\nLe script de recuperation **{script_name}** a ete execute.",
       "fix_flow": {
         "step": {
           "confirm": {
@@ -170,7 +170,7 @@
     },
     "recovery_success_no_script": {
       "title": "{device_name} a recupere",
-      "description": "Votre appareil Sinapsi Alfa repond a nouveau.\n\n**Debut de la panne:** {started_at}\n**Heure de recuperation:** {ended_at}\n**Temps d'arret total:** {downtime}\n\nVeuillez fermer cette notification pour confirmer.",
+      "description": "Votre appareil Sinapsi Alfa repond a nouveau.\n\n**Debut de la panne:** {started_at}\n**Heure de recuperation:** {ended_at}\n**Temps d'arret total:** {downtime}",
       "fix_flow": {
         "step": {
           "confirm": {

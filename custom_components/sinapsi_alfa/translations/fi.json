@@ -158,7 +158,7 @@
     },
     "recovery_success": {
       "title": "{device_name} on palautunut",
-      "description": "Sinapsi Alfa -laitteesi vastaa taas.\n\n**Vika alkoi:** {started_at}\n**Skripti suoritettu:** {script_executed_at}\n**Palautumisaika:** {ended_at}\n**Kokonaiskatkos:** {downtime}\n\nPalautusskripti **{script_name}** suoritettiin.\n\nSulje tama ilmoitus kuittaaksesi.",
+      "description": "Sinapsi Alfa -laitteesi vastaa taas.\n\n**Vika alkoi:** {started_at}\n**Skripti suoritettu:** {script_executed_at}\n**Palautumisaika:** {ended_at}\n**Kokonaiskatkos:** {downtime}\n\nPalautusskripti **{script_name}** suoritettiin.",
       "fix_flow": {
         "step": {
           "confirm": {
@@ -170,7 +170,7 @@
     },
     "recovery_success_no_script": {
       "title": "{device_name} on palautunut",
-      "description": "Sinapsi Alfa -laitteesi vastaa taas.\n\n**Vika alkoi:** {started_at}\n**Palautumisaika:** {ended_at}\n**Kokonaiskatkos:** {downtime}\n\nSulje tama ilmoitus kuittaaksesi.",
+      "description": "Sinapsi Alfa -laitteesi vastaa taas.\n\n**Vika alkoi:** {started_at}\n**Palautumisaika:** {ended_at}\n**Kokonaiskatkos:** {downtime}",
       "fix_flow": {
         "step": {
           "confirm": {

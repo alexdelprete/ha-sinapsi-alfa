@@ -158,7 +158,7 @@
     },
     "recovery_success": {
       "title": "{device_name} recuperou",
-      "description": "O seu dispositivo Sinapsi Alfa esta a responder novamente.\n\n**Inicio da falha:** {started_at}\n**Script executado:** {script_executed_at}\n**Hora de recuperacao:** {ended_at}\n**Tempo de inatividade total:** {downtime}\n\nO script de recuperacao **{script_name}** foi executado.\n\nPor favor feche esta notificacao para confirmar.",
+      "description": "O seu dispositivo Sinapsi Alfa esta a responder novamente.\n\n**Inicio da falha:** {started_at}\n**Script executado:** {script_executed_at}\n**Hora de recuperacao:** {ended_at}\n**Tempo de inatividade total:** {downtime}\n\nO script de recuperacao **{script_name}** foi executado.",
       "fix_flow": {
         "step": {
           "confirm": {
@@ -170,7 +170,7 @@
     },
     "recovery_success_no_script": {
       "title": "{device_name} recuperou",
-      "description": "O seu dispositivo Sinapsi Alfa esta a responder novamente.\n\n**Inicio da falha:** {started_at}\n**Hora de recuperacao:** {ended_at}\n**Tempo de inatividade total:** {downtime}\n\nPor favor feche esta notificacao para confirmar.",
+      "description": "O seu dispositivo Sinapsi Alfa esta a responder novamente.\n\n**Inicio da falha:** {started_at}\n**Hora de recuperacao:** {ended_at}\n**Tempo de inatividade total:** {downtime}",
       "fix_flow": {
         "step": {
           "confirm": {

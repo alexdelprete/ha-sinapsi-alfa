@@ -6,10 +6,13 @@ https://github.com/alexdelprete/ha-sinapsi-alfa
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 
 from homeassistant.components.repairs import ConfirmRepairFlow, RepairsFlow
-from homeassistant.core import HomeAssistant
 from homeassistant.helpers import issue_registry as ir
+
+if TYPE_CHECKING:
+    from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN
 
@@ -26,22 +29,17 @@ async def async_create_fix_flow(
     issue_id: str,
     data: dict[str, str | int | float | None] | None,
 ) -> RepairsFlow:
-    """Create flow to handle fixing a repair issue.
+    """Create flow to fix a repair issue.
 
-    This is called when a user clicks on a fixable repair issue.
-    For recovery notifications, we use ConfirmRepairFlow which shows
-    a simple confirmation dialog to acknowledge and dismiss the issue.
-
-    Args:
-        hass: HomeAssistant instance
-        issue_id: The issue ID (e.g., "recovery_success_<entry_id>")
-        data: Optional data associated with the issue
-
-    Returns:
-        A RepairsFlow instance to handle the fix
-
+    This is called by Home Assistant when user clicks on a fixable repair issue.
+    For recovery notifications, we use ConfirmRepairFlow which shows the issue
+    description and a simple "Submit" button to acknowledge/dismiss.
     """
-    # All our fixable issues use ConfirmRepairFlow for simple acknowledgment
+    # Recovery notifications just need acknowledgment - use ConfirmRepairFlow
+    if issue_id.startswith((ISSUE_RECOVERY_SUCCESS, ISSUE_RECOVERY_SUCCESS_NO_SCRIPT)):
+        return ConfirmRepairFlow()
+
+    # For any other issues, also use ConfirmRepairFlow as fallback
     return ConfirmRepairFlow()
 
 
