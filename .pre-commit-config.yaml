@@ -32,9 +32,9 @@ repos:
         verbose: true
 
       # YAML validation
-      - id: check-yaml
-        name: check-yaml
-        entry: python -c "import yaml, sys; yaml.safe_load(open(sys.argv[1]))"
+      - id: yamllint
+        name: yamllint
+        entry: uvx yamllint -d "{extends: default, rules: {line-length: {max: 120}, document-start: disable, truthy: {check-keys: false}, comments: {min-spaces-from-content: 1}}}"
         language: system
         types: [yaml]
         verbose: true

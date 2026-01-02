@@ -240,7 +240,7 @@ Linting tools and settings are defined in `.pre-commit-config.yaml`:
 | ruff | `ruff check --no-fix` | Python linting |
 | ruff-format | `ruff format --check` | Python formatting |
 | jsonlint | `uvx --from demjson3 jsonlint` | JSON validation |
-| check-yaml | Python yaml.safe_load | YAML validation |
+| yamllint | `uvx yamllint -d "{...}"` | YAML linting (inline config) |
 | pymarkdown | `pymarkdown scan` | Markdown linting |
 
 All hooks use `language: system` (local tools) with `verbose: true` for visibility.
