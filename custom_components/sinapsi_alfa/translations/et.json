@@ -52,6 +52,11 @@
                     "scan_interval": "Polling Period in seconds (30-600)",
                     "timeout": "Connection timeout in seconds (5-60)",
                 },
+                "data_description": {
+                    "recovery_script": "Select a script to run when the device stops responding",
+                    "enable_repair_notification": "Create a repair notification when the device stops responding",
+                    "failures_threshold": "Number of consecutive failures before creating a notification (1-10)",
+                },
             }
         }
     },
