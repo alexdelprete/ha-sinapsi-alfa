@@ -218,6 +218,10 @@ This prevents log spam during extended outages.
 > **⛔ CRITICAL: NEVER modify production code to make tests pass. Always fix the tests instead.**
 > Production code is the source of truth. If tests fail, the tests are wrong - not the production code.
 > The only exception is when production code has an actual bug that tests correctly identified.
+>
+> **📋 RECOMMENDED: Run tests via CI only.**
+> Push commits and let GitHub Actions run the test suite. This ensures consistent test environment
+> and avoids local environment issues. Only run tests locally when debugging specific failures.
 
 - Test with actual Alfa devices
 - Verify all 24 sensors (20 from device + 4 calculated)
