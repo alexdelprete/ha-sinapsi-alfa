@@ -249,30 +249,11 @@ All hooks use `language: system` (local tools) with `verbose: true` for visibili
 
 > **⚠️ ALWAYS run linting before ANY git push action.**
 
-**Option 1: Run all checks at once with pre-commit**
-
 ```bash
 uvx pre-commit run --all-files
 ```
 
-**Option 2: Run individual tools**
-
-```bash
-# Python formatting and linting
-ruff format .
-ruff check . --fix
-
-# JSON validation
-uvx --from demjson3 jsonlint custom_components/sinapsi_alfa/*.json
-
-# Markdown linting
-pymarkdown scan .
-
-# Type checking (optional - requires HA installed)
-ty check custom_components/sinapsi_alfa
-```
-
-All commands must pass without errors before committing. This applies to ALL pushes, not just releases.
+All checks must pass before pushing. This applies to ALL pushes, not just releases.
 
 ### Windows Shell Notes
 
