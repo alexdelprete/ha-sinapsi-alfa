@@ -231,29 +231,56 @@ This integration tracks [Home Assistant Quality Scale](https://developers.home-a
    - `exempt` with `comment` - Rule doesn't apply (explain why)
 1. Aim to complete all Bronze tier rules first, then Silver, Gold, Platinum
 
+### Pre-Commit Configuration
+
+Linting tools and settings are defined in `.pre-commit-config.yaml`:
+
+| Hook | Tool | Purpose |
+| ---- | ---- | ------- |
+| ruff | `ruff check --no-fix` | Python linting |
+| ruff-format | `ruff format --check` | Python formatting |
+| jsonlint | `uvx --from demjson3 jsonlint` | JSON validation |
+| check-yaml | Python yaml.safe_load | YAML validation |
+| pymarkdown | `pymarkdown scan` | Markdown linting |
+
+All hooks use `language: system` (local tools) with `verbose: true` for visibility.
+
 ### Pre-Push Linting (MANDATORY)
 
 > **⚠️ ALWAYS run linting before ANY git push action.**
 
-Before pushing any commits, run these checks and fix all errors:
+**Option 1: Run all checks at once with pre-commit**
 
 ```bash
-# Validate JSON translation files
-python -c "import json; from pathlib import Path; [json.loads(f.read_text()) for f in Path('custom_components/sinapsi_alfa/translations').glob('*.json')]"
+uvx pre-commit run --all-files
+```
 
+**Option 2: Run individual tools**
+
+```bash
 # Python formatting and linting
 ruff format .
 ruff check . --fix
 
-# Type checking (using ty - Rust-based, faster than mypy)
-ty check custom_components/sinapsi_alfa
+# JSON validation
+uvx --from demjson3 jsonlint custom_components/sinapsi_alfa/*.json
 
-# Markdown formatting and linting
-mdformat .
+# Markdown linting
 pymarkdown scan .
+
+# Type checking (optional - requires HA installed)
+ty check custom_components/sinapsi_alfa
 ```
 
 All commands must pass without errors before committing. This applies to ALL pushes, not just releases.
+
+### Windows Shell Notes
+
+When running shell commands on Windows, stray `nul` files may be created (Windows null device artifact). Check for and delete them after command execution:
+
+```bash
+rm nul  # if it exists
+```
 
 ## Release Management - CRITICAL
 
