@@ -215,6 +215,10 @@ This prevents log spam during extended outages.
 
 ### Testing Approach
 
+> **⛔ CRITICAL: NEVER modify production code to make tests pass. Always fix the tests instead.**
+> Production code is the source of truth. If tests fail, the tests are wrong - not the production code.
+> The only exception is when production code has an actual bug that tests correctly identified.
+
 - Test with actual Alfa devices
 - Verify all 24 sensors (20 from device + 4 calculated)
 - Test calculated sensor formulas
@@ -544,6 +548,7 @@ Follow pymarkdown rules (configured in `pyproject.toml` under `[tool.pymarkdown]
 
 **❌ NEVER:**
 
+- Modify production code to make tests pass - fix the tests instead
 - Use `hass.data[DOMAIN][entry_id]` - use `runtime_data` instead
 - Shadow Python builtins
 - Use f-strings in logging
