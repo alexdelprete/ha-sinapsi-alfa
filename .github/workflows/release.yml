@@ -25,10 +25,13 @@ jobs:
           TAG_VERSION="${TAG_VERSION#v}"
 
           # Extract version from manifest.json
-          MANIFEST_VERSION=$(yq -r '.version' "${{ github.workspace }}/custom_components/sinapsi_alfa/manifest.json")
+          MANIFEST_VERSION=$(yq -r '.version' \
+            "${{ github.workspace }}/custom_components/sinapsi_alfa/manifest.json")
 
           # Extract VERSION from const.py
-          CONST_VERSION=$(grep -E "^VERSION = " "${{ github.workspace }}/custom_components/sinapsi_alfa/const.py" | sed 's/VERSION = "\(.*\)"/\1/')
+          CONST_VERSION=$(grep -E "^VERSION = " \
+            "${{ github.workspace }}/custom_components/sinapsi_alfa/const.py" \
+            | sed 's/VERSION = "\(.*\)"/\1/')
 
           echo "Tag version:      $TAG_VERSION"
           echo "manifest.json:    $MANIFEST_VERSION"

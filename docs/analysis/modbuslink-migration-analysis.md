@@ -6,7 +6,9 @@
 
 ## Executive Summary
 
-This document analyzes the feasibility of migrating the ha-sinapsi-alfa Home Assistant integration from **pymodbus** to **ModbusLink** library. The analysis includes a comprehensive pros/cons comparison and a detailed surgical migration plan.
+This document analyzes the feasibility of migrating the ha-sinapsi-alfa Home Assistant integration
+from **pymodbus** to **ModbusLink** library.
+The analysis includes a comprehensive pros/cons comparison and a detailed surgical migration plan.
 
 ### Decision
 

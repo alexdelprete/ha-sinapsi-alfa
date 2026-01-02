@@ -61,7 +61,7 @@ Each release has its own markdown file named with the version number:
 
 Let's say you release v0.5.0 with 3 beta versions:
 
-```
+```text
 v0.4.2 (stable) ← Last stable release
    ↓
 v0.5.0-beta.1 → Documents: New feature A, Bug fix B

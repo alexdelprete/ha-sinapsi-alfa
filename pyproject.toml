@@ -332,8 +332,8 @@ number = true
 
 [tool.pymarkdown]
 plugins.md013.enabled = true
-plugins.md013.line_length = 120
-plugins.md013.code_block_line_length = 120
+plugins.md013.line_length = 180
+plugins.md013.code_block_line_length = 180
 plugins.md013.tables = false
 plugins.md013.headings = false
 plugins.md024.enabled = true

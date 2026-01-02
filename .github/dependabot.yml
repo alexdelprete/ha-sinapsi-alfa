@@ -15,5 +15,5 @@ updates:
       time: "21:00"
       timezone: "Europe/Rome"
     ignore:
-      # Dependabot should not update Home Assistant as that should match the homeassistant key in hacs.json
+      # Dependabot should not update HA as that should match hacs.json
       - dependency-name: "homeassistant"

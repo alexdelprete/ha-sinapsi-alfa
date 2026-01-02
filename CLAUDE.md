@@ -51,9 +51,13 @@ Benefits over `gh` CLI:
 
 ## Project Overview
 
-This is a Home Assistant custom integration for **Sinapsi Alfa** energy monitoring devices using Modbus TCP protocol. The Alfa device monitors power/energy consumption and photovoltaic production directly from the energy provider's OpenMeter 2.0.
+This is a Home Assistant custom integration for **Sinapsi Alfa** energy monitoring devices using Modbus TCP protocol.
+The Alfa device monitors power/energy consumption and photovoltaic production directly from the energy provider's
+OpenMeter 2.0.
 
-This integration is based on and aligned with [ha-abb-powerone-pvi-sunspec](https://github.com/alexdelprete/ha-abb-powerone-pvi-sunspec), sharing similar architecture and code quality standards.
+This integration is based on and aligned with
+[ha-abb-powerone-pvi-sunspec](https://github.com/alexdelprete/ha-abb-powerone-pvi-sunspec),
+sharing similar architecture and code quality standards.
 
 ## Code Architecture
 
@@ -437,7 +441,8 @@ Version 1 → 2 migration moves `scan_interval` and `timeout` from `data` to `op
 1. Check release notes for breaking changes
 1. Test locally if possible
 
-> **⚠️ IMPORTANT**: Always verify PyPI availability before committing dependency updates. We've had issues where upstream maintainers created GitHub releases but forgot to publish to PyPI, breaking our integration for users.
+> **⚠️ IMPORTANT**: Always verify PyPI availability before committing dependency updates. We've had issues where
+> upstream maintainers created GitHub releases but forgot to publish to PyPI, breaking our integration for users.
 
 ### Note on ModbusLink
 
@@ -458,8 +463,10 @@ See `docs/analysis/modbuslink-migration-analysis.md` for detailed migration docu
 
 Monitor these ModbusLink issues for potential improvements:
 
-- **[#3](https://github.com/Miraitowa-la/ModbusLink/issues/3)** (Enhancement, Medium) - Replace manual `_extract_uint16()`/`_extract_uint32()` in `api.py:451-475` with native methods when available
-- **[#4](https://github.com/Miraitowa-la/ModbusLink/issues/4)** (Bug, High) - Test parallel batch reads with `asyncio.gather()` in `api.py:627-631` for performance (currently sequential due to Transaction ID mismatches)
+- **[#3](https://github.com/Miraitowa-la/ModbusLink/issues/3)** (Enhancement, Medium) - Replace manual
+  `_extract_uint16()`/`_extract_uint32()` in `api.py:451-475` with native methods when available
+- **[#4](https://github.com/Miraitowa-la/ModbusLink/issues/4)** (Bug, High) - Test parallel batch reads with
+  `asyncio.gather()` in `api.py:627-631` for performance (currently sequential due to Transaction ID mismatches)
 
 ## Key Files to Review
 

@@ -156,7 +156,8 @@ TBD
 ### 🐛 Bug Fixes
 
 - **Faster protocol error recovery** - Increased reset delay from 0.5s to 1.0s to better clear TCP buffers
-- **Early abort on cascade errors** - If 3+ protocol errors occur in a single update cycle, abort early instead of retrying all batches (reduces worst-case recovery from ~3 minutes to under 1 minute)
+- **Early abort on cascade errors** - If 3+ protocol errors occur in a single update cycle, abort early instead of
+  retrying all batches (reduces worst-case recovery from ~3 minutes to under 1 minute)
 
 **Full Release Notes:** [docs/releases/v1.1.9.md](docs/releases/v1.1.9.md)
 
