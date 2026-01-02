@@ -337,10 +337,10 @@ rm nul  # if it exists
 | Version in `const.py` | ✅ X.Y.Z |
 | Release notes (`docs/releases/vX.Y.Z.md`) | ✅ Created |
 | CHANGELOG.md updated | ✅ Updated |
-| GitHub Actions Validate | ✅ **PASSING** (latest 2 runs) |
+| GitHub Actions (lint/test/validate) | ✅ **PASSING** (check latest runs) |
 | Working tree clean | ✅ Clean |
-
-N commits since vX.Y.Z-1
+| Git tag | ✅ vX.Y.Z created/pushed |
+| Commits since last tag | N commits since vX.Y.Z-1 |
 ```
 
 Verify ALL items show ✅ before proceeding with tag creation. If any item fails, fix it first.
