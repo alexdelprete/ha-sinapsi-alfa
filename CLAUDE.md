@@ -41,6 +41,7 @@ Always use GitHub MCP tools (`mcp__github__*`) for GitHub operations instead of 
 - **Reviews**: `pull_request_review_write`, `add_comment_to_pending_review`
 - **Repositories**: `search_repositories`, `get_file_contents`, `list_branches`, `list_commits`
 - **Releases**: `list_releases`, `get_latest_release`, `list_tags`
+- **Actions**: `actions_list`, `actions_get` for workflow runs and jobs
 
 Benefits over `gh` CLI:
 
@@ -48,6 +49,20 @@ Benefits over `gh` CLI:
 - Structured JSON responses
 - Better error handling
 - No subprocess overhead
+
+### Workflow Run Logs Workaround
+
+The GitHub MCP `get_job_logs` tool is currently broken. To get workflow run logs (e.g., for test coverage):
+
+1. Use MCP to get the run ID: `mcp__GitHub_MCP_Remote__actions_list` with `method: list_workflow_runs`
+2. Use `gh` CLI to fetch logs: `gh run view <run_id> --repo owner/repo --log`
+3. Filter with grep: `gh run view <run_id> --repo owner/repo --log | grep "TOTAL\|coverage"`
+
+Example to get test coverage:
+
+```bash
+gh run view 20666664929 --repo alexdelprete/ha-sinapsi-alfa --log 2>&1 | grep "TOTAL"
+```
 
 ## Project Overview
 
