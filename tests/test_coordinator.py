@@ -547,11 +547,11 @@ async def test_coordinator_execute_recovery_script(
         with pytest.raises(UpdateFailed):
             await coordinator.async_update_data()
 
-        # Script should have been called
+        # Script should have been called (with keyword arguments)
         mock_hass.services.async_call.assert_called_once()
-        call_args = mock_hass.services.async_call.call_args
-        assert call_args[0][0] == "script"
-        assert call_args[0][1] == "restart_device"
+        call_kwargs = mock_hass.services.async_call.call_args.kwargs
+        assert call_kwargs["domain"] == "script"
+        assert call_kwargs["service"] == "restart_device"
         assert coordinator._recovery_script_executed is True
 
 
