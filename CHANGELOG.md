@@ -9,6 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 TBD
 
+## [1.2.3] - 2026-01-02
+
+**Patch release** - Documentation improvements for development workflow.
+
+### 📝 Documentation
+
+- **Testing directives** - Added critical directive: never modify production code to make tests pass
+- **Pre-commit mandatory** - Pre-commit checks now required before ANY commit (not just push)
+- **CI testing recommendation** - Recommend running tests via CI only for consistent environment
+- **Release Readiness Checklist** - Added mandatory checklist verification before tag/release
+- **Download badge requirement** - All release notes must include download badge at top
+
+**Full Release Notes:** [docs/releases/v1.2.3.md](docs/releases/v1.2.3.md)
+
+**Full Changelog:** [v1.2.2...v1.2.3](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.2.2...v1.2.3)
+
 ## [1.2.2] - 2026-01-02
 
 **Patch release** - Code quality improvements and hassfest validation fix.
@@ -612,3 +628,4 @@ ______________________________________________________________________
 [1.2.0]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.0
 [1.2.1]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.1
 [1.2.2]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.2
+[1.2.3]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.3
