@@ -317,11 +317,33 @@ rm nul  # if it exists
 | 5    | `commit-commands:commit` skill | Stage and commit with proper format                                              |
 | 6    | git CLI                        | `git push`                                                                       |
 | 7    | **⏸️ STOP**                    | Wait for user "tag and release" command                                          |
-| 8    | git CLI                        | `git tag -a vX.Y.Z -m "Release vX.Y.Z"`                                          |
-| 9    | git CLI                        | `git push --tags`                                                                |
-| 10   | gh CLI                         | `gh release create vX.Y.Z --title "vX.Y.Z" --notes-file docs/releases/vX.Y.Z.md` |
-| 11   | GitHub Actions                 | Validates versions match, then auto-uploads `sinapsi_alfa.zip` asset             |
-| 12   | Edit                           | Bump versions in `manifest.json` and `const.py` to next version                  |
+| 8    | **Checklist**                  | Display Release Readiness Checklist (see below)                                  |
+| 9    | git CLI                        | `git tag -a vX.Y.Z -m "Release vX.Y.Z"`                                          |
+| 10   | git CLI                        | `git push --tags`                                                                |
+| 11   | gh CLI                         | `gh release create vX.Y.Z --title "vX.Y.Z" --notes-file docs/releases/vX.Y.Z.md` |
+| 12   | GitHub Actions                 | Validates versions match, then auto-uploads `sinapsi_alfa.zip` asset             |
+| 13   | Edit                           | Bump versions in `manifest.json` and `const.py` to next version                  |
+
+### Release Readiness Checklist (MANDATORY)
+
+> **⛔ When user commands "tag and release", ALWAYS display this checklist BEFORE proceeding.**
+
+```markdown
+## Release Readiness Checklist
+
+| Item | Status |
+|------|--------|
+| Version in `manifest.json` | ✅ X.Y.Z |
+| Version in `const.py` | ✅ X.Y.Z |
+| Release notes (`docs/releases/vX.Y.Z.md`) | ✅ Created |
+| CHANGELOG.md updated | ✅ Updated |
+| GitHub Actions Validate | ✅ **PASSING** (latest 2 runs) |
+| Working tree clean | ✅ Clean |
+
+N commits since vX.Y.Z-1
+```
+
+Verify ALL items show ✅ before proceeding with tag creation. If any item fails, fix it first.
 
 **Release notes content:**
 
