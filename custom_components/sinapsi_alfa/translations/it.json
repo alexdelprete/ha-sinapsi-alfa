@@ -1,175 +1,121 @@
 {
-  "config": {
-    "step": {
-      "user": {
-        "title": "Configurazione Connessione Alfa",
-        "description": "Se hai bisogno di aiuto con la configurazione, visita: https://github.com/alexdelprete/ha-sinapsi-alfa",
-        "data": {
-          "name": "Nome dispositivo (usato come prefisso dei sensori)",
-          "host": "IP o hostname",
-          "port": "Porta TCP",
-          "scan_interval": "Intervallo di polling (min: 30s max: 600s)",
-          "timeout": "Timeout connessione (min: 5s max: 60s)",
-          "skip_mac_detection": "Salta rilevamento MAC"
+    "config": {
+        "step": {
+            "user": {
+                "title": "Configurazione Connessione Alfa",
+                "description": "Se hai bisogno di aiuto con la configurazione, visita: https://github.com/alexdelprete/ha-sinapsi-alfa",
+                "data": {
+                    "name": "Nome dispositivo (usato come prefisso dei sensori)",
+                    "host": "IP o hostname",
+                    "port": "Porta TCP",
+                    "scan_interval": "Intervallo di polling (min: 30s max: 600s)",
+                    "timeout": "Timeout connessione (min: 5s max: 60s)",
+                    "skip_mac_detection": "Salta rilevamento MAC",
+                },
+                "data_description": {
+                    "skip_mac_detection": "Abilita per connessioni VPN. Usa ID basato su host invece dell'indirizzo MAC (avvio piu veloce)."
+                },
+            },
+            "reconfigure": {
+                "title": "Riconfigura Connessione Alfa",
+                "description": "Aggiorna le impostazioni di connessione del dispositivo",
+                "data": {
+                    "name": "Nome dispositivo (usato come prefisso dei sensori)",
+                    "host": "IP o hostname",
+                    "port": "Porta TCP",
+                    "skip_mac_detection": "Salta rilevamento MAC",
+                },
+                "data_description": {
+                    "skip_mac_detection": "Abilita per connessioni VPN. Usa ID basato su host invece dell'indirizzo MAC (avvio piu veloce)."
+                },
+            },
         },
-        "data_description": {
-          "skip_mac_detection": "Abilita per connessioni VPN. Usa ID basato su host invece dell'indirizzo MAC (avvio piu veloce)."
-        }
-      },
-      "reconfigure": {
-        "title": "Riconfigura Connessione Alfa",
-        "description": "Aggiorna le impostazioni di connessione del dispositivo",
-        "data": {
-          "name": "Nome dispositivo (usato come prefisso dei sensori)",
-          "host": "IP o hostname",
-          "port": "Porta TCP",
-          "skip_mac_detection": "Salta rilevamento MAC"
+        "error": {
+            "already_configured": "Il dispositivo è gia configurato",
+            "invalid_host": "Indirizzo host non valido",
+            "cannot_connect": "Impossibile connettersi al dispositivo",
         },
-        "data_description": {
-          "skip_mac_detection": "Abilita per connessioni VPN. Usa ID basato su host invece dell'indirizzo MAC (avvio piu veloce)."
+        "abort": {
+            "already_configured": "Il dispositivo è gia configurato",
+            "reconfigure_successful": "Riconfigurazione riuscita",
+        },
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Opzioni Alfa",
+                "description": "Configura le opzioni di runtime.\n\n**Variabili Script di Recupero:**\nQuando configurato, lo script di recupero riceve queste variabili:\n\n- `device_name` : Nome dispositivo\n- `host` : Indirizzo IP/hostname\n- `port` : Porta TCP\n- `serial_number` : Numero seriale\n- `mac_address` : Indirizzo MAC\n- `failures_count` : Numero di errori consecutivi",
+                "data": {
+                    "recovery_script": "Script di recupero (opzionale, eseguito quando il dispositivo smette di rispondere)",
+                    "enable_repair_notification": "Abilita notifiche di riparazione",
+                    "failures_threshold": "Errori prima della notifica (1-10)",
+                    "scan_interval": "Periodo di polling in secondi (30-600)",
+                    "timeout": "Timeout connessione in secondi (5-60)",
+                },
+            }
         }
-      }
     },
-    "error": {
-      "already_configured": "Il dispositivo è gia configurato",
-      "invalid_host": "Indirizzo host non valido",
-      "cannot_connect": "Impossibile connettersi al dispositivo"
-    },
-    "abort": {
-      "already_configured": "Il dispositivo è gia configurato",
-      "reconfigure_successful": "Riconfigurazione riuscita"
-    }
-  },
-  "options": {
-    "step": {
-      "init": {
-        "title": "Opzioni Runtime Alfa",
-        "description": "Configura le opzioni di runtime.\n\n**Variabili Script di Recupero:**\nQuando configurato, lo script di recupero riceve queste variabili:\n- `device_name`: Nome dispositivo\n- `host`: Indirizzo IP/hostname\n- `port`: Porta TCP\n- `serial_number`: Numero seriale\n- `mac_address`: Indirizzo MAC\n- `failures_count`: Numero di errori consecutivi",
-        "data": {
-          "scan_interval": "Intervallo di polling (secondi)",
-          "timeout": "Timeout connessione (secondi)",
-          "enable_repair_notification": "Abilita notifiche di riparazione",
-          "failures_threshold": "Errori prima della notifica (1-10)",
-          "recovery_script": "Script di recupero (opzionale, eseguito quando il dispositivo smette di rispondere)"
+    "entity": {
+        "sensor": {
+            "potenza_prelevata": {"name": "Potenza Importata"},
+            "potenza_prelevata_media_15m": {"name": "Potenza Importata Media 15m"},
+            "potenza_immessa": {"name": "Potenza Esportata"},
+            "potenza_immessa_media_15m": {"name": "Potenza Esportata Media 15m"},
+            "potenza_prodotta": {"name": "Potenza Prodotta"},
+            "energia_prelevata": {"name": "Energia Importata"},
+            "energia_immessa": {"name": "Energia Esportata"},
+            "energia_prodotta": {"name": "Energia Prodotta"},
+            "energia_prelevata_giornaliera_f1": {"name": "Energia Importata Giornaliera F1"},
+            "energia_prelevata_giornaliera_f2": {"name": "Energia Importata Giornaliera F2"},
+            "energia_prelevata_giornaliera_f3": {"name": "Energia Importata Giornaliera F3"},
+            "energia_prelevata_giornaliera_f4": {"name": "Energia Importata Giornaliera F4"},
+            "energia_prelevata_giornaliera_f5": {"name": "Energia Importata Giornaliera F5"},
+            "energia_prelevata_giornaliera_f6": {"name": "Energia Importata Giornaliera F6"},
+            "energia_immessa_giornaliera_f1": {"name": "Energia Esportata Giornaliera F1"},
+            "energia_immessa_giornaliera_f2": {"name": "Energia Esportata Giornaliera F2"},
+            "energia_immessa_giornaliera_f3": {"name": "Energia Esportata Giornaliera F3"},
+            "energia_immessa_giornaliera_f4": {"name": "Energia Esportata Giornaliera F4"},
+            "energia_immessa_giornaliera_f5": {"name": "Energia Esportata Giornaliera F5"},
+            "energia_immessa_giornaliera_f6": {"name": "Energia Esportata Giornaliera F6"},
+            "fascia_oraria_attuale": {"name": "Fascia Oraria Attuale"},
+            "tempo_residuo_distacco": {"name": "Tempo Residuo Distacco"},
+            "data_evento": {"name": "Data Evento"},
+            "potenza_consumata": {"name": "Potenza Consumata"},
+            "potenza_auto_consumata": {"name": "Potenza Auto Consumata"},
+            "energia_consumata": {"name": "Energia Consumata"},
+            "energia_auto_consumata": {"name": "Energia Auto Consumata"},
         }
-      }
-    }
-  },
-  "entity": {
-    "sensor": {
-      "potenza_prelevata": {
-        "name": "Potenza Importata"
-      },
-      "potenza_prelevata_media_15m": {
-        "name": "Potenza Importata Media 15m"
-      },
-      "potenza_immessa": {
-        "name": "Potenza Esportata"
-      },
-      "potenza_immessa_media_15m": {
-        "name": "Potenza Esportata Media 15m"
-      },
-      "potenza_prodotta": {
-        "name": "Potenza Prodotta"
-      },
-      "energia_prelevata": {
-        "name": "Energia Importata"
-      },
-      "energia_immessa": {
-        "name": "Energia Esportata"
-      },
-      "energia_prodotta": {
-        "name": "Energia Prodotta"
-      },
-      "energia_prelevata_giornaliera_f1": {
-        "name": "Energia Importata Giornaliera F1"
-      },
-      "energia_prelevata_giornaliera_f2": {
-        "name": "Energia Importata Giornaliera F2"
-      },
-      "energia_prelevata_giornaliera_f3": {
-        "name": "Energia Importata Giornaliera F3"
-      },
-      "energia_prelevata_giornaliera_f4": {
-        "name": "Energia Importata Giornaliera F4"
-      },
-      "energia_prelevata_giornaliera_f5": {
-        "name": "Energia Importata Giornaliera F5"
-      },
-      "energia_prelevata_giornaliera_f6": {
-        "name": "Energia Importata Giornaliera F6"
-      },
-      "energia_immessa_giornaliera_f1": {
-        "name": "Energia Esportata Giornaliera F1"
-      },
-      "energia_immessa_giornaliera_f2": {
-        "name": "Energia Esportata Giornaliera F2"
-      },
-      "energia_immessa_giornaliera_f3": {
-        "name": "Energia Esportata Giornaliera F3"
-      },
-      "energia_immessa_giornaliera_f4": {
-        "name": "Energia Esportata Giornaliera F4"
-      },
-      "energia_immessa_giornaliera_f5": {
-        "name": "Energia Esportata Giornaliera F5"
-      },
-      "energia_immessa_giornaliera_f6": {
-        "name": "Energia Esportata Giornaliera F6"
-      },
-      "fascia_oraria_attuale": {
-        "name": "Fascia Oraria Attuale"
-      },
-      "tempo_residuo_distacco": {
-        "name": "Tempo Residuo Distacco"
-      },
-      "data_evento": {
-        "name": "Data Evento"
-      },
-      "potenza_consumata": {
-        "name": "Potenza Consumata"
-      },
-      "potenza_auto_consumata": {
-        "name": "Potenza Auto Consumata"
-      },
-      "energia_consumata": {
-        "name": "Energia Consumata"
-      },
-      "energia_auto_consumata": {
-        "name": "Energia Auto Consumata"
-      }
-    }
-  },
-  "exceptions": {
-    "connection_timeout": {
-      "message": "Timeout nella connessione a {device_name}. Verificare che il dispositivo sia acceso e raggiungibile all'indirizzo IP configurato."
     },
-    "connection_failed": {
-      "message": "Impossibile connettersi al dispositivo su {host}:{port}. Verificare che il dispositivo sia online e che le impostazioni di connessione siano corrette."
+    "exceptions": {
+        "connection_timeout": {
+            "message": "Timeout nella connessione a {device_name}. Verificare che il dispositivo sia acceso e raggiungibile all'indirizzo IP configurato."
+        },
+        "connection_failed": {
+            "message": "Impossibile connettersi al dispositivo su {host}:{port}. Verificare che il dispositivo sia online e che le impostazioni di connessione siano corrette."
+        },
+        "modbus_error": {
+            "message": "Errore di comunicazione Modbus con {device_name}. Il dispositivo potrebbe essere occupato o avere problemi."
+        },
     },
-    "modbus_error": {
-      "message": "Errore di comunicazione Modbus con {device_name}. Il dispositivo potrebbe essere occupato o avere problemi."
-    }
-  },
-  "issues": {
-    "connection_failed": {
-      "title": "Impossibile connettersi a {device_name}",
-      "description": "L'integrazione non riesce a connettersi al dispositivo Sinapsi Alfa su {host}:{port}.\n\n**Possibili cause:**\n- Il dispositivo e spento o non connesso alla rete\n- L'indirizzo IP e cambiato\n- Un firewall sta bloccando la connessione\n- La porta Modbus TCP (502) non e accessibile\n\n**Per risolvere:**\n1. Verificare che il dispositivo sia acceso e connesso alla rete\n2. Controllare l'indirizzo IP nella tabella DHCP del router\n3. Provare ad accedere direttamente all'interfaccia web del dispositivo\n4. Se l'IP e cambiato, riconfigurare l'integrazione con il nuovo indirizzo"
+    "issues": {
+        "connection_failed": {
+            "title": "Impossibile connettersi a {device_name}",
+            "description": "L'integrazione non riesce a connettersi al dispositivo Sinapsi Alfa su {host}:{port}.\n\n**Possibili cause:**\n- Il dispositivo e spento o non connesso alla rete\n- L'indirizzo IP e cambiato\n- Un firewall sta bloccando la connessione\n- La porta Modbus TCP (502) non e accessibile\n\n**Per risolvere:**\n1. Verificare che il dispositivo sia acceso e connesso alla rete\n2. Controllare l'indirizzo IP nella tabella DHCP del router\n3. Provare ad accedere direttamente all'interfaccia web del dispositivo\n4. Se l'IP e cambiato, riconfigurare l'integrazione con il nuovo indirizzo",
+        },
+        "recovery_success": {
+            "title": "{device_name} si è ripreso",
+            "description": "Il dispositivo Sinapsi Alfa sta rispondendo di nuovo.\n\n**Inizio errore:** {started_at}\n**Script eseguito:** {script_executed_at}\n**Ora ripristino:** {ended_at}\n**Tempo di inattività:** {downtime}\n\nLo script di recupero **{script_name}** è stato eseguito.\n\nChiudi questa notifica per confermare.",
+        },
+        "recovery_success_no_script": {
+            "title": "{device_name} si è ripreso",
+            "description": "Il dispositivo Sinapsi Alfa sta rispondendo di nuovo.\n\n**Inizio errore:** {started_at}\n**Ora ripristino:** {ended_at}\n**Tempo di inattività:** {downtime}\n\nChiudi questa notifica per confermare.",
+        },
     },
-    "recovery_success": {
-      "title": "{device_name} si è ripreso",
-      "description": "Il dispositivo Sinapsi Alfa sta rispondendo di nuovo.\n\n**Inizio errore:** {started_at}\n**Script eseguito:** {script_executed_at}\n**Ora ripristino:** {ended_at}\n**Tempo di inattività:** {downtime}\n\nLo script di recupero **{script_name}** è stato eseguito.\n\nChiudi questa notifica per confermare."
+    "device_automation": {
+        "trigger_type": {
+            "device_unreachable": "{device_name} non raggiungibile (problema di rete)",
+            "device_not_responding": "{device_name} non risponde (errore Modbus)",
+            "device_recovered": "{device_name} ripristinato",
+        }
     },
-    "recovery_success_no_script": {
-      "title": "{device_name} si è ripreso",
-      "description": "Il dispositivo Sinapsi Alfa sta rispondendo di nuovo.\n\n**Inizio errore:** {started_at}\n**Ora ripristino:** {ended_at}\n**Tempo di inattività:** {downtime}\n\nChiudi questa notifica per confermare."
-    }
-  },
-  "device_automation": {
-    "trigger_type": {
-      "device_unreachable": "{device_name} non raggiungibile (problema di rete)",
-      "device_not_responding": "{device_name} non risponde (errore Modbus)",
-      "device_recovered": "{device_name} ripristinato"
-    }
-  }
 }

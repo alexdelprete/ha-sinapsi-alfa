@@ -1,175 +1,121 @@
 {
-  "config": {
-    "step": {
-      "user": {
-        "title": "Alfa uhenduse seadistamine",
-        "description": "Kui vajate seadistamisel abi, minge: https://github.com/alexdelprete/ha-sinapsi-alfa",
-        "data": {
-          "name": "Seadme nimi (kasutatakse andurite eesliitena)",
-          "host": "IP voi hostinimi",
-          "port": "TCP port",
-          "scan_interval": "Kusimusintervall (min: 30s max: 600s)",
-          "timeout": "Uhenduse aegumine (min: 5s max: 60s)",
-          "skip_mac_detection": "Jata MAC-tuvastus vahele"
+    "config": {
+        "step": {
+            "user": {
+                "title": "Alfa uhenduse seadistamine",
+                "description": "Kui vajate seadistamisel abi, minge: https://github.com/alexdelprete/ha-sinapsi-alfa",
+                "data": {
+                    "name": "Seadme nimi (kasutatakse andurite eesliitena)",
+                    "host": "IP voi hostinimi",
+                    "port": "TCP port",
+                    "scan_interval": "Kusimusintervall (min: 30s max: 600s)",
+                    "timeout": "Uhenduse aegumine (min: 5s max: 60s)",
+                    "skip_mac_detection": "Jata MAC-tuvastus vahele",
+                },
+                "data_description": {
+                    "skip_mac_detection": "Luba VPN-uhenduste jaoks. Kasutab hostipohist seadme ID-d MAC-aadressi asemel (kiirem kaivitamine)."
+                },
+            },
+            "reconfigure": {
+                "title": "Alfa uhenduse umberseadistamine",
+                "description": "Uuenda seadme uhenduse seadeid",
+                "data": {
+                    "name": "Seadme nimi (kasutatakse andurite eesliitena)",
+                    "host": "IP voi hostinimi",
+                    "port": "TCP port",
+                    "skip_mac_detection": "Jata MAC-tuvastus vahele",
+                },
+                "data_description": {
+                    "skip_mac_detection": "Luba VPN-uhenduste jaoks. Kasutab hostipohist seadme ID-d MAC-aadressi asemel (kiirem kaivitamine)."
+                },
+            },
         },
-        "data_description": {
-          "skip_mac_detection": "Luba VPN-uhenduste jaoks. Kasutab hostipohist seadme ID-d MAC-aadressi asemel (kiirem kaivitamine)."
-        }
-      },
-      "reconfigure": {
-        "title": "Alfa uhenduse umberseadistamine",
-        "description": "Uuenda seadme uhenduse seadeid",
-        "data": {
-          "name": "Seadme nimi (kasutatakse andurite eesliitena)",
-          "host": "IP voi hostinimi",
-          "port": "TCP port",
-          "skip_mac_detection": "Jata MAC-tuvastus vahele"
+        "error": {
+            "already_configured": "Seade on juba seadistatud",
+            "invalid_host": "Kehtetu hosti aadress",
+            "cannot_connect": "Seadmega ei saa uhendust",
         },
-        "data_description": {
-          "skip_mac_detection": "Luba VPN-uhenduste jaoks. Kasutab hostipohist seadme ID-d MAC-aadressi asemel (kiirem kaivitamine)."
+        "abort": {
+            "already_configured": "Seade on juba seadistatud",
+            "reconfigure_successful": "Umberseadistamine onnestus",
+        },
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Alfa valikud",
+                "description": "Configure runtime options.\n\n**Recovery Script Variables:**\nWhen configured, the recovery script receives these variables:\n\n- `device_name` : Device name\n- `host` : IP address/hostname\n- `port` : TCP port\n- `serial_number` : Device serial number\n- `mac_address` : Device MAC address\n- `failures_count` : Number of consecutive failures",
+                "data": {
+                    "recovery_script": "Recovery script (optional, runs when device stops responding)",
+                    "enable_repair_notification": "Enable repair notifications",
+                    "failures_threshold": "Failures before notification (1-10)",
+                    "scan_interval": "Polling Period in seconds (30-600)",
+                    "timeout": "Connection timeout in seconds (5-60)",
+                },
+            }
         }
-      }
     },
-    "error": {
-      "already_configured": "Seade on juba seadistatud",
-      "invalid_host": "Kehtetu hosti aadress",
-      "cannot_connect": "Seadmega ei saa uhendust"
-    },
-    "abort": {
-      "already_configured": "Seade on juba seadistatud",
-      "reconfigure_successful": "Umberseadistamine onnestus"
-    }
-  },
-  "options": {
-    "step": {
-      "init": {
-        "title": "Alfa toimimisvalikud",
-        "description": "Configure runtime options.\n\n**Recovery Script Variables:**\nWhen configured, the recovery script receives these variables:\n- `device_name`: Device name\n- `host`: IP address/hostname\n- `port`: TCP port\n- `serial_number`: Device serial number\n- `mac_address`: Device MAC address\n- `failures_count`: Number of consecutive failures",
-        "data": {
-          "recovery_script": "Recovery script (optional)",
-          "enable_repair_notification": "Enable repair notifications",
-          "failures_threshold": "Failures before notification (1-10)",
-          "scan_interval": "Polling interval (seconds)",
-          "timeout": "Connection timeout (seconds)"
+    "entity": {
+        "sensor": {
+            "potenza_prelevata": {"name": "Imporditud voimsus"},
+            "potenza_prelevata_media_15m": {"name": "Imporditud voimsus kesk 15m"},
+            "potenza_immessa": {"name": "Eksporditud voimsus"},
+            "potenza_immessa_media_15m": {"name": "Eksporditud voimsus kesk 15m"},
+            "potenza_prodotta": {"name": "Toodetud voimsus"},
+            "energia_prelevata": {"name": "Imporditud energia"},
+            "energia_immessa": {"name": "Eksporditud energia"},
+            "energia_prodotta": {"name": "Toodetud energia"},
+            "energia_prelevata_giornaliera_f1": {"name": "Paeva imporditud energia F1"},
+            "energia_prelevata_giornaliera_f2": {"name": "Paeva imporditud energia F2"},
+            "energia_prelevata_giornaliera_f3": {"name": "Paeva imporditud energia F3"},
+            "energia_prelevata_giornaliera_f4": {"name": "Paeva imporditud energia F4"},
+            "energia_prelevata_giornaliera_f5": {"name": "Paeva imporditud energia F5"},
+            "energia_prelevata_giornaliera_f6": {"name": "Paeva imporditud energia F6"},
+            "energia_immessa_giornaliera_f1": {"name": "Paeva eksporditud energia F1"},
+            "energia_immessa_giornaliera_f2": {"name": "Paeva eksporditud energia F2"},
+            "energia_immessa_giornaliera_f3": {"name": "Paeva eksporditud energia F3"},
+            "energia_immessa_giornaliera_f4": {"name": "Paeva eksporditud energia F4"},
+            "energia_immessa_giornaliera_f5": {"name": "Paeva eksporditud energia F5"},
+            "energia_immessa_giornaliera_f6": {"name": "Paeva eksporditud energia F6"},
+            "fascia_oraria_attuale": {"name": "Praegune ajavoond"},
+            "tempo_residuo_distacco": {"name": "Lahtiuhendamise taimer"},
+            "data_evento": {"name": "Sundmuse kuupaev"},
+            "potenza_consumata": {"name": "Tarbitud voimsus"},
+            "potenza_auto_consumata": {"name": "Omatarbitud voimsus"},
+            "energia_consumata": {"name": "Tarbitud energia"},
+            "energia_auto_consumata": {"name": "Omatarbitud energia"},
         }
-      }
-    }
-  },
-  "entity": {
-    "sensor": {
-      "potenza_prelevata": {
-        "name": "Imporditud voimsus"
-      },
-      "potenza_prelevata_media_15m": {
-        "name": "Imporditud voimsus kesk 15m"
-      },
-      "potenza_immessa": {
-        "name": "Eksporditud voimsus"
-      },
-      "potenza_immessa_media_15m": {
-        "name": "Eksporditud voimsus kesk 15m"
-      },
-      "potenza_prodotta": {
-        "name": "Toodetud voimsus"
-      },
-      "energia_prelevata": {
-        "name": "Imporditud energia"
-      },
-      "energia_immessa": {
-        "name": "Eksporditud energia"
-      },
-      "energia_prodotta": {
-        "name": "Toodetud energia"
-      },
-      "energia_prelevata_giornaliera_f1": {
-        "name": "Paeva imporditud energia F1"
-      },
-      "energia_prelevata_giornaliera_f2": {
-        "name": "Paeva imporditud energia F2"
-      },
-      "energia_prelevata_giornaliera_f3": {
-        "name": "Paeva imporditud energia F3"
-      },
-      "energia_prelevata_giornaliera_f4": {
-        "name": "Paeva imporditud energia F4"
-      },
-      "energia_prelevata_giornaliera_f5": {
-        "name": "Paeva imporditud energia F5"
-      },
-      "energia_prelevata_giornaliera_f6": {
-        "name": "Paeva imporditud energia F6"
-      },
-      "energia_immessa_giornaliera_f1": {
-        "name": "Paeva eksporditud energia F1"
-      },
-      "energia_immessa_giornaliera_f2": {
-        "name": "Paeva eksporditud energia F2"
-      },
-      "energia_immessa_giornaliera_f3": {
-        "name": "Paeva eksporditud energia F3"
-      },
-      "energia_immessa_giornaliera_f4": {
-        "name": "Paeva eksporditud energia F4"
-      },
-      "energia_immessa_giornaliera_f5": {
-        "name": "Paeva eksporditud energia F5"
-      },
-      "energia_immessa_giornaliera_f6": {
-        "name": "Paeva eksporditud energia F6"
-      },
-      "fascia_oraria_attuale": {
-        "name": "Praegune ajavoond"
-      },
-      "tempo_residuo_distacco": {
-        "name": "Lahtiuhendamise taimer"
-      },
-      "data_evento": {
-        "name": "Sundmuse kuupaev"
-      },
-      "potenza_consumata": {
-        "name": "Tarbitud voimsus"
-      },
-      "potenza_auto_consumata": {
-        "name": "Omatarbitud voimsus"
-      },
-      "energia_consumata": {
-        "name": "Tarbitud energia"
-      },
-      "energia_auto_consumata": {
-        "name": "Omatarbitud energia"
-      }
-    }
-  },
-  "exceptions": {
-    "connection_timeout": {
-      "message": "Uhenduse aegumine seadmega {device_name}. Kontrollige, kas seade on sisse lulitatud ja seadistatud IP-aadressil kattesaadav."
     },
-    "connection_failed": {
-      "message": "Uhendus seadmega aadressil {host}:{port} ebaonnestus. Kontrollige, kas seade on vorgus ja uhendusseaded on oiged."
+    "exceptions": {
+        "connection_timeout": {
+            "message": "Uhenduse aegumine seadmega {device_name}. Kontrollige, kas seade on sisse lulitatud ja seadistatud IP-aadressil kattesaadav."
+        },
+        "connection_failed": {
+            "message": "Uhendus seadmega aadressil {host}:{port} ebaonnestus. Kontrollige, kas seade on vorgus ja uhendusseaded on oiged."
+        },
+        "modbus_error": {
+            "message": "Modbus-i sideviga seadmega {device_name}. Seade voib olla huivatud voi kogeda probleeme."
+        },
     },
-    "modbus_error": {
-      "message": "Modbus-i sideviga seadmega {device_name}. Seade voib olla huivatud voi kogeda probleeme."
-    }
-  },
-  "issues": {
-    "connection_failed": {
-      "title": "Seadmega {device_name} ei saa uhendust",
-      "description": "Integratsioon ei saa uhendust teie Sinapsi Alfa seadmega aadressil {host}:{port}.\n\n**Voimalikud pohjused:**\n- Seade on valja lulitatud voi ei ole vorku uhendatud\n- IP-aadress on muutunud\n- Tulemuur blokeerib uhendust\n- Modbus TCP port (502) ei ole ligipaasetav\n\n**Lahendamiseks:**\n1. Kontrollige, kas seade on sisse lulitatud ja teie vorku uhendatud\n2. Kontrollige IP-aadressi oma ruuteri DHCP-tabelis\n3. Proovige seadme veebiliidesele otse ligi paaseda\n4. Kui IP on muutunud, seadistage integratsioon uue aadressiga umber"
+    "issues": {
+        "connection_failed": {
+            "title": "Seadmega {device_name} ei saa uhendust",
+            "description": "Integratsioon ei saa uhendust teie Sinapsi Alfa seadmega aadressil {host}:{port}.\n\n**Voimalikud pohjused:**\n- Seade on valja lulitatud voi ei ole vorku uhendatud\n- IP-aadress on muutunud\n- Tulemuur blokeerib uhendust\n- Modbus TCP port (502) ei ole ligipaasetav\n\n**Lahendamiseks:**\n1. Kontrollige, kas seade on sisse lulitatud ja teie vorku uhendatud\n2. Kontrollige IP-aadressi oma ruuteri DHCP-tabelis\n3. Proovige seadme veebiliidesele otse ligi paaseda\n4. Kui IP on muutunud, seadistage integratsioon uue aadressiga umber",
+        },
+        "recovery_success": {
+            "title": "{device_name} has recovered",
+            "description": "Your Sinapsi Alfa device is now responding again.\n\n**Failure started:** {started_at}\n**Script executed:** {script_executed_at}\n**Recovery time:** {ended_at}\n**Total downtime:** {downtime}\n\nThe recovery script **{script_name}** was executed.",
+        },
+        "recovery_success_no_script": {
+            "title": "{device_name} has recovered",
+            "description": "Your Sinapsi Alfa device is now responding again.\n\n**Failure started:** {started_at}\n**Recovery time:** {ended_at}\n**Total downtime:** {downtime}",
+        },
     },
-    "recovery_success": {
-      "title": "{device_name} has recovered",
-      "description": "Your Sinapsi Alfa device is now responding again.\n\n**Failure started:** {started_at}\n**Script executed:** {script_executed_at}\n**Recovery time:** {ended_at}\n**Total downtime:** {downtime}\n\nThe recovery script **{script_name}** was executed."
+    "device_automation": {
+        "trigger_type": {
+            "device_unreachable": "{device_name} is unreachable (network issue)",
+            "device_not_responding": "{device_name} is not responding (Modbus error)",
+            "device_recovered": "{device_name} recovered",
+        }
     },
-    "recovery_success_no_script": {
-      "title": "{device_name} has recovered",
-      "description": "Your Sinapsi Alfa device is now responding again.\n\n**Failure started:** {started_at}\n**Recovery time:** {ended_at}\n**Total downtime:** {downtime}"
-    }
-  },
-  "device_automation": {
-    "trigger_type": {
-      "device_unreachable": "{device_name} is unreachable (network issue)",
-      "device_not_responding": "{device_name} is not responding (Modbus error)",
-      "device_recovered": "{device_name} recovered"
-    }
-  }
 }

@@ -1,175 +1,121 @@
 {
-  "config": {
-    "step": {
-      "user": {
-        "title": "Alfa-anslutningskonfiguration",
-        "description": "Om du behover hjalp med konfigurationen, besok: https://github.com/alexdelprete/ha-sinapsi-alfa",
-        "data": {
-          "name": "Enhetsnamn (anvands som sensorprefix)",
-          "host": "IP eller vardnamn",
-          "port": "TCP-port",
-          "scan_interval": "Avfragningsintervall (min: 30s max: 600s)",
-          "timeout": "Anslutningstimeout (min: 5s max: 60s)",
-          "skip_mac_detection": "Hoppa over MAC-detektering"
+    "config": {
+        "step": {
+            "user": {
+                "title": "Alfa-anslutningskonfiguration",
+                "description": "Om du behover hjalp med konfigurationen, besok: https://github.com/alexdelprete/ha-sinapsi-alfa",
+                "data": {
+                    "name": "Enhetsnamn (anvands som sensorprefix)",
+                    "host": "IP eller vardnamn",
+                    "port": "TCP-port",
+                    "scan_interval": "Avfragningsintervall (min: 30s max: 600s)",
+                    "timeout": "Anslutningstimeout (min: 5s max: 60s)",
+                    "skip_mac_detection": "Hoppa over MAC-detektering",
+                },
+                "data_description": {
+                    "skip_mac_detection": "Aktivera for VPN-anslutningar. Anvander vardbaserat enhets-ID istallet for MAC-adress (snabbare start)."
+                },
+            },
+            "reconfigure": {
+                "title": "Omkonfigurera Alfa-anslutning",
+                "description": "Uppdatera enhetens anslutningsinstallningar",
+                "data": {
+                    "name": "Enhetsnamn (anvands som sensorprefix)",
+                    "host": "IP eller vardnamn",
+                    "port": "TCP-port",
+                    "skip_mac_detection": "Hoppa over MAC-detektering",
+                },
+                "data_description": {
+                    "skip_mac_detection": "Aktivera for VPN-anslutningar. Anvander vardbaserat enhets-ID istallet for MAC-adress (snabbare start)."
+                },
+            },
         },
-        "data_description": {
-          "skip_mac_detection": "Aktivera for VPN-anslutningar. Anvander vardbaserat enhets-ID istallet for MAC-adress (snabbare start)."
-        }
-      },
-      "reconfigure": {
-        "title": "Omkonfigurera Alfa-anslutning",
-        "description": "Uppdatera enhetens anslutningsinstallningar",
-        "data": {
-          "name": "Enhetsnamn (anvands som sensorprefix)",
-          "host": "IP eller vardnamn",
-          "port": "TCP-port",
-          "skip_mac_detection": "Hoppa over MAC-detektering"
+        "error": {
+            "already_configured": "Enheten ar redan konfigurerad",
+            "invalid_host": "Ogiltig vardadress",
+            "cannot_connect": "Kan inte ansluta till enheten",
         },
-        "data_description": {
-          "skip_mac_detection": "Aktivera for VPN-anslutningar. Anvander vardbaserat enhets-ID istallet for MAC-adress (snabbare start)."
+        "abort": {
+            "already_configured": "Enheten ar redan konfigurerad",
+            "reconfigure_successful": "Omkonfigurering lyckades",
+        },
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Alfa alternativ",
+                "description": "Configure runtime options.\n\n**Recovery Script Variables:**\nWhen configured, the recovery script receives these variables:\n\n- `device_name` : Device name\n- `host` : IP address/hostname\n- `port` : TCP port\n- `serial_number` : Device serial number\n- `mac_address` : Device MAC address\n- `failures_count` : Number of consecutive failures",
+                "data": {
+                    "recovery_script": "Recovery script (optional, runs when device stops responding)",
+                    "enable_repair_notification": "Enable repair notifications",
+                    "failures_threshold": "Failures before notification (1-10)",
+                    "scan_interval": "Polling Period in seconds (30-600)",
+                    "timeout": "Connection timeout in seconds (5-60)",
+                },
+            }
         }
-      }
     },
-    "error": {
-      "already_configured": "Enheten ar redan konfigurerad",
-      "invalid_host": "Ogiltig vardadress",
-      "cannot_connect": "Kan inte ansluta till enheten"
-    },
-    "abort": {
-      "already_configured": "Enheten ar redan konfigurerad",
-      "reconfigure_successful": "Omkonfigurering lyckades"
-    }
-  },
-  "options": {
-    "step": {
-      "init": {
-        "title": "Alfa korningsalternativ",
-        "description": "Configure runtime options.\n\n**Recovery Script Variables:**\nWhen configured, the recovery script receives these variables:\n- `device_name`: Device name\n- `host`: IP address/hostname\n- `port`: TCP port\n- `serial_number`: Device serial number\n- `mac_address`: Device MAC address\n- `failures_count`: Number of consecutive failures",
-        "data": {
-          "recovery_script": "Recovery script (optional)",
-          "enable_repair_notification": "Enable repair notifications",
-          "failures_threshold": "Failures before notification (1-10)",
-          "scan_interval": "Polling interval (seconds)",
-          "timeout": "Connection timeout (seconds)"
+    "entity": {
+        "sensor": {
+            "potenza_prelevata": {"name": "Importerad effekt"},
+            "potenza_prelevata_media_15m": {"name": "Importerad effekt medel 15m"},
+            "potenza_immessa": {"name": "Exporterad effekt"},
+            "potenza_immessa_media_15m": {"name": "Exporterad effekt medel 15m"},
+            "potenza_prodotta": {"name": "Producerad effekt"},
+            "energia_prelevata": {"name": "Importerad energi"},
+            "energia_immessa": {"name": "Exporterad energi"},
+            "energia_prodotta": {"name": "Producerad energi"},
+            "energia_prelevata_giornaliera_f1": {"name": "Daglig importerad energi F1"},
+            "energia_prelevata_giornaliera_f2": {"name": "Daglig importerad energi F2"},
+            "energia_prelevata_giornaliera_f3": {"name": "Daglig importerad energi F3"},
+            "energia_prelevata_giornaliera_f4": {"name": "Daglig importerad energi F4"},
+            "energia_prelevata_giornaliera_f5": {"name": "Daglig importerad energi F5"},
+            "energia_prelevata_giornaliera_f6": {"name": "Daglig importerad energi F6"},
+            "energia_immessa_giornaliera_f1": {"name": "Daglig exporterad energi F1"},
+            "energia_immessa_giornaliera_f2": {"name": "Daglig exporterad energi F2"},
+            "energia_immessa_giornaliera_f3": {"name": "Daglig exporterad energi F3"},
+            "energia_immessa_giornaliera_f4": {"name": "Daglig exporterad energi F4"},
+            "energia_immessa_giornaliera_f5": {"name": "Daglig exporterad energi F5"},
+            "energia_immessa_giornaliera_f6": {"name": "Daglig exporterad energi F6"},
+            "fascia_oraria_attuale": {"name": "Aktuell tidszon"},
+            "tempo_residuo_distacco": {"name": "Frankopplingstimer"},
+            "data_evento": {"name": "Handelsedatum"},
+            "potenza_consumata": {"name": "Forbrukad effekt"},
+            "potenza_auto_consumata": {"name": "Egenforbrukad effekt"},
+            "energia_consumata": {"name": "Forbrukad energi"},
+            "energia_auto_consumata": {"name": "Egenforbrukad energi"},
         }
-      }
-    }
-  },
-  "entity": {
-    "sensor": {
-      "potenza_prelevata": {
-        "name": "Importerad effekt"
-      },
-      "potenza_prelevata_media_15m": {
-        "name": "Importerad effekt medel 15m"
-      },
-      "potenza_immessa": {
-        "name": "Exporterad effekt"
-      },
-      "potenza_immessa_media_15m": {
-        "name": "Exporterad effekt medel 15m"
-      },
-      "potenza_prodotta": {
-        "name": "Producerad effekt"
-      },
-      "energia_prelevata": {
-        "name": "Importerad energi"
-      },
-      "energia_immessa": {
-        "name": "Exporterad energi"
-      },
-      "energia_prodotta": {
-        "name": "Producerad energi"
-      },
-      "energia_prelevata_giornaliera_f1": {
-        "name": "Daglig importerad energi F1"
-      },
-      "energia_prelevata_giornaliera_f2": {
-        "name": "Daglig importerad energi F2"
-      },
-      "energia_prelevata_giornaliera_f3": {
-        "name": "Daglig importerad energi F3"
-      },
-      "energia_prelevata_giornaliera_f4": {
-        "name": "Daglig importerad energi F4"
-      },
-      "energia_prelevata_giornaliera_f5": {
-        "name": "Daglig importerad energi F5"
-      },
-      "energia_prelevata_giornaliera_f6": {
-        "name": "Daglig importerad energi F6"
-      },
-      "energia_immessa_giornaliera_f1": {
-        "name": "Daglig exporterad energi F1"
-      },
-      "energia_immessa_giornaliera_f2": {
-        "name": "Daglig exporterad energi F2"
-      },
-      "energia_immessa_giornaliera_f3": {
-        "name": "Daglig exporterad energi F3"
-      },
-      "energia_immessa_giornaliera_f4": {
-        "name": "Daglig exporterad energi F4"
-      },
-      "energia_immessa_giornaliera_f5": {
-        "name": "Daglig exporterad energi F5"
-      },
-      "energia_immessa_giornaliera_f6": {
-        "name": "Daglig exporterad energi F6"
-      },
-      "fascia_oraria_attuale": {
-        "name": "Aktuell tidszon"
-      },
-      "tempo_residuo_distacco": {
-        "name": "Frankopplingstimer"
-      },
-      "data_evento": {
-        "name": "Handelsedatum"
-      },
-      "potenza_consumata": {
-        "name": "Forbrukad effekt"
-      },
-      "potenza_auto_consumata": {
-        "name": "Egenforbrukad effekt"
-      },
-      "energia_consumata": {
-        "name": "Forbrukad energi"
-      },
-      "energia_auto_consumata": {
-        "name": "Egenforbrukad energi"
-      }
-    }
-  },
-  "exceptions": {
-    "connection_timeout": {
-      "message": "Timeout vid anslutning till {device_name}. Kontrollera att enheten ar paslagan och atkomlig pa den konfigurerade IP-adressen."
     },
-    "connection_failed": {
-      "message": "Kunde inte ansluta till enheten pa {host}:{port}. Kontrollera att enheten ar online och att anslutningsinstallningarna ar korrekta."
+    "exceptions": {
+        "connection_timeout": {
+            "message": "Timeout vid anslutning till {device_name}. Kontrollera att enheten ar paslagan och atkomlig pa den konfigurerade IP-adressen."
+        },
+        "connection_failed": {
+            "message": "Kunde inte ansluta till enheten pa {host}:{port}. Kontrollera att enheten ar online och att anslutningsinstallningarna ar korrekta."
+        },
+        "modbus_error": {
+            "message": "Modbus-kommunikationsfel med {device_name}. Enheten kan vara upptagen eller uppleva problem."
+        },
     },
-    "modbus_error": {
-      "message": "Modbus-kommunikationsfel med {device_name}. Enheten kan vara upptagen eller uppleva problem."
-    }
-  },
-  "issues": {
-    "connection_failed": {
-      "title": "Kan inte ansluta till {device_name}",
-      "description": "Integrationen kan inte ansluta till din Sinapsi Alfa-enhet pa {host}:{port}.\n\n**Mojliga orsaker:**\n- Enheten ar avstangd eller inte ansluten till natverket\n- IP-adressen har andrats\n- En brandvagg blockerar anslutningen\n- Modbus TCP-porten (502) ar inte atkomlig\n\n**For att losa:**\n1. Kontrollera att enheten ar paslagan och ansluten till ditt natverk\n2. Verifiera IP-adressen i din routers DHCP-tabell\n3. Forsok komma at enhetens webbgranssnitt direkt\n4. Om IP har andrats, konfigurera om integrationen med den nya adressen"
+    "issues": {
+        "connection_failed": {
+            "title": "Kan inte ansluta till {device_name}",
+            "description": "Integrationen kan inte ansluta till din Sinapsi Alfa-enhet pa {host}:{port}.\n\n**Mojliga orsaker:**\n- Enheten ar avstangd eller inte ansluten till natverket\n- IP-adressen har andrats\n- En brandvagg blockerar anslutningen\n- Modbus TCP-porten (502) ar inte atkomlig\n\n**For att losa:**\n1. Kontrollera att enheten ar paslagan och ansluten till ditt natverk\n2. Verifiera IP-adressen i din routers DHCP-tabell\n3. Forsok komma at enhetens webbgranssnitt direkt\n4. Om IP har andrats, konfigurera om integrationen med den nya adressen",
+        },
+        "recovery_success": {
+            "title": "{device_name} has recovered",
+            "description": "Your Sinapsi Alfa device is now responding again.\n\n**Failure started:** {started_at}\n**Script executed:** {script_executed_at}\n**Recovery time:** {ended_at}\n**Total downtime:** {downtime}\n\nThe recovery script **{script_name}** was executed.",
+        },
+        "recovery_success_no_script": {
+            "title": "{device_name} has recovered",
+            "description": "Your Sinapsi Alfa device is now responding again.\n\n**Failure started:** {started_at}\n**Recovery time:** {ended_at}\n**Total downtime:** {downtime}",
+        },
     },
-    "recovery_success": {
-      "title": "{device_name} has recovered",
-      "description": "Your Sinapsi Alfa device is now responding again.\n\n**Failure started:** {started_at}\n**Script executed:** {script_executed_at}\n**Recovery time:** {ended_at}\n**Total downtime:** {downtime}\n\nThe recovery script **{script_name}** was executed."
+    "device_automation": {
+        "trigger_type": {
+            "device_unreachable": "{device_name} is unreachable (network issue)",
+            "device_not_responding": "{device_name} is not responding (Modbus error)",
+            "device_recovered": "{device_name} recovered",
+        }
     },
-    "recovery_success_no_script": {
-      "title": "{device_name} has recovered",
-      "description": "Your Sinapsi Alfa device is now responding again.\n\n**Failure started:** {started_at}\n**Recovery time:** {ended_at}\n**Total downtime:** {downtime}"
-    }
-  },
-  "device_automation": {
-    "trigger_type": {
-      "device_unreachable": "{device_name} is unreachable (network issue)",
-      "device_not_responding": "{device_name} is not responding (Modbus error)",
-      "device_recovered": "{device_name} recovered"
-    }
-  }
 }

@@ -1,175 +1,121 @@
 {
-  "config": {
-    "step": {
-      "user": {
-        "title": "Alfa-yhteyden maaritys",
-        "description": "Jos tarvitset apua maarityksessa, kay osoitteessa: https://github.com/alexdelprete/ha-sinapsi-alfa",
-        "data": {
-          "name": "Laitteen nimi (kaytetaan anturien etuliitteena)",
-          "host": "IP tai isantanimi",
-          "port": "TCP-portti",
-          "scan_interval": "Kyselyvali (min: 30s max: 600s)",
-          "timeout": "Yhteyden aikakatkaisu (min: 5s max: 60s)",
-          "skip_mac_detection": "Ohita MAC-tunnistus"
+    "config": {
+        "step": {
+            "user": {
+                "title": "Alfa-yhteyden maaritys",
+                "description": "Jos tarvitset apua maarityksessa, kay osoitteessa: https://github.com/alexdelprete/ha-sinapsi-alfa",
+                "data": {
+                    "name": "Laitteen nimi (kaytetaan anturien etuliitteena)",
+                    "host": "IP tai isantanimi",
+                    "port": "TCP-portti",
+                    "scan_interval": "Kyselyvali (min: 30s max: 600s)",
+                    "timeout": "Yhteyden aikakatkaisu (min: 5s max: 60s)",
+                    "skip_mac_detection": "Ohita MAC-tunnistus",
+                },
+                "data_description": {
+                    "skip_mac_detection": "Ota kayttoon VPN-yhteyksia varten. Kayttaa isantapohjaista laitetunnusta MAC-osoitteen sijaan (nopeampi kaynnistys)."
+                },
+            },
+            "reconfigure": {
+                "title": "Maarita Alfa-yhteys uudelleen",
+                "description": "Paivita laitteen yhteysasetukset",
+                "data": {
+                    "name": "Laitteen nimi (kaytetaan anturien etuliitteena)",
+                    "host": "IP tai isantanimi",
+                    "port": "TCP-portti",
+                    "skip_mac_detection": "Ohita MAC-tunnistus",
+                },
+                "data_description": {
+                    "skip_mac_detection": "Ota kayttoon VPN-yhteyksia varten. Kayttaa isantapohjaista laitetunnusta MAC-osoitteen sijaan (nopeampi kaynnistys)."
+                },
+            },
         },
-        "data_description": {
-          "skip_mac_detection": "Ota kayttoon VPN-yhteyksia varten. Kayttaa isantapohjaista laitetunnusta MAC-osoitteen sijaan (nopeampi kaynnistys)."
-        }
-      },
-      "reconfigure": {
-        "title": "Maarita Alfa-yhteys uudelleen",
-        "description": "Paivita laitteen yhteysasetukset",
-        "data": {
-          "name": "Laitteen nimi (kaytetaan anturien etuliitteena)",
-          "host": "IP tai isantanimi",
-          "port": "TCP-portti",
-          "skip_mac_detection": "Ohita MAC-tunnistus"
+        "error": {
+            "already_configured": "Laite on jo maaritetty",
+            "invalid_host": "Virheellinen isantaosoite",
+            "cannot_connect": "Laitteeseen ei saada yhteytta",
         },
-        "data_description": {
-          "skip_mac_detection": "Ota kayttoon VPN-yhteyksia varten. Kayttaa isantapohjaista laitetunnusta MAC-osoitteen sijaan (nopeampi kaynnistys)."
+        "abort": {
+            "already_configured": "Laite on jo maaritetty",
+            "reconfigure_successful": "Uudelleenmaaritys onnistui",
+        },
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Alfa asetukset",
+                "description": "Configure runtime options.\n\n**Recovery Script Variables:**\nWhen configured, the recovery script receives these variables:\n\n- `device_name` : Device name\n- `host` : IP address/hostname\n- `port` : TCP port\n- `serial_number` : Device serial number\n- `mac_address` : Device MAC address\n- `failures_count` : Number of consecutive failures",
+                "data": {
+                    "recovery_script": "Recovery script (optional, runs when device stops responding)",
+                    "enable_repair_notification": "Enable repair notifications",
+                    "failures_threshold": "Failures before notification (1-10)",
+                    "scan_interval": "Polling Period in seconds (30-600)",
+                    "timeout": "Connection timeout in seconds (5-60)",
+                },
+            }
         }
-      }
     },
-    "error": {
-      "already_configured": "Laite on jo maaritetty",
-      "invalid_host": "Virheellinen isantaosoite",
-      "cannot_connect": "Laitteeseen ei saada yhteytta"
-    },
-    "abort": {
-      "already_configured": "Laite on jo maaritetty",
-      "reconfigure_successful": "Uudelleenmaaritys onnistui"
-    }
-  },
-  "options": {
-    "step": {
-      "init": {
-        "title": "Alfa-ajonaikaiset asetukset",
-        "description": "Configure runtime options.\n\n**Recovery Script Variables:**\nWhen configured, the recovery script receives these variables:\n- `device_name`: Device name\n- `host`: IP address/hostname\n- `port`: TCP port\n- `serial_number`: Device serial number\n- `mac_address`: Device MAC address\n- `failures_count`: Number of consecutive failures",
-        "data": {
-          "recovery_script": "Recovery script (optional)",
-          "enable_repair_notification": "Enable repair notifications",
-          "failures_threshold": "Failures before notification (1-10)",
-          "scan_interval": "Polling interval (seconds)",
-          "timeout": "Connection timeout (seconds)"
+    "entity": {
+        "sensor": {
+            "potenza_prelevata": {"name": "Tuotu teho"},
+            "potenza_prelevata_media_15m": {"name": "Tuotu teho ka 15m"},
+            "potenza_immessa": {"name": "Viety teho"},
+            "potenza_immessa_media_15m": {"name": "Viety teho ka 15m"},
+            "potenza_prodotta": {"name": "Tuotettu teho"},
+            "energia_prelevata": {"name": "Tuotu energia"},
+            "energia_immessa": {"name": "Viety energia"},
+            "energia_prodotta": {"name": "Tuotettu energia"},
+            "energia_prelevata_giornaliera_f1": {"name": "Paivaenergia tuotu F1"},
+            "energia_prelevata_giornaliera_f2": {"name": "Paivaenergia tuotu F2"},
+            "energia_prelevata_giornaliera_f3": {"name": "Paivaenergia tuotu F3"},
+            "energia_prelevata_giornaliera_f4": {"name": "Paivaenergia tuotu F4"},
+            "energia_prelevata_giornaliera_f5": {"name": "Paivaenergia tuotu F5"},
+            "energia_prelevata_giornaliera_f6": {"name": "Paivaenergia tuotu F6"},
+            "energia_immessa_giornaliera_f1": {"name": "Paivaenergia viety F1"},
+            "energia_immessa_giornaliera_f2": {"name": "Paivaenergia viety F2"},
+            "energia_immessa_giornaliera_f3": {"name": "Paivaenergia viety F3"},
+            "energia_immessa_giornaliera_f4": {"name": "Paivaenergia viety F4"},
+            "energia_immessa_giornaliera_f5": {"name": "Paivaenergia viety F5"},
+            "energia_immessa_giornaliera_f6": {"name": "Paivaenergia viety F6"},
+            "fascia_oraria_attuale": {"name": "Nykyinen aikavyohyke"},
+            "tempo_residuo_distacco": {"name": "Irrotusajastin"},
+            "data_evento": {"name": "Tapahtuman paivamaara"},
+            "potenza_consumata": {"name": "Kulutettu teho"},
+            "potenza_auto_consumata": {"name": "Omakaytetty teho"},
+            "energia_consumata": {"name": "Kulutettu energia"},
+            "energia_auto_consumata": {"name": "Omakaytetty energia"},
         }
-      }
-    }
-  },
-  "entity": {
-    "sensor": {
-      "potenza_prelevata": {
-        "name": "Tuotu teho"
-      },
-      "potenza_prelevata_media_15m": {
-        "name": "Tuotu teho ka 15m"
-      },
-      "potenza_immessa": {
-        "name": "Viety teho"
-      },
-      "potenza_immessa_media_15m": {
-        "name": "Viety teho ka 15m"
-      },
-      "potenza_prodotta": {
-        "name": "Tuotettu teho"
-      },
-      "energia_prelevata": {
-        "name": "Tuotu energia"
-      },
-      "energia_immessa": {
-        "name": "Viety energia"
-      },
-      "energia_prodotta": {
-        "name": "Tuotettu energia"
-      },
-      "energia_prelevata_giornaliera_f1": {
-        "name": "Paivaenergia tuotu F1"
-      },
-      "energia_prelevata_giornaliera_f2": {
-        "name": "Paivaenergia tuotu F2"
-      },
-      "energia_prelevata_giornaliera_f3": {
-        "name": "Paivaenergia tuotu F3"
-      },
-      "energia_prelevata_giornaliera_f4": {
-        "name": "Paivaenergia tuotu F4"
-      },
-      "energia_prelevata_giornaliera_f5": {
-        "name": "Paivaenergia tuotu F5"
-      },
-      "energia_prelevata_giornaliera_f6": {
-        "name": "Paivaenergia tuotu F6"
-      },
-      "energia_immessa_giornaliera_f1": {
-        "name": "Paivaenergia viety F1"
-      },
-      "energia_immessa_giornaliera_f2": {
-        "name": "Paivaenergia viety F2"
-      },
-      "energia_immessa_giornaliera_f3": {
-        "name": "Paivaenergia viety F3"
-      },
-      "energia_immessa_giornaliera_f4": {
-        "name": "Paivaenergia viety F4"
-      },
-      "energia_immessa_giornaliera_f5": {
-        "name": "Paivaenergia viety F5"
-      },
-      "energia_immessa_giornaliera_f6": {
-        "name": "Paivaenergia viety F6"
-      },
-      "fascia_oraria_attuale": {
-        "name": "Nykyinen aikavyohyke"
-      },
-      "tempo_residuo_distacco": {
-        "name": "Irrotusajastin"
-      },
-      "data_evento": {
-        "name": "Tapahtuman paivamaara"
-      },
-      "potenza_consumata": {
-        "name": "Kulutettu teho"
-      },
-      "potenza_auto_consumata": {
-        "name": "Omakaytetty teho"
-      },
-      "energia_consumata": {
-        "name": "Kulutettu energia"
-      },
-      "energia_auto_consumata": {
-        "name": "Omakaytetty energia"
-      }
-    }
-  },
-  "exceptions": {
-    "connection_timeout": {
-      "message": "Yhteyden aikakatkaisu laitteeseen {device_name}. Tarkista, etta laite on paalla ja tavoitettavissa maaritetyssa IP-osoitteessa."
     },
-    "connection_failed": {
-      "message": "Yhteys laitteeseen osoitteessa {host}:{port} epaonnistui. Tarkista, etta laite on verkossa ja yhteysasetukset ovat oikein."
+    "exceptions": {
+        "connection_timeout": {
+            "message": "Yhteyden aikakatkaisu laitteeseen {device_name}. Tarkista, etta laite on paalla ja tavoitettavissa maaritetyssa IP-osoitteessa."
+        },
+        "connection_failed": {
+            "message": "Yhteys laitteeseen osoitteessa {host}:{port} epaonnistui. Tarkista, etta laite on verkossa ja yhteysasetukset ovat oikein."
+        },
+        "modbus_error": {
+            "message": "Modbus-viestintavirhe laitteen {device_name} kanssa. Laite saattaa olla varattu tai kokea ongelmia."
+        },
     },
-    "modbus_error": {
-      "message": "Modbus-viestintavirhe laitteen {device_name} kanssa. Laite saattaa olla varattu tai kokea ongelmia."
-    }
-  },
-  "issues": {
-    "connection_failed": {
-      "title": "Yhteyden muodostaminen laitteeseen {device_name} ei onnistu",
-      "description": "Integraatio ei voi muodostaa yhteytta Sinapsi Alfa -laitteeseesi osoitteessa {host}:{port}.\n\n**Mahdolliset syyt:**\n- Laite on pois paalta tai ei ole yhdistetty verkkoon\n- IP-osoite on muuttunut\n- Palomuuri estaa yhteyden\n- Modbus TCP -portti (502) ei ole kaytettavissa\n\n**Ratkaisemiseksi:**\n1. Tarkista, etta laite on paalla ja yhdistetty verkkoon\n2. Tarkista IP-osoite reitittimesi DHCP-taulukosta\n3. Yrita paasta suoraan laitteen verkkokayttoliittymaan\n4. Jos IP on muuttunut, maarita integraatio uudelleen uudella osoitteella"
+    "issues": {
+        "connection_failed": {
+            "title": "Yhteyden muodostaminen laitteeseen {device_name} ei onnistu",
+            "description": "Integraatio ei voi muodostaa yhteytta Sinapsi Alfa -laitteeseesi osoitteessa {host}:{port}.\n\n**Mahdolliset syyt:**\n- Laite on pois paalta tai ei ole yhdistetty verkkoon\n- IP-osoite on muuttunut\n- Palomuuri estaa yhteyden\n- Modbus TCP -portti (502) ei ole kaytettavissa\n\n**Ratkaisemiseksi:**\n1. Tarkista, etta laite on paalla ja yhdistetty verkkoon\n2. Tarkista IP-osoite reitittimesi DHCP-taulukosta\n3. Yrita paasta suoraan laitteen verkkokayttoliittymaan\n4. Jos IP on muuttunut, maarita integraatio uudelleen uudella osoitteella",
+        },
+        "recovery_success": {
+            "title": "{device_name} has recovered",
+            "description": "Your Sinapsi Alfa device is now responding again.\n\n**Failure started:** {started_at}\n**Script executed:** {script_executed_at}\n**Recovery time:** {ended_at}\n**Total downtime:** {downtime}\n\nThe recovery script **{script_name}** was executed.",
+        },
+        "recovery_success_no_script": {
+            "title": "{device_name} has recovered",
+            "description": "Your Sinapsi Alfa device is now responding again.\n\n**Failure started:** {started_at}\n**Recovery time:** {ended_at}\n**Total downtime:** {downtime}",
+        },
     },
-    "recovery_success": {
-      "title": "{device_name} has recovered",
-      "description": "Your Sinapsi Alfa device is now responding again.\n\n**Failure started:** {started_at}\n**Script executed:** {script_executed_at}\n**Recovery time:** {ended_at}\n**Total downtime:** {downtime}\n\nThe recovery script **{script_name}** was executed."
+    "device_automation": {
+        "trigger_type": {
+            "device_unreachable": "{device_name} is unreachable (network issue)",
+            "device_not_responding": "{device_name} is not responding (Modbus error)",
+            "device_recovered": "{device_name} recovered",
+        }
     },
-    "recovery_success_no_script": {
-      "title": "{device_name} has recovered",
-      "description": "Your Sinapsi Alfa device is now responding again.\n\n**Failure started:** {started_at}\n**Recovery time:** {ended_at}\n**Total downtime:** {downtime}"
-    }
-  },
-  "device_automation": {
-    "trigger_type": {
-      "device_unreachable": "{device_name} is unreachable (network issue)",
-      "device_not_responding": "{device_name} is not responding (Modbus error)",
-      "device_recovered": "{device_name} recovered"
-    }
-  }
 }

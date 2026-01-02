@@ -1,175 +1,121 @@
 {
-  "config": {
-    "step": {
-      "user": {
-        "title": "Alfa-tilkoblingskonfigurasjon",
-        "description": "Hvis du trenger hjelp med konfigurasjonen, ga til: https://github.com/alexdelprete/ha-sinapsi-alfa",
-        "data": {
-          "name": "Enhetsnavn (brukes som sensorprefiks)",
-          "host": "IP eller vertsnavn",
-          "port": "TCP-port",
-          "scan_interval": "Avsporringsintervall (min: 30s maks: 600s)",
-          "timeout": "Tilkoblingstidsavbrudd (min: 5s maks: 60s)",
-          "skip_mac_detection": "Hopp over MAC-deteksjon"
+    "config": {
+        "step": {
+            "user": {
+                "title": "Alfa-tilkoblingskonfigurasjon",
+                "description": "Hvis du trenger hjelp med konfigurasjonen, ga til: https://github.com/alexdelprete/ha-sinapsi-alfa",
+                "data": {
+                    "name": "Enhetsnavn (brukes som sensorprefiks)",
+                    "host": "IP eller vertsnavn",
+                    "port": "TCP-port",
+                    "scan_interval": "Avsporringsintervall (min: 30s maks: 600s)",
+                    "timeout": "Tilkoblingstidsavbrudd (min: 5s maks: 60s)",
+                    "skip_mac_detection": "Hopp over MAC-deteksjon",
+                },
+                "data_description": {
+                    "skip_mac_detection": "Aktiver for VPN-tilkoblinger. Bruker vertsbasert enhets-ID i stedet for MAC-adresse (raskere oppstart)."
+                },
+            },
+            "reconfigure": {
+                "title": "Rekonfigurer Alfa-tilkobling",
+                "description": "Oppdater enhetens tilkoblingsinnstillinger",
+                "data": {
+                    "name": "Enhetsnavn (brukes som sensorprefiks)",
+                    "host": "IP eller vertsnavn",
+                    "port": "TCP-port",
+                    "skip_mac_detection": "Hopp over MAC-deteksjon",
+                },
+                "data_description": {
+                    "skip_mac_detection": "Aktiver for VPN-tilkoblinger. Bruker vertsbasert enhets-ID i stedet for MAC-adresse (raskere oppstart)."
+                },
+            },
         },
-        "data_description": {
-          "skip_mac_detection": "Aktiver for VPN-tilkoblinger. Bruker vertsbasert enhets-ID i stedet for MAC-adresse (raskere oppstart)."
-        }
-      },
-      "reconfigure": {
-        "title": "Rekonfigurer Alfa-tilkobling",
-        "description": "Oppdater enhetens tilkoblingsinnstillinger",
-        "data": {
-          "name": "Enhetsnavn (brukes som sensorprefiks)",
-          "host": "IP eller vertsnavn",
-          "port": "TCP-port",
-          "skip_mac_detection": "Hopp over MAC-deteksjon"
+        "error": {
+            "already_configured": "Enheten er allerede konfigurert",
+            "invalid_host": "Ugyldig vertsadresse",
+            "cannot_connect": "Kan ikke koble til enheten",
         },
-        "data_description": {
-          "skip_mac_detection": "Aktiver for VPN-tilkoblinger. Bruker vertsbasert enhets-ID i stedet for MAC-adresse (raskere oppstart)."
+        "abort": {
+            "already_configured": "Enheten er allerede konfigurert",
+            "reconfigure_successful": "Rekonfigurering vellykket",
+        },
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Alfa alternativer",
+                "description": "Configure runtime options.\n\n**Recovery Script Variables:**\nWhen configured, the recovery script receives these variables:\n\n- `device_name` : Device name\n- `host` : IP address/hostname\n- `port` : TCP port\n- `serial_number` : Device serial number\n- `mac_address` : Device MAC address\n- `failures_count` : Number of consecutive failures",
+                "data": {
+                    "recovery_script": "Recovery script (optional, runs when device stops responding)",
+                    "enable_repair_notification": "Enable repair notifications",
+                    "failures_threshold": "Failures before notification (1-10)",
+                    "scan_interval": "Polling Period in seconds (30-600)",
+                    "timeout": "Connection timeout in seconds (5-60)",
+                },
+            }
         }
-      }
     },
-    "error": {
-      "already_configured": "Enheten er allerede konfigurert",
-      "invalid_host": "Ugyldig vertsadresse",
-      "cannot_connect": "Kan ikke koble til enheten"
-    },
-    "abort": {
-      "already_configured": "Enheten er allerede konfigurert",
-      "reconfigure_successful": "Rekonfigurering vellykket"
-    }
-  },
-  "options": {
-    "step": {
-      "init": {
-        "title": "Alfa kjortidsalternativer",
-        "description": "Configure runtime options.\n\n**Recovery Script Variables:**\nWhen configured, the recovery script receives these variables:\n- `device_name`: Device name\n- `host`: IP address/hostname\n- `port`: TCP port\n- `serial_number`: Device serial number\n- `mac_address`: Device MAC address\n- `failures_count`: Number of consecutive failures",
-        "data": {
-          "recovery_script": "Recovery script (optional)",
-          "enable_repair_notification": "Enable repair notifications",
-          "failures_threshold": "Failures before notification (1-10)",
-          "scan_interval": "Polling interval (seconds)",
-          "timeout": "Connection timeout (seconds)"
+    "entity": {
+        "sensor": {
+            "potenza_prelevata": {"name": "Importert effekt"},
+            "potenza_prelevata_media_15m": {"name": "Importert effekt snitt 15m"},
+            "potenza_immessa": {"name": "Eksportert effekt"},
+            "potenza_immessa_media_15m": {"name": "Eksportert effekt snitt 15m"},
+            "potenza_prodotta": {"name": "Produsert effekt"},
+            "energia_prelevata": {"name": "Importert energi"},
+            "energia_immessa": {"name": "Eksportert energi"},
+            "energia_prodotta": {"name": "Produsert energi"},
+            "energia_prelevata_giornaliera_f1": {"name": "Daglig importert energi F1"},
+            "energia_prelevata_giornaliera_f2": {"name": "Daglig importert energi F2"},
+            "energia_prelevata_giornaliera_f3": {"name": "Daglig importert energi F3"},
+            "energia_prelevata_giornaliera_f4": {"name": "Daglig importert energi F4"},
+            "energia_prelevata_giornaliera_f5": {"name": "Daglig importert energi F5"},
+            "energia_prelevata_giornaliera_f6": {"name": "Daglig importert energi F6"},
+            "energia_immessa_giornaliera_f1": {"name": "Daglig eksportert energi F1"},
+            "energia_immessa_giornaliera_f2": {"name": "Daglig eksportert energi F2"},
+            "energia_immessa_giornaliera_f3": {"name": "Daglig eksportert energi F3"},
+            "energia_immessa_giornaliera_f4": {"name": "Daglig eksportert energi F4"},
+            "energia_immessa_giornaliera_f5": {"name": "Daglig eksportert energi F5"},
+            "energia_immessa_giornaliera_f6": {"name": "Daglig eksportert energi F6"},
+            "fascia_oraria_attuale": {"name": "Gjeldende tidssone"},
+            "tempo_residuo_distacco": {"name": "Frakoblingstimer"},
+            "data_evento": {"name": "Hendelsesdato"},
+            "potenza_consumata": {"name": "Forbrukt effekt"},
+            "potenza_auto_consumata": {"name": "Egenforbruk effekt"},
+            "energia_consumata": {"name": "Forbrukt energi"},
+            "energia_auto_consumata": {"name": "Egenforbruk energi"},
         }
-      }
-    }
-  },
-  "entity": {
-    "sensor": {
-      "potenza_prelevata": {
-        "name": "Importert effekt"
-      },
-      "potenza_prelevata_media_15m": {
-        "name": "Importert effekt snitt 15m"
-      },
-      "potenza_immessa": {
-        "name": "Eksportert effekt"
-      },
-      "potenza_immessa_media_15m": {
-        "name": "Eksportert effekt snitt 15m"
-      },
-      "potenza_prodotta": {
-        "name": "Produsert effekt"
-      },
-      "energia_prelevata": {
-        "name": "Importert energi"
-      },
-      "energia_immessa": {
-        "name": "Eksportert energi"
-      },
-      "energia_prodotta": {
-        "name": "Produsert energi"
-      },
-      "energia_prelevata_giornaliera_f1": {
-        "name": "Daglig importert energi F1"
-      },
-      "energia_prelevata_giornaliera_f2": {
-        "name": "Daglig importert energi F2"
-      },
-      "energia_prelevata_giornaliera_f3": {
-        "name": "Daglig importert energi F3"
-      },
-      "energia_prelevata_giornaliera_f4": {
-        "name": "Daglig importert energi F4"
-      },
-      "energia_prelevata_giornaliera_f5": {
-        "name": "Daglig importert energi F5"
-      },
-      "energia_prelevata_giornaliera_f6": {
-        "name": "Daglig importert energi F6"
-      },
-      "energia_immessa_giornaliera_f1": {
-        "name": "Daglig eksportert energi F1"
-      },
-      "energia_immessa_giornaliera_f2": {
-        "name": "Daglig eksportert energi F2"
-      },
-      "energia_immessa_giornaliera_f3": {
-        "name": "Daglig eksportert energi F3"
-      },
-      "energia_immessa_giornaliera_f4": {
-        "name": "Daglig eksportert energi F4"
-      },
-      "energia_immessa_giornaliera_f5": {
-        "name": "Daglig eksportert energi F5"
-      },
-      "energia_immessa_giornaliera_f6": {
-        "name": "Daglig eksportert energi F6"
-      },
-      "fascia_oraria_attuale": {
-        "name": "Gjeldende tidssone"
-      },
-      "tempo_residuo_distacco": {
-        "name": "Frakoblingstimer"
-      },
-      "data_evento": {
-        "name": "Hendelsesdato"
-      },
-      "potenza_consumata": {
-        "name": "Forbrukt effekt"
-      },
-      "potenza_auto_consumata": {
-        "name": "Egenforbruk effekt"
-      },
-      "energia_consumata": {
-        "name": "Forbrukt energi"
-      },
-      "energia_auto_consumata": {
-        "name": "Egenforbruk energi"
-      }
-    }
-  },
-  "exceptions": {
-    "connection_timeout": {
-      "message": "Tidsavbrudd ved tilkobling til {device_name}. Sjekk at enheten er slatt pa og tilgjengelig pa den konfigurerte IP-adressen."
     },
-    "connection_failed": {
-      "message": "Kunne ikke koble til enheten pa {host}:{port}. Bekreft at enheten er online og at tilkoblingsinnstillingene er riktige."
+    "exceptions": {
+        "connection_timeout": {
+            "message": "Tidsavbrudd ved tilkobling til {device_name}. Sjekk at enheten er slatt pa og tilgjengelig pa den konfigurerte IP-adressen."
+        },
+        "connection_failed": {
+            "message": "Kunne ikke koble til enheten pa {host}:{port}. Bekreft at enheten er online og at tilkoblingsinnstillingene er riktige."
+        },
+        "modbus_error": {
+            "message": "Modbus-kommunikasjonsfeil med {device_name}. Enheten kan vare opptatt eller oppleve problemer."
+        },
     },
-    "modbus_error": {
-      "message": "Modbus-kommunikasjonsfeil med {device_name}. Enheten kan vare opptatt eller oppleve problemer."
-    }
-  },
-  "issues": {
-    "connection_failed": {
-      "title": "Kan ikke koble til {device_name}",
-      "description": "Integrasjonen kan ikke koble til Sinapsi Alfa-enheten din pa {host}:{port}.\n\n**Mulige arsaker:**\n- Enheten er slatt av eller ikke koblet til nettverket\n- IP-adressen har endret seg\n- En brannmur blokkerer tilkoblingen\n- Modbus TCP-porten (502) er ikke tilgjengelig\n\n**For a lose:**\n1. Sjekk at enheten er slatt pa og koblet til nettverket\n2. Verifiser IP-adressen i ruterens DHCP-tabell\n3. Prov a fa tilgang til enhetens webgrensesnitt direkte\n4. Hvis IP har endret seg, rekonfigurer integrasjonen med den nye adressen"
+    "issues": {
+        "connection_failed": {
+            "title": "Kan ikke koble til {device_name}",
+            "description": "Integrasjonen kan ikke koble til Sinapsi Alfa-enheten din pa {host}:{port}.\n\n**Mulige arsaker:**\n- Enheten er slatt av eller ikke koblet til nettverket\n- IP-adressen har endret seg\n- En brannmur blokkerer tilkoblingen\n- Modbus TCP-porten (502) er ikke tilgjengelig\n\n**For a lose:**\n1. Sjekk at enheten er slatt pa og koblet til nettverket\n2. Verifiser IP-adressen i ruterens DHCP-tabell\n3. Prov a fa tilgang til enhetens webgrensesnitt direkte\n4. Hvis IP har endret seg, rekonfigurer integrasjonen med den nye adressen",
+        },
+        "recovery_success": {
+            "title": "{device_name} has recovered",
+            "description": "Your Sinapsi Alfa device is now responding again.\n\n**Failure started:** {started_at}\n**Script executed:** {script_executed_at}\n**Recovery time:** {ended_at}\n**Total downtime:** {downtime}\n\nThe recovery script **{script_name}** was executed.",
+        },
+        "recovery_success_no_script": {
+            "title": "{device_name} has recovered",
+            "description": "Your Sinapsi Alfa device is now responding again.\n\n**Failure started:** {started_at}\n**Recovery time:** {ended_at}\n**Total downtime:** {downtime}",
+        },
     },
-    "recovery_success": {
-      "title": "{device_name} has recovered",
-      "description": "Your Sinapsi Alfa device is now responding again.\n\n**Failure started:** {started_at}\n**Script executed:** {script_executed_at}\n**Recovery time:** {ended_at}\n**Total downtime:** {downtime}\n\nThe recovery script **{script_name}** was executed."
+    "device_automation": {
+        "trigger_type": {
+            "device_unreachable": "{device_name} is unreachable (network issue)",
+            "device_not_responding": "{device_name} is not responding (Modbus error)",
+            "device_recovered": "{device_name} recovered",
+        }
     },
-    "recovery_success_no_script": {
-      "title": "{device_name} has recovered",
-      "description": "Your Sinapsi Alfa device is now responding again.\n\n**Failure started:** {started_at}\n**Recovery time:** {ended_at}\n**Total downtime:** {downtime}"
-    }
-  },
-  "device_automation": {
-    "trigger_type": {
-      "device_unreachable": "{device_name} is unreachable (network issue)",
-      "device_not_responding": "{device_name} is not responding (Modbus error)",
-      "device_recovered": "{device_name} recovered"
-    }
-  }
 }
