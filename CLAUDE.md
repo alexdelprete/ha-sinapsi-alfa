@@ -253,15 +253,16 @@ Linting tools and settings are defined in `.pre-commit-config.yaml`:
 
 All hooks use `language: system` (local tools) with `verbose: true` for visibility.
 
-### Pre-Push Linting (MANDATORY)
+### Pre-Commit Checks (MANDATORY)
 
-> **⚠️ ALWAYS run linting before ANY git push action.**
+> **⛔ CRITICAL: ALWAYS run pre-commit checks before ANY git commit.**
+> This is a hard rule - no exceptions. Never commit without passing all checks.
 
 ```bash
 uvx pre-commit run --all-files
 ```
 
-All checks must pass before pushing. This applies to ALL pushes, not just releases.
+All checks must pass before committing. This applies to ALL commits, not just releases.
 
 ### Windows Shell Notes
 
@@ -533,6 +534,7 @@ Follow pymarkdown rules (configured in `pyproject.toml` under `[tool.pymarkdown]
 
 **✅ DO:**
 
+- Run `uvx pre-commit run --all-files` before EVERY commit
 - Read CLAUDE.md at session start
 - Use custom exceptions for error handling
 - Log with proper context (use helpers.py functions)
@@ -548,6 +550,7 @@ Follow pymarkdown rules (configured in `pyproject.toml` under `[tool.pymarkdown]
 
 **❌ NEVER:**
 
+- Commit without running `uvx pre-commit run --all-files` first
 - Modify production code to make tests pass - fix the tests instead
 - Use `hass.data[DOMAIN][entry_id]` - use `runtime_data` instead
 - Shadow Python builtins
