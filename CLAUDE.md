@@ -347,6 +347,12 @@ Verify ALL items show ✅ before proceeding with tag creation. If any item fails
 
 **Release notes content:**
 
+- **Download badge** (MANDATORY) - Add at top of every release note file:
+
+  ```markdown
+  [![GitHub Downloads](https://img.shields.io/github/downloads/alexdelprete/ha-sinapsi-alfa/vX.Y.Z/total?style=for-the-badge)](https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/vX.Y.Z)
+  ```
+
 - Include ALL changes since last stable release
 - Review commits: `git log vX.Y.Z..HEAD`
 - Include sections: What's Changed, Bug Fixes, Features, Breaking Changes
