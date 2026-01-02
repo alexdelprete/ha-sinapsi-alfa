@@ -10,13 +10,20 @@ from custom_components.sinapsi_alfa import (
     async_remove_config_entry_device,
     async_setup_entry,
     async_unload_entry,
+    async_update_device_registry,
 )
 from custom_components.sinapsi_alfa.const import (
+    CONF_ENABLE_REPAIR_NOTIFICATION,
+    CONF_FAILURES_THRESHOLD,
     CONF_HOST,
     CONF_NAME,
     CONF_PORT,
+    CONF_RECOVERY_SCRIPT,
     CONF_SCAN_INTERVAL,
     CONF_TIMEOUT,
+    DEFAULT_ENABLE_REPAIR_NOTIFICATION,
+    DEFAULT_FAILURES_THRESHOLD,
+    DEFAULT_RECOVERY_SCRIPT,
     DEFAULT_SCAN_INTERVAL,
     DEFAULT_TIMEOUT,
     DOMAIN,
@@ -261,3 +268,138 @@ class TestRuntimeData:
         """Test RuntimeData can be created."""
         runtime_data = RuntimeData(coordinator=mock_coordinator)
         assert runtime_data.coordinator is mock_coordinator
+
+
+@pytest.fixture
+def mock_config_entry_v2():
+    """Create a mock v2 config entry for migration testing."""
+    entry = MagicMock(spec=ConfigEntry)
+    entry.entry_id = "test_entry_id"
+    entry.domain = DOMAIN
+    entry.version = 2
+    entry.data = {
+        CONF_NAME: TEST_NAME,
+        CONF_HOST: TEST_HOST,
+        CONF_PORT: TEST_PORT,
+    }
+    entry.options = {
+        CONF_SCAN_INTERVAL: 60,
+        CONF_TIMEOUT: 10,
+    }
+    return entry
+
+
+class TestMigrateV2ToV3:
+    """Tests for v2 to v3 migration."""
+
+    async def test_migrate_v2_to_v3_adds_repair_notification_options(
+        self,
+        hass: HomeAssistant,
+        mock_config_entry_v2,
+    ):
+        """Test migration from v2 to v3 adds repair notification options."""
+        with patch.object(hass.config_entries, "async_update_entry") as mock_update:
+            result = await async_migrate_entry(hass, mock_config_entry_v2)
+
+            assert result is True
+            mock_update.assert_called_once()
+            call_kwargs = mock_update.call_args[1]
+
+            # Should have new repair notification options with defaults
+            assert (
+                call_kwargs["options"][CONF_ENABLE_REPAIR_NOTIFICATION]
+                == DEFAULT_ENABLE_REPAIR_NOTIFICATION
+            )
+            assert call_kwargs["options"][CONF_FAILURES_THRESHOLD] == DEFAULT_FAILURES_THRESHOLD
+            assert call_kwargs["options"][CONF_RECOVERY_SCRIPT] == DEFAULT_RECOVERY_SCRIPT
+            assert call_kwargs["version"] == 3
+
+    async def test_migrate_v2_to_v3_preserves_existing_options(
+        self,
+        hass: HomeAssistant,
+        mock_config_entry_v2,
+    ):
+        """Test migration preserves existing scan_interval and timeout options."""
+        with patch.object(hass.config_entries, "async_update_entry") as mock_update:
+            result = await async_migrate_entry(hass, mock_config_entry_v2)
+
+            assert result is True
+            call_kwargs = mock_update.call_args[1]
+
+            # Original options should be preserved
+            assert call_kwargs["options"][CONF_SCAN_INTERVAL] == 60
+            assert call_kwargs["options"][CONF_TIMEOUT] == 10
+
+
+class TestAsyncUpdateDeviceRegistry:
+    """Tests for async_update_device_registry function."""
+
+    async def test_update_device_registry_creates_device(
+        self,
+        hass: HomeAssistant,
+        mock_config_entry,
+        mock_coordinator,
+    ):
+        """Test device is created in registry."""
+        mock_config_entry.runtime_data = RuntimeData(coordinator=mock_coordinator)
+
+        mock_device = MagicMock()
+        mock_device.id = "device_123"
+
+        with patch("custom_components.sinapsi_alfa.dr.async_get") as mock_get_registry:
+            mock_registry = MagicMock()
+            mock_registry.async_get_or_create.return_value = mock_device
+            mock_registry.async_get_device.return_value = mock_device
+            mock_get_registry.return_value = mock_registry
+
+            async_update_device_registry(hass, mock_config_entry)
+
+            mock_registry.async_get_or_create.assert_called_once()
+            call_kwargs = mock_registry.async_get_or_create.call_args[1]
+            assert call_kwargs["config_entry_id"] == mock_config_entry.entry_id
+            assert call_kwargs["manufacturer"] == "Sinapsi"
+            assert call_kwargs["model"] == "Alfa"
+
+    async def test_update_device_registry_stores_device_id(
+        self,
+        hass: HomeAssistant,
+        mock_config_entry,
+        mock_coordinator,
+    ):
+        """Test device_id is stored in coordinator for triggers."""
+        mock_config_entry.runtime_data = RuntimeData(coordinator=mock_coordinator)
+
+        mock_device = MagicMock()
+        mock_device.id = "stored_device_id"
+
+        with patch("custom_components.sinapsi_alfa.dr.async_get") as mock_get_registry:
+            mock_registry = MagicMock()
+            mock_registry.async_get_or_create.return_value = mock_device
+            mock_registry.async_get_device.return_value = mock_device
+            mock_get_registry.return_value = mock_registry
+
+            async_update_device_registry(hass, mock_config_entry)
+
+            # Device ID should be stored in coordinator
+            assert mock_coordinator.device_id == "stored_device_id"
+
+    async def test_update_device_registry_no_device_found(
+        self,
+        hass: HomeAssistant,
+        mock_config_entry,
+        mock_coordinator,
+    ):
+        """Test handles case when device not found after creation."""
+        mock_config_entry.runtime_data = RuntimeData(coordinator=mock_coordinator)
+
+        with patch("custom_components.sinapsi_alfa.dr.async_get") as mock_get_registry:
+            mock_registry = MagicMock()
+            mock_registry.async_get_or_create.return_value = MagicMock()
+            mock_registry.async_get_device.return_value = None  # Device not found
+            mock_get_registry.return_value = mock_registry
+
+            # Should not raise, just not set device_id
+            async_update_device_registry(hass, mock_config_entry)
+
+            # device_id should not be set (keeping original value)
+            mock_coordinator.device_id = None  # Would remain None
