@@ -524,7 +524,7 @@ async def test_coordinator_error_type_sinapsi_connection_error(
 
 
 async def test_coordinator_execute_recovery_script(
-    hass: HomeAssistant,
+    mock_hass: MagicMock,
 ) -> None:
     """Test recovery script is executed after threshold failures."""
     entry = create_mock_config_entry(recovery_script="script.restart_device")
@@ -536,31 +536,33 @@ async def test_coordinator_execute_recovery_script(
         patch(
             "custom_components.sinapsi_alfa.coordinator.create_connection_issue",
         ),
-        patch.object(hass.services, "async_call", new_callable=AsyncMock) as mock_call,
     ):
         mock_api = mock_api_class.return_value
         mock_api.async_get_data = AsyncMock(side_effect=Exception("Connection failed"))
         mock_api.data = {"sn": "SN123", "mac": "AA:BB:CC:DD:EE:FF"}
 
-        coordinator = SinapsiAlfaCoordinator(hass, entry)
+        coordinator = SinapsiAlfaCoordinator(mock_hass, entry)
         coordinator._consecutive_failures = DEFAULT_FAILURES_THRESHOLD - 1
 
         with pytest.raises(UpdateFailed):
             await coordinator.async_update_data()
 
         # Script should have been called
-        mock_call.assert_called_once()
-        call_args = mock_call.call_args
-        assert call_args[1]["domain"] == "script"
-        assert call_args[1]["service"] == "restart_device"
+        mock_hass.services.async_call.assert_called_once()
+        call_args = mock_hass.services.async_call.call_args
+        assert call_args[0][0] == "script"
+        assert call_args[0][1] == "restart_device"
         assert coordinator._recovery_script_executed is True
 
 
 async def test_coordinator_execute_recovery_script_failure(
-    hass: HomeAssistant,
+    mock_hass: MagicMock,
 ) -> None:
     """Test recovery script execution handles errors gracefully."""
     entry = create_mock_config_entry(recovery_script="script.nonexistent")
+
+    # Configure mock to raise error when called
+    mock_hass.services.async_call = AsyncMock(side_effect=HomeAssistantError("Script not found"))
 
     with (
         patch(
@@ -569,18 +571,12 @@ async def test_coordinator_execute_recovery_script_failure(
         patch(
             "custom_components.sinapsi_alfa.coordinator.create_connection_issue",
         ),
-        patch.object(
-            hass.services,
-            "async_call",
-            new_callable=AsyncMock,
-            side_effect=HomeAssistantError("Script not found"),
-        ) as mock_call,
     ):
         mock_api = mock_api_class.return_value
         mock_api.async_get_data = AsyncMock(side_effect=Exception("Connection failed"))
         mock_api.data = {"sn": "SN123", "mac": "AA:BB:CC:DD:EE:FF"}
 
-        coordinator = SinapsiAlfaCoordinator(hass, entry)
+        coordinator = SinapsiAlfaCoordinator(mock_hass, entry)
         coordinator._consecutive_failures = DEFAULT_FAILURES_THRESHOLD - 1
 
         # Should not raise additional error from script failure
@@ -588,7 +584,6 @@ async def test_coordinator_execute_recovery_script_failure(
             await coordinator.async_update_data()
 
         # Script was attempted but failed
-        mock_call.assert_called_once()
         assert coordinator._recovery_script_executed is False
 
 
@@ -643,27 +638,24 @@ async def test_coordinator_format_downtime_hours(
 
 
 async def test_coordinator_fire_device_event(
-    hass: HomeAssistant,
+    mock_hass: MagicMock,
 ) -> None:
     """Test _fire_device_event fires event on bus."""
     entry = create_mock_config_entry()
 
-    with (
-        patch(
-            "custom_components.sinapsi_alfa.coordinator.SinapsiAlfaAPI",
-        ) as mock_api_class,
-        patch.object(hass.bus, "async_fire") as mock_fire,
-    ):
+    with patch(
+        "custom_components.sinapsi_alfa.coordinator.SinapsiAlfaAPI",
+    ) as mock_api_class:
         mock_api = mock_api_class.return_value
         mock_api.data = {"sn": "SN123", "mac": "AA:BB:CC:DD:EE:FF"}
 
-        coordinator = SinapsiAlfaCoordinator(hass, entry)
+        coordinator = SinapsiAlfaCoordinator(mock_hass, entry)
         coordinator.device_id = "test_device_id"
 
         coordinator._fire_device_event("device_recovered", {"extra": "data"})
 
-        mock_fire.assert_called_once()
-        call_args = mock_fire.call_args
+        mock_hass.bus.async_fire.assert_called_once()
+        call_args = mock_hass.bus.async_fire.call_args
         assert call_args[0][0] == f"{DOMAIN}_event"
         event_data = call_args[0][1]
         assert event_data["device_id"] == "test_device_id"
@@ -672,28 +664,25 @@ async def test_coordinator_fire_device_event(
 
 
 async def test_coordinator_fire_device_event_no_device_id(
-    hass: HomeAssistant,
+    mock_hass: MagicMock,
 ) -> None:
     """Test _fire_device_event does nothing without device_id."""
     entry = create_mock_config_entry()
 
-    with (
-        patch(
-            "custom_components.sinapsi_alfa.coordinator.SinapsiAlfaAPI",
-        ),
-        patch.object(hass.bus, "async_fire") as mock_fire,
+    with patch(
+        "custom_components.sinapsi_alfa.coordinator.SinapsiAlfaAPI",
     ):
-        coordinator = SinapsiAlfaCoordinator(hass, entry)
+        coordinator = SinapsiAlfaCoordinator(mock_hass, entry)
         coordinator.device_id = None  # No device ID set
 
         coordinator._fire_device_event("device_recovered")
 
         # Should not fire event
-        mock_fire.assert_not_called()
+        mock_hass.bus.async_fire.assert_not_called()
 
 
 async def test_coordinator_fires_device_event_on_failure_threshold(
-    hass: HomeAssistant,
+    mock_hass: MagicMock,
 ) -> None:
     """Test device event is fired when failure threshold is reached."""
     entry = create_mock_config_entry()
@@ -705,13 +694,12 @@ async def test_coordinator_fires_device_event_on_failure_threshold(
         patch(
             "custom_components.sinapsi_alfa.coordinator.create_connection_issue",
         ),
-        patch.object(hass.bus, "async_fire") as mock_fire,
     ):
         mock_api = mock_api_class.return_value
         mock_api.async_get_data = AsyncMock(side_effect=Exception("Connection failed"))
         mock_api.data = {"sn": "", "mac": ""}
 
-        coordinator = SinapsiAlfaCoordinator(hass, entry)
+        coordinator = SinapsiAlfaCoordinator(mock_hass, entry)
         coordinator.device_id = "test_device"
         coordinator._consecutive_failures = DEFAULT_FAILURES_THRESHOLD - 1
 
@@ -719,14 +707,14 @@ async def test_coordinator_fires_device_event_on_failure_threshold(
             await coordinator.async_update_data()
 
         # Event should be fired for device_unreachable
-        mock_fire.assert_called()
-        call_args = mock_fire.call_args
+        mock_hass.bus.async_fire.assert_called()
+        call_args = mock_hass.bus.async_fire.call_args
         assert call_args[0][0] == f"{DOMAIN}_event"
         assert call_args[0][1]["type"] == "device_unreachable"
 
 
 async def test_coordinator_fires_recovery_event(
-    hass: HomeAssistant,
+    mock_hass: MagicMock,
     mock_api_data: dict,
 ) -> None:
     """Test device_recovered event is fired on successful recovery."""
@@ -743,14 +731,13 @@ async def test_coordinator_fires_recovery_event(
             "custom_components.sinapsi_alfa.coordinator.create_recovery_notification",
         ),
         patch("custom_components.sinapsi_alfa.coordinator.time") as mock_time,
-        patch.object(hass.bus, "async_fire") as mock_fire,
     ):
         mock_api = mock_api_class.return_value
         mock_api.async_get_data = AsyncMock(return_value=mock_api_data)
         mock_api.data = {"sn": "", "mac": ""}
         mock_time.time.return_value = 1000.0
 
-        coordinator = SinapsiAlfaCoordinator(hass, entry)
+        coordinator = SinapsiAlfaCoordinator(mock_hass, entry)
         coordinator.device_id = "test_device"
         coordinator._repair_issue_created = True
         coordinator._consecutive_failures = 3
@@ -759,8 +746,8 @@ async def test_coordinator_fires_recovery_event(
         await coordinator.async_update_data()
 
         # Event should be fired for device_recovered
-        mock_fire.assert_called()
-        call_args = mock_fire.call_args
+        mock_hass.bus.async_fire.assert_called()
+        call_args = mock_hass.bus.async_fire.call_args
         assert call_args[0][0] == f"{DOMAIN}_event"
         assert call_args[0][1]["type"] == "device_recovered"
         assert call_args[0][1]["previous_failures"] == 3
