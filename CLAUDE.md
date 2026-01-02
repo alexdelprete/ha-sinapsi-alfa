@@ -238,6 +238,9 @@ This integration tracks [Home Assistant Quality Scale](https://developers.home-a
 Before pushing any commits, run these checks and fix all errors:
 
 ```bash
+# Validate JSON translation files
+python -c "import json; from pathlib import Path; [json.loads(f.read_text()) for f in Path('custom_components/sinapsi_alfa/translations').glob('*.json')]"
+
 # Python formatting and linting
 ruff format .
 ruff check . --fix

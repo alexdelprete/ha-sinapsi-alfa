@@ -27,6 +27,26 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v7
 
+      - name: Validate JSON translation files
+        run: |
+          python -c "
+          import json
+          import sys
+          from pathlib import Path
+          errors = []
+          for f in Path('custom_components/sinapsi_alfa/translations').glob('*.json'):
+              try:
+                  json.loads(f.read_text())
+              except json.JSONDecodeError as e:
+                  errors.append(f'{f}: {e}')
+          if errors:
+              print('Invalid JSON files:')
+              for e in errors:
+                  print(f'  {e}')
+              sys.exit(1)
+          print('All JSON files valid')
+          "
+
       - name: Run Ruff format check
         run: uvx ruff format . --check
 
