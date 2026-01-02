@@ -9,6 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 TBD
 
+## [1.2.2] - 2026-01-02
+
+**Patch release** - Code quality improvements and hassfest validation fix.
+
+### 🧹 Code Quality
+
+- **Pre-commit hooks** - Added comprehensive pre-commit configuration (ruff, jsonlint, yamllint, pymarkdown)
+
+### 🐛 Bug Fixes
+
+- **Fixed hassfest validation** - Removed invalid `fix_flow` sections from translation files (issues using `ConfirmRepairFlow` don't need custom translations)
+
+**Full Release Notes:** [docs/releases/v1.2.2.md](docs/releases/v1.2.2.md)
+
+**Full Changelog:** [v1.2.1...v1.2.2](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.2.1...v1.2.2)
+
 ## [1.2.1] - 2026-01-02
 
 **Stable release** - Feature alignment with ha-4noks-elios4you v1.1.0.
@@ -594,3 +610,5 @@ ______________________________________________________________________
 [1.1.8]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.8
 [1.1.9]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.1.9
 [1.2.0]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.0
+[1.2.1]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.1
+[1.2.2]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.2
