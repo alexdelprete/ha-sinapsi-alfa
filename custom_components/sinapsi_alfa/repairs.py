@@ -8,7 +8,6 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
-from homeassistant.components.repairs import ConfirmRepairFlow, RepairsFlow
 from homeassistant.helpers import issue_registry as ir
 
 if TYPE_CHECKING:
@@ -20,27 +19,9 @@ _LOGGER = logging.getLogger(__name__)
 
 # Issue IDs
 ISSUE_CONNECTION_FAILED = "connection_failed"
-ISSUE_RECOVERY_SUCCESS = "recovery_success"
-ISSUE_RECOVERY_SUCCESS_NO_SCRIPT = "recovery_success_no_script"
 
-
-async def async_create_fix_flow(
-    hass: HomeAssistant,
-    issue_id: str,
-    data: dict[str, str | int | float | None] | None,
-) -> RepairsFlow:
-    """Create flow to fix a repair issue.
-
-    This is called by Home Assistant when user clicks on a fixable repair issue.
-    For recovery notifications, we use ConfirmRepairFlow which shows the issue
-    description and a simple "Submit" button to acknowledge/dismiss.
-    """
-    # Recovery notifications just need acknowledgment - use ConfirmRepairFlow
-    if issue_id.startswith((ISSUE_RECOVERY_SUCCESS, ISSUE_RECOVERY_SUCCESS_NO_SCRIPT)):
-        return ConfirmRepairFlow()
-
-    # For any other issues, also use ConfirmRepairFlow as fallback
-    return ConfirmRepairFlow()
+# Notification IDs
+NOTIFICATION_RECOVERY = "recovery"
 
 
 def create_connection_issue(
@@ -101,6 +82,9 @@ def create_recovery_notification(
 ) -> None:
     """Create a persistent notification for device recovery.
 
+    Uses persistent_notification service instead of repair issues to ensure
+    the full message with timestamps is displayed properly when clicked.
+
     Args:
         hass: HomeAssistant instance
         entry_id: Config entry ID
@@ -112,35 +96,41 @@ def create_recovery_notification(
         script_executed_at: Time when script was executed (if executed)
 
     """
-    if script_name and script_executed_at:
-        translation_key = ISSUE_RECOVERY_SUCCESS
-        placeholders = {
-            "device_name": device_name,
-            "started_at": started_at,
-            "script_executed_at": script_executed_at,
-            "ended_at": ended_at,
-            "downtime": downtime,
-            "script_name": script_name,
-        }
-    else:
-        translation_key = ISSUE_RECOVERY_SUCCESS_NO_SCRIPT
-        placeholders = {
-            "device_name": device_name,
-            "started_at": started_at,
-            "ended_at": ended_at,
-            "downtime": downtime,
-        }
+    # Build the notification message
+    message_lines = [
+        f"**{device_name}** is now responding again.",
+        "",
+        f"**Failure started:** {started_at}",
+    ]
 
-    ir.async_create_issue(
-        hass,
-        DOMAIN,
-        f"{translation_key}_{entry_id}",
-        is_fixable=True,  # User can dismiss by clicking "Mark as resolved"
-        is_persistent=True,  # Survives HA restart, requires user acknowledgment
-        severity=ir.IssueSeverity.WARNING,
-        translation_key=translation_key,
-        translation_placeholders=placeholders,
+    if script_name and script_executed_at:
+        message_lines.append(f"**Script executed:** {script_executed_at}")
+        message_lines.append(f"**Recovery script:** {script_name}")
+
+    message_lines.extend(
+        [
+            f"**Recovery time:** {ended_at}",
+            f"**Total downtime:** {downtime}",
+        ]
     )
+
+    message = "\n".join(message_lines)
+    title = f"{device_name} has recovered"
+    notification_id = f"{DOMAIN}_{NOTIFICATION_RECOVERY}_{entry_id}"
+
+    # Use persistent_notification service for immediate display
+    hass.async_create_task(
+        hass.services.async_call(
+            domain="persistent_notification",
+            service="create",
+            service_data={
+                "title": title,
+                "message": message,
+                "notification_id": notification_id,
+            },
+        )
+    )
+
     _LOGGER.debug(
         "Created recovery notification for %s (started: %s, ended: %s, downtime: %s, script: %s)",
         device_name,

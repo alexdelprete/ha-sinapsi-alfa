@@ -155,14 +155,6 @@
     "connection_failed": {
       "title": "Kan inte ansluta till {device_name}",
       "description": "Integrationen kan inte ansluta till din Sinapsi Alfa-enhet pa {host}:{port}.\n\n**Mojliga orsaker:**\n- Enheten ar avstangd eller inte ansluten till natverket\n- IP-adressen har andrats\n- En brandvagg blockerar anslutningen\n- Modbus TCP-porten (502) ar inte atkomlig\n\n**For att losa:**\n1. Kontrollera att enheten ar paslagan och ansluten till ditt natverk\n2. Verifiera IP-adressen i din routers DHCP-tabell\n3. Forsok komma at enhetens webbgranssnitt direkt\n4. Om IP har andrats, konfigurera om integrationen med den nya adressen"
-    },
-    "recovery_success": {
-      "title": "{device_name} har aterhämtat sig",
-      "description": "Din Sinapsi Alfa-enhet svarar igen.\n\n**Fel startade:** {started_at}\n**Skript kordes:** {script_executed_at}\n**Aterhamtningstid:** {ended_at}\n**Total nedtid:** {downtime}\n\nAterhämtningsskriptet **{script_name}** kordes."
-    },
-    "recovery_success_no_script": {
-      "title": "{device_name} har aterhämtat sig",
-      "description": "Din Sinapsi Alfa-enhet svarar igen.\n\n**Fel startade:** {started_at}\n**Aterhamtningstid:** {ended_at}\n**Total nedtid:** {downtime}"
     }
   },
   "device_automation": {

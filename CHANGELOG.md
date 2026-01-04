@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-TBD
+### 🐛 Bug Fixes
+
+- **Fixed recovery notification display** - Switched from HA repair issues to `persistent_notification` for recovery notifications. When clicking the notification, the full message with timestamps now displays correctly. Also fixes duplicate notifications after acknowledging.
 
 ## [1.2.3] - 2026-01-02
 

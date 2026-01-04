@@ -155,14 +155,6 @@
     "connection_failed": {
       "title": "Verbindung zu {device_name} nicht moglich",
       "description": "Die Integration kann keine Verbindung zu Ihrem Sinapsi Alfa-Gerat unter {host}:{port} herstellen.\n\n**Mogliche Ursachen:**\n- Das Gerat ist ausgeschaltet oder nicht mit dem Netzwerk verbunden\n- Die IP-Adresse hat sich geandert\n- Eine Firewall blockiert die Verbindung\n- Der Modbus-TCP-Port (502) ist nicht zuganglich\n\n**Zur Losung:**\n1. Prufen Sie, ob das Gerat eingeschaltet und mit Ihrem Netzwerk verbunden ist\n2. Uberprufen Sie die IP-Adresse in der DHCP-Tabelle Ihres Routers\n3. Versuchen Sie, direkt auf die Weboberflache des Gerats zuzugreifen\n4. Wenn sich die IP geandert hat, konfigurieren Sie die Integration mit der neuen Adresse neu"
-    },
-    "recovery_success": {
-      "title": "{device_name} hat sich erholt",
-      "description": "Ihr Sinapsi Alfa-Gerat antwortet wieder.\n\n**Fehler begann:** {started_at}\n**Skript ausgefuhrt:** {script_executed_at}\n**Wiederherstellungszeit:** {ended_at}\n**Gesamte Ausfallzeit:** {downtime}\n\nDas Wiederherstellungsskript **{script_name}** wurde ausgefuhrt."
-    },
-    "recovery_success_no_script": {
-      "title": "{device_name} hat sich erholt",
-      "description": "Ihr Sinapsi Alfa-Gerat antwortet wieder.\n\n**Fehler begann:** {started_at}\n**Wiederherstellungszeit:** {ended_at}\n**Gesamte Ausfallzeit:** {downtime}"
     }
   },
   "device_automation": {

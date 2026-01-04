@@ -155,14 +155,6 @@
     "connection_failed": {
       "title": "No se puede conectar a {device_name}",
       "description": "La integracion no puede conectarse a su dispositivo Sinapsi Alfa en {host}:{port}.\n\n**Posibles causas:**\n- El dispositivo esta apagado o no conectado a la red\n- La direccion IP ha cambiado\n- Un firewall esta bloqueando la conexion\n- El puerto Modbus TCP (502) no es accesible\n\n**Para resolver:**\n1. Verifique que el dispositivo este encendido y conectado a su red\n2. Compruebe la direccion IP en la tabla DHCP de su router\n3. Intente acceder directamente a la interfaz web del dispositivo\n4. Si la IP ha cambiado, reconfigure la integracion con la nueva direccion"
-    },
-    "recovery_success": {
-      "title": "{device_name} se ha recuperado",
-      "description": "Su dispositivo Sinapsi Alfa esta respondiendo de nuevo.\n\n**Inicio del fallo:** {started_at}\n**Script ejecutado:** {script_executed_at}\n**Hora de recuperacion:** {ended_at}\n**Tiempo de inactividad total:** {downtime}\n\nEl script de recuperacion **{script_name}** fue ejecutado."
-    },
-    "recovery_success_no_script": {
-      "title": "{device_name} se ha recuperado",
-      "description": "Su dispositivo Sinapsi Alfa esta respondiendo de nuevo.\n\n**Inicio del fallo:** {started_at}\n**Hora de recuperacion:** {ended_at}\n**Tiempo de inactividad total:** {downtime}"
     }
   },
   "device_automation": {

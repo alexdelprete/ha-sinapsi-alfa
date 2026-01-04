@@ -155,14 +155,6 @@
     "connection_failed": {
       "title": "Yhteyden muodostaminen laitteeseen {device_name} ei onnistu",
       "description": "Integraatio ei voi muodostaa yhteytta Sinapsi Alfa -laitteeseesi osoitteessa {host}:{port}.\n\n**Mahdolliset syyt:**\n- Laite on pois paalta tai ei ole yhdistetty verkkoon\n- IP-osoite on muuttunut\n- Palomuuri estaa yhteyden\n- Modbus TCP -portti (502) ei ole kaytettavissa\n\n**Ratkaisemiseksi:**\n1. Tarkista, etta laite on paalla ja yhdistetty verkkoon\n2. Tarkista IP-osoite reitittimesi DHCP-taulukosta\n3. Yrita paasta suoraan laitteen verkkokayttoliittymaan\n4. Jos IP on muuttunut, maarita integraatio uudelleen uudella osoitteella"
-    },
-    "recovery_success": {
-      "title": "{device_name} on palautunut",
-      "description": "Sinapsi Alfa -laitteesi vastaa taas.\n\n**Vika alkoi:** {started_at}\n**Skripti suoritettu:** {script_executed_at}\n**Palautumisaika:** {ended_at}\n**Kokonaiskatkos:** {downtime}\n\nPalautusskripti **{script_name}** suoritettiin."
-    },
-    "recovery_success_no_script": {
-      "title": "{device_name} on palautunut",
-      "description": "Sinapsi Alfa -laitteesi vastaa taas.\n\n**Vika alkoi:** {started_at}\n**Palautumisaika:** {ended_at}\n**Kokonaiskatkos:** {downtime}"
     }
   },
   "device_automation": {
