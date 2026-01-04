@@ -11,13 +11,19 @@ from custom_components.sinapsi_alfa.config_flow import (
     get_host_from_config,
 )
 from custom_components.sinapsi_alfa.const import (
+    CONF_ENABLE_REPAIR_NOTIFICATION,
+    CONF_FAILURES_THRESHOLD,
     CONF_HOST,
     CONF_NAME,
     CONF_PORT,
+    CONF_RECOVERY_SCRIPT,
     CONF_SCAN_INTERVAL,
     CONF_SKIP_MAC_DETECTION,
     CONF_TIMEOUT,
+    DEFAULT_ENABLE_REPAIR_NOTIFICATION,
+    DEFAULT_FAILURES_THRESHOLD,
     DEFAULT_PORT,
+    DEFAULT_RECOVERY_SCRIPT,
     DEFAULT_SCAN_INTERVAL,
     DEFAULT_TIMEOUT,
     DOMAIN,
@@ -79,11 +85,11 @@ async def test_user_flow_success(
     }
 
 
-async def test_user_flow_already_configured(
+async def test_user_flow_already_configured_same_host(
     hass: HomeAssistant,
     mock_sinapsi_api,
 ) -> None:
-    """Test user flow when host is already configured."""
+    """Test user flow when host is already configured (same host check)."""
     # Create first entry
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
@@ -102,7 +108,7 @@ async def test_user_flow_already_configured(
     await hass.async_block_till_done()
     assert result["type"] == FlowResultType.CREATE_ENTRY
 
-    # Try to configure same host again
+    # Try to configure same host again - host check happens before connection test
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
@@ -110,7 +116,7 @@ async def test_user_flow_already_configured(
         result["flow_id"],
         {
             CONF_NAME: "Another Alfa",
-            CONF_HOST: TEST_HOST,  # Same host
+            CONF_HOST: TEST_HOST,  # Same host - rejected before connection test
             CONF_PORT: DEFAULT_PORT,
             CONF_SCAN_INTERVAL: DEFAULT_SCAN_INTERVAL,
             CONF_TIMEOUT: DEFAULT_TIMEOUT,
@@ -118,8 +124,54 @@ async def test_user_flow_already_configured(
         },
     )
 
+    # Host check happens first and returns error
     assert result["type"] == FlowResultType.FORM
     assert result["errors"] == {CONF_HOST: "already_configured"}
+
+
+async def test_user_flow_already_configured_same_device(
+    hass: HomeAssistant,
+    mock_sinapsi_api,
+) -> None:
+    """Test user flow when same device (MAC) is already configured via different host."""
+    # Create first entry
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        {
+            CONF_NAME: TEST_NAME,
+            CONF_HOST: TEST_HOST,
+            CONF_PORT: DEFAULT_PORT,
+            CONF_SCAN_INTERVAL: DEFAULT_SCAN_INTERVAL,
+            CONF_TIMEOUT: DEFAULT_TIMEOUT,
+            CONF_SKIP_MAC_DETECTION: False,
+        },
+    )
+    await hass.async_block_till_done()
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+
+    # Try to configure different host but same device (same MAC returned by mock)
+    # This triggers unique_id abort
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        {
+            CONF_NAME: "Another Alfa",
+            CONF_HOST: "192.168.1.200",  # Different host
+            CONF_PORT: DEFAULT_PORT,
+            CONF_SCAN_INTERVAL: DEFAULT_SCAN_INTERVAL,
+            CONF_TIMEOUT: DEFAULT_TIMEOUT,
+            CONF_SKIP_MAC_DETECTION: False,
+        },
+    )
+
+    # Same MAC (unique_id) causes abort
+    assert result["type"] == FlowResultType.ABORT
+    assert result["reason"] == "already_configured"
 
 
 async def test_user_flow_invalid_host(
@@ -243,10 +295,13 @@ async def test_options_flow(
     assert result["type"] == FlowResultType.FORM
     assert result["step_id"] == "init"
 
-    # Configure new options
+    # Configure new options - must include all required fields from the options schema
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
         {
+            CONF_RECOVERY_SCRIPT: DEFAULT_RECOVERY_SCRIPT,
+            CONF_ENABLE_REPAIR_NOTIFICATION: DEFAULT_ENABLE_REPAIR_NOTIFICATION,
+            CONF_FAILURES_THRESHOLD: DEFAULT_FAILURES_THRESHOLD,
             CONF_SCAN_INTERVAL: 120,
             CONF_TIMEOUT: 15,
         },
@@ -254,6 +309,9 @@ async def test_options_flow(
 
     assert result["type"] == FlowResultType.CREATE_ENTRY
     assert result["data"] == {
+        CONF_RECOVERY_SCRIPT: DEFAULT_RECOVERY_SCRIPT,
+        CONF_ENABLE_REPAIR_NOTIFICATION: DEFAULT_ENABLE_REPAIR_NOTIFICATION,
+        CONF_FAILURES_THRESHOLD: DEFAULT_FAILURES_THRESHOLD,
         CONF_SCAN_INTERVAL: 120,
         CONF_TIMEOUT: 15,
     }
