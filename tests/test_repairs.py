@@ -160,134 +160,125 @@ class TestCreateRecoveryNotification:
         """Test creating recovery notification with script execution."""
         entry_id = "test_entry"
 
-        # Mock async_create_task and services.async_call
-        hass.async_create_task = AsyncMock()
-        hass.services.async_call = AsyncMock()
+        with patch.object(hass, "async_create_task") as mock_task:
+            create_recovery_notification(
+                hass,
+                entry_id,
+                device_name=TEST_NAME,
+                started_at="10:00:00",
+                ended_at="10:05:00",
+                downtime="5m 0s",
+                script_name="script.recovery_action",
+                script_executed_at="10:03:00",
+            )
 
-        create_recovery_notification(
-            hass,
-            entry_id,
-            device_name=TEST_NAME,
-            started_at="10:00:00",
-            ended_at="10:05:00",
-            downtime="5m 0s",
-            script_name="script.recovery_action",
-            script_executed_at="10:03:00",
-        )
-
-        # Verify async_create_task was called
-        hass.async_create_task.assert_called_once()
+            # Verify async_create_task was called
+            mock_task.assert_called_once()
 
     def test_create_recovery_notification_without_script(self, hass: HomeAssistant) -> None:
         """Test creating recovery notification without script execution."""
         entry_id = "test_entry_no_script"
 
-        # Mock async_create_task and services.async_call
-        hass.async_create_task = AsyncMock()
-        hass.services.async_call = AsyncMock()
+        with patch.object(hass, "async_create_task") as mock_task:
+            create_recovery_notification(
+                hass,
+                entry_id,
+                device_name=TEST_NAME,
+                started_at="12:00:00",
+                ended_at="12:10:00",
+                downtime="10m 0s",
+                script_name=None,
+                script_executed_at=None,
+            )
 
-        create_recovery_notification(
-            hass,
-            entry_id,
-            device_name=TEST_NAME,
-            started_at="12:00:00",
-            ended_at="12:10:00",
-            downtime="10m 0s",
-            script_name=None,
-            script_executed_at=None,
-        )
-
-        # Verify async_create_task was called
-        hass.async_create_task.assert_called_once()
+            # Verify async_create_task was called
+            mock_task.assert_called_once()
 
     def test_create_recovery_notification_message_with_script(self, hass: HomeAssistant) -> None:
         """Test recovery notification message content with script."""
         entry_id = "test_entry"
-        captured_call = None
 
-        # Capture the service call
-        async def capture_call(*args, **kwargs):
-            nonlocal captured_call
-            captured_call = kwargs if kwargs else args
+        with (
+            patch.object(hass, "async_create_task", side_effect=lambda coro: coro),
+            patch.object(hass.services, "async_call", new_callable=AsyncMock) as mock_call,
+        ):
+            create_recovery_notification(
+                hass,
+                entry_id,
+                device_name=TEST_NAME,
+                started_at="10:00:00",
+                ended_at="10:05:00",
+                downtime="5m 0s",
+                script_name="script.recovery_action",
+                script_executed_at="10:03:00",
+            )
 
-        hass.async_create_task = lambda coro: coro  # Execute immediately
-        hass.services.async_call = AsyncMock(side_effect=capture_call)
+            # Verify service was called with correct parameters
+            mock_call.assert_called_once()
+            call_args = mock_call.call_args
 
-        create_recovery_notification(
-            hass,
-            entry_id,
-            device_name=TEST_NAME,
-            started_at="10:00:00",
-            ended_at="10:05:00",
-            downtime="5m 0s",
-            script_name="script.recovery_action",
-            script_executed_at="10:03:00",
-        )
+            assert call_args.kwargs["domain"] == "persistent_notification"
+            assert call_args.kwargs["service"] == "create"
 
-        # Verify service was called with correct parameters
-        hass.services.async_call.assert_called_once()
-        call_args = hass.services.async_call.call_args
-
-        assert call_args.kwargs["domain"] == "persistent_notification"
-        assert call_args.kwargs["service"] == "create"
-
-        service_data = call_args.kwargs["service_data"]
-        assert service_data["title"] == f"{TEST_NAME} has recovered"
-        assert f"{DOMAIN}_{NOTIFICATION_RECOVERY}_{entry_id}" == service_data["notification_id"]
-        assert "script.recovery_action" in service_data["message"]
-        assert "10:03:00" in service_data["message"]
+            service_data = call_args.kwargs["service_data"]
+            assert service_data["title"] == f"{TEST_NAME} has recovered"
+            assert f"{DOMAIN}_{NOTIFICATION_RECOVERY}_{entry_id}" == service_data["notification_id"]
+            assert "script.recovery_action" in service_data["message"]
+            assert "10:03:00" in service_data["message"]
 
     def test_create_recovery_notification_message_without_script(self, hass: HomeAssistant) -> None:
         """Test recovery notification message content without script."""
         entry_id = "test_entry_no_script"
 
-        hass.async_create_task = lambda coro: coro  # Execute immediately
-        hass.services.async_call = AsyncMock()
+        with (
+            patch.object(hass, "async_create_task", side_effect=lambda coro: coro),
+            patch.object(hass.services, "async_call", new_callable=AsyncMock) as mock_call,
+        ):
+            create_recovery_notification(
+                hass,
+                entry_id,
+                device_name=TEST_NAME,
+                started_at="12:00:00",
+                ended_at="12:10:00",
+                downtime="10m 0s",
+                script_name=None,
+                script_executed_at=None,
+            )
 
-        create_recovery_notification(
-            hass,
-            entry_id,
-            device_name=TEST_NAME,
-            started_at="12:00:00",
-            ended_at="12:10:00",
-            downtime="10m 0s",
-            script_name=None,
-            script_executed_at=None,
-        )
+            # Verify service was called with correct parameters
+            mock_call.assert_called_once()
+            call_args = mock_call.call_args
 
-        # Verify service was called with correct parameters
-        hass.services.async_call.assert_called_once()
-        call_args = hass.services.async_call.call_args
+            assert call_args.kwargs["domain"] == "persistent_notification"
+            assert call_args.kwargs["service"] == "create"
 
-        assert call_args.kwargs["domain"] == "persistent_notification"
-        assert call_args.kwargs["service"] == "create"
-
-        service_data = call_args.kwargs["service_data"]
-        assert service_data["title"] == f"{TEST_NAME} has recovered"
-        assert "12:00:00" in service_data["message"]
-        assert "12:10:00" in service_data["message"]
-        assert "10m 0s" in service_data["message"]
-        # Script info should not be in message
-        assert "Script executed" not in service_data["message"]
+            service_data = call_args.kwargs["service_data"]
+            assert service_data["title"] == f"{TEST_NAME} has recovered"
+            assert "12:00:00" in service_data["message"]
+            assert "12:10:00" in service_data["message"]
+            assert "10m 0s" in service_data["message"]
+            # Script info should not be in message
+            assert "Script executed" not in service_data["message"]
 
     def test_create_recovery_notification_id_format(self, hass: HomeAssistant) -> None:
         """Test recovery notification ID format."""
         entry_id = "unique_entry_id"
 
-        hass.async_create_task = lambda coro: coro
-        hass.services.async_call = AsyncMock()
+        with (
+            patch.object(hass, "async_create_task", side_effect=lambda coro: coro),
+            patch.object(hass.services, "async_call", new_callable=AsyncMock) as mock_call,
+        ):
+            create_recovery_notification(
+                hass,
+                entry_id,
+                device_name=TEST_NAME,
+                started_at="14:00:00",
+                ended_at="14:01:00",
+                downtime="1m 0s",
+            )
 
-        create_recovery_notification(
-            hass,
-            entry_id,
-            device_name=TEST_NAME,
-            started_at="14:00:00",
-            ended_at="14:01:00",
-            downtime="1m 0s",
-        )
-
-        # Check notification ID format
-        call_args = hass.services.async_call.call_args
-        notification_id = call_args.kwargs["service_data"]["notification_id"]
-        assert entry_id in notification_id
-        assert notification_id == f"{DOMAIN}_{NOTIFICATION_RECOVERY}_{entry_id}"
+            # Check notification ID format
+            call_args = mock_call.call_args
+            notification_id = call_args.kwargs["service_data"]["notification_id"]
+            assert entry_id in notification_id
+            assert notification_id == f"{DOMAIN}_{NOTIFICATION_RECOVERY}_{entry_id}"
