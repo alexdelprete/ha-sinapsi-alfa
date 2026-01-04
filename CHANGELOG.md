@@ -7,11 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.4-beta.1] - 2026-01-04
+
+**Beta release** - Recovery notification improvements. Testing required.
+
 ### 🐛 Bug Fixes
 
 - **Fixed recovery notification display** - Switched from HA repair issues to `persistent_notification` for
   recovery notifications. When clicking the notification, the full message with timestamps now displays correctly.
-  Also fixes duplicate notifications after acknowledging.
+- **Fixed duplicate notifications** - Recovery notifications no longer appear twice after acknowledging.
+
+**Full Release Notes:** [docs/releases/v1.2.4-beta.1.md](docs/releases/v1.2.4-beta.1.md)
+
+**Full Changelog:** [v1.2.3...v1.2.4-beta.1](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.2.3...v1.2.4-beta.1)
 
 ## [1.2.3] - 2026-01-02
 
@@ -633,3 +641,4 @@ ______________________________________________________________________
 [1.2.1]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.1
 [1.2.2]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.2
 [1.2.3]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.3
+[1.2.4-beta.1]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.4-beta.1
