@@ -23,6 +23,9 @@ from custom_components.sinapsi_alfa.const import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import CoreState, HomeAssistant
 
+# Register pytest-homeassistant-custom-component plugin
+pytest_plugins = ["pytest_homeassistant_custom_component"]
+
 # Test configuration values
 TEST_HOST = "192.168.1.100"
 TEST_NAME = "Test Alfa"
@@ -30,6 +33,23 @@ TEST_PORT = DEFAULT_PORT
 TEST_SCAN_INTERVAL = DEFAULT_SCAN_INTERVAL
 TEST_TIMEOUT = DEFAULT_TIMEOUT
 TEST_MAC = "AA:BB:CC:DD:EE:FF"
+
+
+@pytest.fixture(autouse=True)
+def auto_enable_custom_integrations(
+    enable_custom_integrations: None,
+) -> None:
+    """Enable custom integrations for all tests."""
+
+
+@pytest.fixture
+def mock_setup_entry() -> Generator[AsyncMock]:
+    """Override async_setup_entry."""
+    with patch(
+        "custom_components.sinapsi_alfa.async_setup_entry",
+        return_value=True,
+    ) as mock_setup:
+        yield mock_setup
 
 
 @pytest.fixture
@@ -115,23 +135,6 @@ def mock_sinapsi_api_coordinator(mock_api_data: dict) -> Generator[MagicMock]:
         mock_api.async_get_data = AsyncMock(return_value=mock_api_data)
         mock_api.close = AsyncMock()
         yield mock_api
-
-
-@pytest.fixture
-def mock_setup_entry() -> Generator[AsyncMock]:
-    """Override async_setup_entry."""
-    with patch(
-        "custom_components.sinapsi_alfa.async_setup_entry",
-        return_value=True,
-    ) as mock_setup:
-        yield mock_setup
-
-
-@pytest.fixture(autouse=True)
-def auto_enable_custom_integrations(
-    enable_custom_integrations: None,
-) -> None:
-    """Enable custom integrations in Home Assistant."""
 
 
 @pytest.fixture

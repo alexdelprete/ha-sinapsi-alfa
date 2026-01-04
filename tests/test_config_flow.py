@@ -28,17 +28,20 @@ from homeassistant.data_entry_flow import FlowResultType
 
 from .conftest import TEST_HOST, TEST_MAC, TEST_NAME
 
-# Skip reason for tests requiring full integration loading
-SKIP_INTEGRATION_LOADING = (
-    "Skipped: HA integration loading fails in CI due to editable install path issues"
-)
+
+@pytest.fixture(name="sinapsi_setup", autouse=True)
+def sinapsi_setup_fixture():
+    """Mock sinapsi_alfa entry setup to avoid loading the full integration."""
+    with patch(
+        "custom_components.sinapsi_alfa.async_setup_entry",
+        return_value=True,
+    ):
+        yield
 
 
-@pytest.mark.skip(reason=SKIP_INTEGRATION_LOADING)
 async def test_user_flow_success(
     hass: HomeAssistant,
     mock_sinapsi_api,
-    mock_setup_entry,
 ) -> None:
     """Test successful user flow."""
     result = await hass.config_entries.flow.async_init(
@@ -60,6 +63,7 @@ async def test_user_flow_success(
             CONF_SKIP_MAC_DETECTION: False,
         },
     )
+    await hass.async_block_till_done()
 
     assert result["type"] == FlowResultType.CREATE_ENTRY
     assert result["title"] == TEST_NAME
@@ -75,11 +79,9 @@ async def test_user_flow_success(
     }
 
 
-@pytest.mark.skip(reason=SKIP_INTEGRATION_LOADING)
 async def test_user_flow_already_configured(
     hass: HomeAssistant,
     mock_sinapsi_api,
-    mock_setup_entry,
 ) -> None:
     """Test user flow when host is already configured."""
     # Create first entry
@@ -97,6 +99,7 @@ async def test_user_flow_already_configured(
             CONF_SKIP_MAC_DETECTION: False,
         },
     )
+    await hass.async_block_till_done()
     assert result["type"] == FlowResultType.CREATE_ENTRY
 
     # Try to configure same host again
@@ -119,7 +122,6 @@ async def test_user_flow_already_configured(
     assert result["errors"] == {CONF_HOST: "already_configured"}
 
 
-@pytest.mark.skip(reason=SKIP_INTEGRATION_LOADING)
 async def test_user_flow_invalid_host(
     hass: HomeAssistant,
     mock_sinapsi_api,
@@ -145,7 +147,6 @@ async def test_user_flow_invalid_host(
     assert result["errors"] == {CONF_HOST: "invalid_host"}
 
 
-@pytest.mark.skip(reason=SKIP_INTEGRATION_LOADING)
 async def test_user_flow_cannot_connect(
     hass: HomeAssistant,
 ) -> None:
@@ -177,7 +178,6 @@ async def test_user_flow_cannot_connect(
         assert result["errors"] == {CONF_HOST: "cannot_connect"}
 
 
-@pytest.mark.skip(reason=SKIP_INTEGRATION_LOADING)
 async def test_user_flow_modbus_error(
     hass: HomeAssistant,
 ) -> None:
@@ -209,11 +209,9 @@ async def test_user_flow_modbus_error(
         assert result["errors"] == {CONF_HOST: "cannot_connect"}
 
 
-@pytest.mark.skip(reason=SKIP_INTEGRATION_LOADING)
 async def test_options_flow(
     hass: HomeAssistant,
     mock_sinapsi_api,
-    mock_setup_entry,
 ) -> None:
     """Test options flow."""
     # Create config entry first
@@ -231,6 +229,7 @@ async def test_options_flow(
             CONF_SKIP_MAC_DETECTION: False,
         },
     )
+    await hass.async_block_till_done()
     assert result["type"] == FlowResultType.CREATE_ENTRY
 
     # Get the config entry
@@ -260,11 +259,9 @@ async def test_options_flow(
     }
 
 
-@pytest.mark.skip(reason=SKIP_INTEGRATION_LOADING)
 async def test_reconfigure_flow_success(
     hass: HomeAssistant,
     mock_sinapsi_api,
-    mock_setup_entry,
 ) -> None:
     """Test successful reconfigure flow."""
     # Create config entry first
@@ -282,6 +279,7 @@ async def test_reconfigure_flow_success(
             CONF_SKIP_MAC_DETECTION: False,
         },
     )
+    await hass.async_block_till_done()
     assert result["type"] == FlowResultType.CREATE_ENTRY
 
     # Get the config entry
@@ -317,11 +315,9 @@ async def test_reconfigure_flow_success(
     assert result["reason"] == "reconfigure_successful"
 
 
-@pytest.mark.skip(reason=SKIP_INTEGRATION_LOADING)
 async def test_reconfigure_flow_invalid_host(
     hass: HomeAssistant,
     mock_sinapsi_api,
-    mock_setup_entry,
 ) -> None:
     """Test reconfigure flow with invalid host."""
     # Create config entry first
@@ -339,6 +335,7 @@ async def test_reconfigure_flow_invalid_host(
             CONF_SKIP_MAC_DETECTION: False,
         },
     )
+    await hass.async_block_till_done()
     assert result["type"] == FlowResultType.CREATE_ENTRY
 
     # Get the config entry
@@ -369,10 +366,8 @@ async def test_reconfigure_flow_invalid_host(
     assert result["errors"] == {CONF_HOST: "invalid_host"}
 
 
-@pytest.mark.skip(reason=SKIP_INTEGRATION_LOADING)
 async def test_reconfigure_flow_cannot_connect(
     hass: HomeAssistant,
-    mock_setup_entry,
 ) -> None:
     """Test reconfigure flow when cannot connect."""
     # Create initial entry with mock
@@ -398,6 +393,7 @@ async def test_reconfigure_flow_cannot_connect(
                 CONF_SKIP_MAC_DETECTION: False,
             },
         )
+        await hass.async_block_till_done()
         assert result["type"] == FlowResultType.CREATE_ENTRY
 
     # Get the config entry
