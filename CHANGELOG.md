@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.5] - 2026-01-08
+
+**Patch release** - Lower minimum polling interval for faster sensor updates.
+
+### ✨ Improvements
+
+- **Lower minimum polling interval** - Reduced from 30s to 10s for more responsive sensor updates (Addresses [#74](https://github.com/alexdelprete/ha-sinapsi-alfa/issues/74))
+
+Thanks to [@sigitm](https://github.com/sigitm) for the feature request!
+
+**Full Release Notes:** [docs/releases/v1.2.5.md](docs/releases/v1.2.5.md)
+
+**Full Changelog:** [v1.2.4...v1.2.5](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.2.4...v1.2.5)
+
 ## [1.2.4] - 2026-01-04
 
 **Patch release** - Recovery notifications and test infrastructure improvements.
@@ -647,4 +661,5 @@ ______________________________________________________________________
 [1.2.2]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.2
 [1.2.3]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.3
 [1.2.4]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.4
+[1.2.5]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.5
 [1.2.4-beta.1]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.4-beta.1
