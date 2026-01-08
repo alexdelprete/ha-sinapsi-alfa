@@ -385,17 +385,54 @@ logger:
 
 After adding this, restart Home Assistant for the changes to take effect.
 
-### View and Download Logs
+### How to Get the FULL Debug Log
 
-1. Go to **Settings** > **System** > **Logs**
-1. Click **Load Full Logs** to see all log entries
-1. Use the search box to filter for `sinapsi_alfa`
-1. Click **Download Full Log** to save the complete log file
+The standard **Settings > System > Logs** page only shows warnings and errors
+by default. To get the complete debug log with all diagnostic information:
 
-Alternatively, you can access logs directly from the file system at:
+#### Method 1: Download Full Log File (Recommended)
 
-- `config/home-assistant.log` (current log)
-- `config/home-assistant.log.1` (previous log)
+1. Enable debug logging as shown above and restart Home Assistant
+2. Reproduce the issue you're experiencing
+3. Go to **Settings** > **System** > **Logs**
+4. Click the three-dot menu (⋮) in the top-right corner
+5. Select **Download full log**
+6. This downloads the complete `home-assistant.log` file with ALL debug entries
+
+#### Method 2: Access Log Files Directly
+
+Log files are stored in your Home Assistant config directory:
+
+- `config/home-assistant.log` - Current log file
+- `config/home-assistant.log.1` - Previous log (rotated)
+
+**Access methods by installation type:**
+
+| Installation | How to Access |
+|--------------|---------------|
+| Home Assistant OS | Use the **File Editor** or **SSH & Web Terminal** add-on |
+| Home Assistant Container | `docker exec -it homeassistant cat /config/home-assistant.log` |
+| Home Assistant Core | Direct file access in your config directory |
+
+#### Method 3: Filter Logs in Real-Time
+
+For live debugging, use SSH or Terminal to watch logs in real-time:
+
+```bash
+# Filter for sinapsi_alfa entries only
+tail -f /config/home-assistant.log | grep sinapsi_alfa
+
+# Or view the last 500 lines
+tail -n 500 /config/home-assistant.log | grep sinapsi_alfa
+```
+
+#### Important Notes
+
+- The web UI logs page filters out debug-level messages by default
+- Debug entries are only visible in the downloaded/raw log file
+- After troubleshooting, consider removing the debug configuration to reduce
+  log file size
+- Log files rotate automatically; capture logs soon after reproducing an issue
 
 ### Reporting Issues
 
