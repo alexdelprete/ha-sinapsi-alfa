@@ -14,6 +14,7 @@ from custom_components.sinapsi_alfa.const import (
     CONF_HOST,
     CONF_NAME,
     CONF_PORT,
+    CONF_RECOVERY_SCRIPT,
     CONF_SCAN_INTERVAL,
     CONF_SKIP_MAC_DETECTION,
     CONF_TIMEOUT,
@@ -820,7 +821,9 @@ class TestOptionsFlowDirect:
             )
 
         assert result["type"] == FlowResultType.CREATE_ENTRY
+        # recovery_script is set to None when not provided (empty string -> None conversion)
         assert result["data"] == {
+            CONF_RECOVERY_SCRIPT: None,
             CONF_SCAN_INTERVAL: new_scan_interval,
             CONF_TIMEOUT: new_timeout,
         }
