@@ -342,6 +342,9 @@ rm nul  # if it exists
 ### Release Readiness Checklist (MANDATORY)
 
 > **⛔ When user commands "tag and release", ALWAYS display this checklist BEFORE proceeding.**
+>
+> **CI Status is REQUIRED**: Always use `mcp__GitHub_MCP_Remote__actions_list` to check the latest workflow runs.
+> Display actual workflow conclusions (success/failure) - never skip this step.
 
 ```markdown
 ## Release Readiness Checklist
@@ -352,10 +355,11 @@ rm nul  # if it exists
 | Version in `const.py` | ✅ X.Y.Z |
 | Release notes (`docs/releases/vX.Y.Z.md`) | ✅ Created |
 | CHANGELOG.md updated | ✅ Updated |
-| GitHub Actions (lint/test/validate) | ✅ **PASSING** (check latest runs) |
+| CI: Lint workflow | ✅ success |
+| CI: Tests workflow | ✅ success |
+| CI: Validate workflow | ✅ success |
 | Working tree clean | ✅ Clean |
-| Git tag | ✅ vX.Y.Z created/pushed |
-| Commits since last tag | N commits since vX.Y.Z-1 |
+| Commits since last tag | N commits |
 ```
 
 Verify ALL items show ✅ before proceeding with tag creation. If any item fails, fix it first.
