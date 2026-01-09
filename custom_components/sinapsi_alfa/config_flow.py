@@ -294,6 +294,11 @@ class SinapsiAlfaOptionsFlow(OptionsFlowWithReload):
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Manage the options."""
         if user_input is not None:
+            # Convert empty string to None for optional entity selector
+            # EntitySelector rejects empty strings as invalid entity IDs
+            if not user_input.get(CONF_RECOVERY_SCRIPT):
+                user_input[CONF_RECOVERY_SCRIPT] = None
+
             log_debug(
                 _LOGGER,
                 "async_step_init",
@@ -321,9 +326,13 @@ class SinapsiAlfaOptionsFlow(OptionsFlowWithReload):
             data_schema=vol.Schema(
                 {
                     # 1. Recovery script (right after variables description)
+                    # Use suggested_value instead of default for optional entity selectors
+                    # to avoid pre-filling with empty string which fails validation
                     vol.Optional(
                         CONF_RECOVERY_SCRIPT,
-                        default=recovery_script,
+                        description={
+                            "suggested_value": recovery_script if recovery_script else None
+                        },
                     ): EntitySelector(
                         EntitySelectorConfig(domain="script"),
                     ),
