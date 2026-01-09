@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.6] - 2026-01-09
+
+**Patch release** - Fixes empty recovery script validation error in options flow.
+
+### 🐛 Bug Fixes
+
+- **Fixed empty recovery script validation** - When saving options with an empty recovery script field, the form
+  no longer shows "Entity is neither a valid entity ID nor a valid UUID" error
+  (Fixes [#190](https://github.com/alexdelprete/ha-sinapsi-alfa/issues/190))
+
+**Full Release Notes:** [docs/releases/v1.2.6.md](docs/releases/v1.2.6.md)
+
+**Full Changelog:** [v1.2.5...v1.2.6](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.2.5...v1.2.6)
+
 ## [1.2.5] - 2026-01-08
 
 **Patch release** - Lower minimum polling interval for faster sensor updates.
@@ -661,5 +675,6 @@ ______________________________________________________________________
 [1.2.2]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.2
 [1.2.3]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.3
 [1.2.4]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.4
+[1.2.6]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.6
 [1.2.5]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.5
 [1.2.4-beta.1]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.4-beta.1
