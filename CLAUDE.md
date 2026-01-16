@@ -50,19 +50,51 @@ Benefits over `gh` CLI:
 - Better error handling
 - No subprocess overhead
 
-### Workflow Run Logs Workaround
+### CI Workflow Status Check (Efficient Method)
 
-The GitHub MCP `get_job_logs` tool is currently broken. To get workflow run logs (e.g., for test coverage):
+The project has 3 CI workflows: **Lint**, **Tests**, and **Validate**.
 
-1. Use MCP to get the run ID: `mcp__GitHub_MCP_Remote__actions_list` with `method: list_workflow_runs`
-2. Use `gh` CLI to fetch logs: `gh run view <run_id> --repo owner/repo --log`
-3. Filter with grep: `gh run view <run_id> --repo owner/repo --log | grep "TOTAL\|coverage"`
+**Step 1: Get workflow IDs (one-time lookup)**
 
-Example to get test coverage:
+```python
+mcp__GitHub_MCP_Remote__actions_list(method="list_workflows", owner="alexdelprete", repo="ha-sinapsi-alfa")
+```
+
+Workflow IDs:
+
+- Lint: `85233856`
+- Tests: `219252281`
+- Validate: `85233855`
+
+**Step 2: Get latest runs for each workflow**
+
+```python
+# Run these 3 calls in parallel for efficiency
+mcp__GitHub_MCP_Remote__actions_list(method="list_workflow_runs", owner="alexdelprete", repo="ha-sinapsi-alfa", resource_id="85233856", per_page=1)   # Lint
+mcp__GitHub_MCP_Remote__actions_list(method="list_workflow_runs", owner="alexdelprete", repo="ha-sinapsi-alfa", resource_id="219252281", per_page=1)  # Tests
+mcp__GitHub_MCP_Remote__actions_list(method="list_workflow_runs", owner="alexdelprete", repo="ha-sinapsi-alfa", resource_id="85233855", per_page=1)   # Validate
+```
+
+Parse each response for `conclusion` (success/failure) and `created_at`.
+
+### Workflow Run Logs (for Test Coverage)
+
+The GitHub MCP `get_job_logs` tool is currently broken. Use `gh` CLI instead:
+
+**Get test coverage from Tests workflow:**
 
 ```bash
-gh run view 20666664929 --repo alexdelprete/ha-sinapsi-alfa --log 2>&1 | grep "TOTAL"
+# Get the run ID from the Tests workflow runs above, then:
+gh run view <run_id> --repo alexdelprete/ha-sinapsi-alfa --log 2>&1 | grep "TOTAL"
 ```
+
+**Example output:**
+
+```text
+TOTAL                                 1647     39    98%
+```
+
+The coverage percentage is the last column (98% in this example).
 
 ## Project Overview
 
@@ -388,6 +420,54 @@ Verify ALL items show ✅ before proceeding with tag creation. If any item fails
 | GitHub MCP                     | Read issues/PRs/releases, create issues, manage PRs  |
 
 **CRITICAL:** Never create git tags or GitHub releases without explicit user instruction.
+
+### Release Readiness Report (After Every Push)
+
+> **⛔ MANDATORY: After EVERY "commit and push" command, display the Release Readiness Report (RRR).**
+>
+> This report gives the user visibility into CI status and test coverage before they decide to release.
+
+**After pushing, wait for CI workflows to complete (usually 1-2 minutes), then display:**
+
+```markdown
+## Release Readiness Report (RRR)
+
+| Check | Status | Details |
+|-------|--------|---------|
+| **Lint** | ✅ success | 2026-01-16 |
+| **Tests** | ✅ success | 2026-01-16 |
+| **Validate** | ✅ success | 2026-01-16 |
+| **Test Coverage** | ✅ 98% | Minimum required: 97% |
+| **Version** | 1.2.7 | manifest.json + const.py |
+| **Working Tree** | ✅ Clean | No uncommitted changes |
+
+All checks passed. Ready for release when you decide.
+```
+
+**Test Coverage Requirement:**
+
+> **⚠️ CRITICAL: Test coverage MUST be at minimum 97%.**
+> If coverage drops below 97%, flag it as ❌ and do not proceed with release until fixed.
+
+**How to get test coverage:**
+
+1. Get the Tests workflow run ID from `mcp__GitHub_MCP_Remote__actions_list`
+2. Run: `gh run view <run_id> --repo alexdelprete/ha-sinapsi-alfa --log 2>&1 | grep "TOTAL"`
+3. Parse the percentage from the output (last column)
+
+**If CI is still running:**
+
+```markdown
+## Release Readiness Report (RRR)
+
+| Check | Status | Details |
+|-------|--------|---------|
+| **Lint** | ⏳ in_progress | Started 2026-01-16 |
+| **Tests** | ⏳ queued | Waiting... |
+| **Validate** | ⏳ in_progress | Started 2026-01-16 |
+
+CI workflows still running. Check back in 1-2 minutes.
+```
 
 ### Issue References in Release Notes
 
