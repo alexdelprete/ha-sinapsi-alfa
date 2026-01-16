@@ -74,12 +74,10 @@ device, causing connection failures.
 
 **Before installing this integration:**
 
-1. Check your `configuration.yaml` for any `modbus:` entries pointing to your
-   Alfa device
-2. Go to **Settings** > **Devices & Services** > **Modbus** and remove any
-   hubs configured for your Alfa device's IP address
-3. Restart Home Assistant
-4. Then proceed with installing this integration
+1. Remove or rename the Sinapsi YAML package file
+   (`alfa-ha-modbus-configuration.yaml`) from your `packages` folder
+2. Restart Home Assistant
+3. Then proceed with installing this integration
 
 The integration will detect this conflict and show a clear error message if
 the built-in Modbus integration is still configured for the same device.
