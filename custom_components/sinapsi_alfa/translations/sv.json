@@ -37,7 +37,8 @@
     },
     "abort": {
       "already_configured": "Enheten ar redan konfigurerad",
-      "reconfigure_successful": "Omkonfigurering lyckades"
+      "reconfigure_successful": "Omkonfigurering lyckades",
+      "modbus_conflict": "Den inbyggda Modbus-integrationen är redan konfigurerad för denna enhet.\n\n**Din konfiguration:** {host}\n**Modbus-konfiguration:** {modbus_host}\n\nBåda pekar på samma enhet, som endast stöder en Modbus TCP-klient åt gången.\n\nTa bort Modbus-integrationsposten innan du konfigurerar denna integration. Kontrollera din configuration.yaml för 'modbus:'-poster, eller ta bort via Inställningar → Enheter & Tjänster → Modbus."
     }
   },
   "options": {
@@ -152,6 +153,10 @@
     }
   },
   "issues": {
+    "modbus_conflict": {
+      "title": "Modbus-integrationskonflikt för {device_name}",
+      "description": "Den inbyggda Modbus-integrationen är också konfigurerad för denna enhet:\n\n- **Denna integration:** {host}\n- **Modbus-integration:** {modbus_host}\n\nBåda pekar på samma enhet, som endast stöder **en Modbus TCP-klient** åt gången. Detta orsakar troligen dina anslutningsproblem.\n\n**För att åtgärda:**\n1. Gå till Inställningar → Enheter & Tjänster → Modbus\n2. Ta bort eller inaktivera Modbus-hubben konfigurerad för {modbus_host}\n3. Kontrollera din configuration.yaml för 'modbus:'-poster\n4. Starta om Home Assistant\n\nDetta problem försvinner automatiskt när konflikten är löst."
+    },
     "connection_failed": {
       "title": "Kan inte ansluta till {device_name}",
       "description": "Integrationen kan inte ansluta till din Sinapsi Alfa-enhet pa {host}:{port}.\n\n**Mojliga orsaker:**\n- Enheten ar avstangd eller inte ansluten till natverket\n- IP-adressen har andrats\n- En brandvagg blockerar anslutningen\n- Modbus TCP-porten (502) ar inte atkomlig\n\n**For att losa:**\n1. Kontrollera att enheten ar paslagan och ansluten till ditt natverk\n2. Verifiera IP-adressen i din routers DHCP-tabell\n3. Forsok komma at enhetens webbgranssnitt direkt\n4. Om IP har andrats, konfigurera om integrationen med den nya adressen"

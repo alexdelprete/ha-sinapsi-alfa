@@ -35,8 +35,14 @@ from .const import (
     MIN_SCAN_INTERVAL,
     MIN_TIMEOUT,
 )
-from .helpers import log_debug, log_info, log_warning
-from .repairs import create_connection_issue, create_recovery_notification, delete_connection_issue
+from .helpers import check_modbus_conflict, log_debug, log_info, log_warning
+from .repairs import (
+    create_connection_issue,
+    create_modbus_conflict_issue,
+    create_recovery_notification,
+    delete_connection_issue,
+    delete_modbus_conflict_issue,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -122,6 +128,10 @@ class SinapsiAlfaCoordinator(DataUpdateCoordinator):
             CONF_RECOVERY_SCRIPT, DEFAULT_RECOVERY_SCRIPT
         )
 
+        # Modbus conflict tracking
+        self._modbus_conflict_detected = False
+        self._modbus_conflict_host: str | None = None
+
         log_debug(
             _LOGGER,
             "__init__",
@@ -154,6 +164,40 @@ class SinapsiAlfaCoordinator(DataUpdateCoordinator):
     async def async_update_data(self) -> bool:
         """Update data method."""
         log_debug(_LOGGER, "async_update_data", "Update started", time=datetime.now())
+
+        # Check for Modbus conflict at runtime
+        conflicting_host = await check_modbus_conflict(self.hass, self.conf_host)
+
+        if conflicting_host and not self._modbus_conflict_detected:
+            # Conflict just detected
+            self._modbus_conflict_detected = True
+            self._modbus_conflict_host = conflicting_host
+            create_modbus_conflict_issue(
+                self.hass,
+                self._entry_id,
+                self.conf_name,
+                self.conf_host,
+                conflicting_host,
+            )
+            log_warning(
+                _LOGGER,
+                "async_update_data",
+                "Modbus conflict detected - another integration is using this device",
+                our_host=self.conf_host,
+                modbus_host=conflicting_host,
+            )
+        elif not conflicting_host and self._modbus_conflict_detected:
+            # Conflict resolved (user removed Modbus integration)
+            self._modbus_conflict_detected = False
+            self._modbus_conflict_host = None
+            delete_modbus_conflict_issue(self.hass, self._entry_id)
+            log_info(
+                _LOGGER,
+                "async_update_data",
+                "Modbus conflict resolved",
+                host=self.conf_host,
+            )
+
         try:
             self.last_update_status = await self.api.async_get_data()
             self.last_update_time = datetime.now()

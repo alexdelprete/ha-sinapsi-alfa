@@ -37,7 +37,8 @@
     },
     "abort": {
       "already_configured": "Device is already configured",
-      "reconfigure_successful": "Reconfiguration successful"
+      "reconfigure_successful": "Reconfiguration successful",
+      "modbus_conflict": "The built-in Modbus integration is already configured for this device.\n\n**Your config:** {host}\n**Modbus config:** {modbus_host}\n\nBoth point to the same device, which only supports one Modbus TCP client at a time.\n\nPlease remove the Modbus integration entry before setting up this integration. Check your configuration.yaml for 'modbus:' entries, or remove via Settings → Devices & Services → Modbus."
     }
   },
   "options": {
@@ -155,6 +156,10 @@
     "connection_failed": {
       "title": "Cannot connect to {device_name}",
       "description": "The integration cannot connect to your Sinapsi Alfa device at {host}:{port}.\n\n**Possible causes:**\n- The device is powered off or not connected to the network\n- The IP address has changed\n- A firewall is blocking the connection\n- The Modbus TCP port (502) is not accessible\n\n**To resolve:**\n1. Check that the device is powered on and connected to your network\n2. Verify the IP address in your router's DHCP table\n3. Try accessing the device's web interface directly\n4. If the IP has changed, reconfigure the integration with the new address"
+    },
+    "modbus_conflict": {
+      "title": "Modbus integration conflict for {device_name}",
+      "description": "The built-in Modbus integration is also configured for this device:\n\n- **This integration:** {host}\n- **Modbus integration:** {modbus_host}\n\nBoth point to the same device, which only supports **one Modbus TCP client** at a time. This is likely causing your connection issues.\n\n**To fix this:**\n1. Go to Settings → Devices & Services → Modbus\n2. Remove or disable the Modbus hub configured for {modbus_host}\n3. Check your configuration.yaml for 'modbus:' entries\n4. Restart Home Assistant\n\nThis issue will automatically disappear once the conflict is resolved."
     }
   },
   "device_automation": {

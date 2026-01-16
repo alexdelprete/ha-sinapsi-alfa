@@ -37,7 +37,8 @@
     },
     "abort": {
       "already_configured": "Gerat ist bereits konfiguriert",
-      "reconfigure_successful": "Neukonfiguration erfolgreich"
+      "reconfigure_successful": "Neukonfiguration erfolgreich",
+      "modbus_conflict": "Die integrierte Modbus-Integration ist bereits für dieses Gerät konfiguriert.\n\n**Ihre Konfiguration:** {host}\n**Modbus-Konfiguration:** {modbus_host}\n\nBeide verweisen auf dasselbe Gerät, das nur einen Modbus-TCP-Client gleichzeitig unterstützt.\n\nBitte entfernen Sie den Modbus-Integrationseintrag, bevor Sie diese Integration einrichten. Prüfen Sie Ihre configuration.yaml auf 'modbus:'-Einträge oder entfernen Sie ihn über Einstellungen → Geräte & Dienste → Modbus."
     }
   },
   "options": {
@@ -155,6 +156,10 @@
     "connection_failed": {
       "title": "Verbindung zu {device_name} nicht moglich",
       "description": "Die Integration kann keine Verbindung zu Ihrem Sinapsi Alfa-Gerat unter {host}:{port} herstellen.\n\n**Mogliche Ursachen:**\n- Das Gerat ist ausgeschaltet oder nicht mit dem Netzwerk verbunden\n- Die IP-Adresse hat sich geandert\n- Eine Firewall blockiert die Verbindung\n- Der Modbus-TCP-Port (502) ist nicht zuganglich\n\n**Zur Losung:**\n1. Prufen Sie, ob das Gerat eingeschaltet und mit Ihrem Netzwerk verbunden ist\n2. Uberprufen Sie die IP-Adresse in der DHCP-Tabelle Ihres Routers\n3. Versuchen Sie, direkt auf die Weboberflache des Gerats zuzugreifen\n4. Wenn sich die IP geandert hat, konfigurieren Sie die Integration mit der neuen Adresse neu"
+    },
+    "modbus_conflict": {
+      "title": "Modbus-Integrationskonflikt für {device_name}",
+      "description": "Die integrierte Modbus-Integration ist auch für dieses Gerät konfiguriert:\n\n- **Diese Integration:** {host}\n- **Modbus-Integration:** {modbus_host}\n\nBeide verweisen auf dasselbe Gerät, das nur **einen Modbus-TCP-Client** gleichzeitig unterstützt. Dies verursacht wahrscheinlich Ihre Verbindungsprobleme.\n\n**Zur Behebung:**\n1. Gehen Sie zu Einstellungen → Geräte & Dienste → Modbus\n2. Entfernen oder deaktivieren Sie den für {modbus_host} konfigurierten Modbus-Hub\n3. Prüfen Sie Ihre configuration.yaml auf 'modbus:'-Einträge\n4. Starten Sie Home Assistant neu\n\nDieses Problem verschwindet automatisch, wenn der Konflikt behoben ist."
     }
   },
   "device_automation": {

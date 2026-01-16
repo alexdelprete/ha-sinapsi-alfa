@@ -37,7 +37,8 @@
     },
     "abort": {
       "already_configured": "Enheten er allerede konfigurert",
-      "reconfigure_successful": "Rekonfigurering vellykket"
+      "reconfigure_successful": "Rekonfigurering vellykket",
+      "modbus_conflict": "Den innebygde Modbus-integrasjonen er allerede konfigurert for denne enheten.\n\n**Din konfigurasjon:** {host}\n**Modbus-konfigurasjon:** {modbus_host}\n\nBegge peker til samme enhet, som bare støtter én Modbus TCP-klient om gangen.\n\nVennligst fjern Modbus-integrasjonsoppføringen før du setter opp denne integrasjonen. Sjekk configuration.yaml for 'modbus:'-oppføringer, eller fjern via Innstillinger → Enheter & Tjenester → Modbus."
     }
   },
   "options": {
@@ -152,6 +153,10 @@
     }
   },
   "issues": {
+    "modbus_conflict": {
+      "title": "Modbus-integrasjonskonflikt for {device_name}",
+      "description": "Den innebygde Modbus-integrasjonen er også konfigurert for denne enheten:\n\n- **Denne integrasjonen:** {host}\n- **Modbus-integrasjon:** {modbus_host}\n\nBegge peker til samme enhet, som bare støtter **én Modbus TCP-klient** om gangen. Dette forårsaker sannsynligvis tilkoblingsproblemene dine.\n\n**For å fikse:**\n1. Gå til Innstillinger → Enheter & Tjenester → Modbus\n2. Fjern eller deaktiver Modbus-huben konfigurert for {modbus_host}\n3. Sjekk configuration.yaml for 'modbus:'-oppføringer\n4. Start Home Assistant på nytt\n\nDette problemet forsvinner automatisk når konflikten er løst."
+    },
     "connection_failed": {
       "title": "Kan ikke koble til {device_name}",
       "description": "Integrasjonen kan ikke koble til Sinapsi Alfa-enheten din pa {host}:{port}.\n\n**Mulige arsaker:**\n- Enheten er slatt av eller ikke koblet til nettverket\n- IP-adressen har endret seg\n- En brannmur blokkerer tilkoblingen\n- Modbus TCP-porten (502) er ikke tilgjengelig\n\n**For a lose:**\n1. Sjekk at enheten er slatt pa og koblet til nettverket\n2. Verifiser IP-adressen i ruterens DHCP-tabell\n3. Prov a fa tilgang til enhetens webgrensesnitt direkte\n4. Hvis IP har endret seg, rekonfigurer integrasjonen med den nye adressen"

@@ -37,7 +37,8 @@
     },
     "abort": {
       "already_configured": "O dispositivo ja esta configurado",
-      "reconfigure_successful": "Reconfiguracao bem-sucedida"
+      "reconfigure_successful": "Reconfiguracao bem-sucedida",
+      "modbus_conflict": "A integração Modbus nativa já está configurada para este dispositivo.\n\n**Sua configuração:** {host}\n**Configuração Modbus:** {modbus_host}\n\nAmbos apontam para o mesmo dispositivo, que suporta apenas um cliente Modbus TCP por vez.\n\nRemova a entrada da integração Modbus antes de configurar esta integração. Verifique seu configuration.yaml para entradas 'modbus:', ou remova via Configurações → Dispositivos & Serviços → Modbus."
     }
   },
   "options": {
@@ -152,6 +153,10 @@
     }
   },
   "issues": {
+    "modbus_conflict": {
+      "title": "Conflito de integração Modbus para {device_name}",
+      "description": "A integração Modbus nativa também está configurada para este dispositivo:\n\n- **Esta integração:** {host}\n- **Integração Modbus:** {modbus_host}\n\nAmbos apontam para o mesmo dispositivo, que suporta apenas **um cliente Modbus TCP** por vez. Isso provavelmente está causando seus problemas de conexão.\n\n**Para corrigir:**\n1. Vá para Configurações → Dispositivos & Serviços → Modbus\n2. Remova ou desative o hub Modbus configurado para {modbus_host}\n3. Verifique seu configuration.yaml para entradas 'modbus:'\n4. Reinicie o Home Assistant\n\nEste problema desaparecerá automaticamente quando o conflito for resolvido."
+    },
     "connection_failed": {
       "title": "Nao e possivel ligar a {device_name}",
       "description": "A integracao nao consegue ligar ao seu dispositivo Sinapsi Alfa em {host}:{port}.\n\n**Possiveis causas:**\n- O dispositivo esta desligado ou nao ligado a rede\n- O endereco IP mudou\n- Uma firewall esta a bloquear a ligacao\n- A porta Modbus TCP (502) nao esta acessivel\n\n**Para resolver:**\n1. Verifique se o dispositivo esta ligado e conectado a sua rede\n2. Verifique o endereco IP na tabela DHCP do seu router\n3. Tente aceder diretamente a interface web do dispositivo\n4. Se o IP mudou, reconfigure a integracao com o novo endereco"

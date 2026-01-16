@@ -37,7 +37,8 @@
     },
     "abort": {
       "already_configured": "Il dispositivo è gia configurato",
-      "reconfigure_successful": "Riconfigurazione riuscita"
+      "reconfigure_successful": "Riconfigurazione riuscita",
+      "modbus_conflict": "L'integrazione Modbus nativa è già configurata per questo dispositivo.\n\n**La tua config:** {host}\n**Config Modbus:** {modbus_host}\n\nEntrambi puntano allo stesso dispositivo, che supporta un solo client Modbus TCP alla volta.\n\nRimuovi la configurazione Modbus prima di configurare questa integrazione. Controlla configuration.yaml per le voci 'modbus:', oppure rimuovila da Impostazioni → Dispositivi e Servizi → Modbus."
     }
   },
   "options": {
@@ -155,6 +156,10 @@
     "connection_failed": {
       "title": "Impossibile connettersi a {device_name}",
       "description": "L'integrazione non riesce a connettersi al dispositivo Sinapsi Alfa su {host}:{port}.\n\n**Possibili cause:**\n- Il dispositivo e spento o non connesso alla rete\n- L'indirizzo IP e cambiato\n- Un firewall sta bloccando la connessione\n- La porta Modbus TCP (502) non e accessibile\n\n**Per risolvere:**\n1. Verificare che il dispositivo sia acceso e connesso alla rete\n2. Controllare l'indirizzo IP nella tabella DHCP del router\n3. Provare ad accedere direttamente all'interfaccia web del dispositivo\n4. Se l'IP e cambiato, riconfigurare l'integrazione con il nuovo indirizzo"
+    },
+    "modbus_conflict": {
+      "title": "Conflitto integrazione Modbus per {device_name}",
+      "description": "L'integrazione Modbus nativa è configurata anche per questo dispositivo:\n\n- **Questa integrazione:** {host}\n- **Integrazione Modbus:** {modbus_host}\n\nEntrambi puntano allo stesso dispositivo, che supporta **un solo client Modbus TCP** alla volta. Questa è probabilmente la causa dei problemi di connessione.\n\n**Per risolvere:**\n1. Vai su Impostazioni → Dispositivi e Servizi → Modbus\n2. Rimuovi o disabilita l'hub Modbus configurato per {modbus_host}\n3. Controlla configuration.yaml per le voci 'modbus:'\n4. Riavvia Home Assistant\n\nQuesto problema scomparirà automaticamente quando il conflitto sarà risolto."
     }
   },
   "device_automation": {

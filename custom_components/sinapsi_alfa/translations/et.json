@@ -37,7 +37,8 @@
     },
     "abort": {
       "already_configured": "Seade on juba seadistatud",
-      "reconfigure_successful": "Umberseadistamine onnestus"
+      "reconfigure_successful": "Umberseadistamine onnestus",
+      "modbus_conflict": "Sisseehitatud Modbus integratsioon on juba selle seadme jaoks konfigureeritud.\n\n**Teie konfiguratsioon:** {host}\n**Modbus konfiguratsioon:** {modbus_host}\n\nMõlemad viitavad samale seadmele, mis toetab korraga ainult ühte Modbus TCP klienti.\n\nPalun eemaldage Modbus integratsiooni kirje enne selle integratsiooni seadistamist. Kontrollige oma configuration.yaml faili 'modbus:' kirjete osas või eemaldage Seaded → Seadmed ja Teenused → Modbus kaudu."
     }
   },
   "options": {
@@ -152,6 +153,10 @@
     }
   },
   "issues": {
+    "modbus_conflict": {
+      "title": "Modbus integratsiooni konflikt seadmele {device_name}",
+      "description": "Sisseehitatud Modbus integratsioon on samuti konfigureeritud selle seadme jaoks:\n\n- **See integratsioon:** {host}\n- **Modbus integratsioon:** {modbus_host}\n\nMõlemad viitavad samale seadmele, mis toetab korraga ainult **ühte Modbus TCP klienti**. See põhjustab tõenäoliselt teie ühendusprobleeme.\n\n**Lahendamiseks:**\n1. Minge Seaded → Seadmed ja Teenused → Modbus\n2. Eemaldage või keelake {modbus_host} jaoks konfigureeritud Modbus hub\n3. Kontrollige oma configuration.yaml faili 'modbus:' kirjete osas\n4. Taaskäivitage Home Assistant\n\nSee probleem kaob automaatselt, kui konflikt on lahendatud."
+    },
     "connection_failed": {
       "title": "Seadmega {device_name} ei saa uhendust",
       "description": "Integratsioon ei saa uhendust teie Sinapsi Alfa seadmega aadressil {host}:{port}.\n\n**Voimalikud pohjused:**\n- Seade on valja lulitatud voi ei ole vorku uhendatud\n- IP-aadress on muutunud\n- Tulemuur blokeerib uhendust\n- Modbus TCP port (502) ei ole ligipaasetav\n\n**Lahendamiseks:**\n1. Kontrollige, kas seade on sisse lulitatud ja teie vorku uhendatud\n2. Kontrollige IP-aadressi oma ruuteri DHCP-tabelis\n3. Proovige seadme veebiliidesele otse ligi paaseda\n4. Kui IP on muutunud, seadistage integratsioon uue aadressiga umber"

@@ -37,7 +37,8 @@
     },
     "abort": {
       "already_configured": "Laite on jo maaritetty",
-      "reconfigure_successful": "Uudelleenmaaritys onnistui"
+      "reconfigure_successful": "Uudelleenmaaritys onnistui",
+      "modbus_conflict": "Sisäänrakennettu Modbus-integraatio on jo määritetty tälle laitteelle.\n\n**Sinun asetuksesi:** {host}\n**Modbus-asetukset:** {modbus_host}\n\nMolemmat viittaavat samaan laitteeseen, joka tukee vain yhtä Modbus TCP -asiakasta kerrallaan.\n\nPoista Modbus-integraation merkintä ennen tämän integraation määrittämistä. Tarkista configuration.yaml-tiedostosi 'modbus:'-merkintöjen varalta tai poista kohdasta Asetukset → Laitteet & Palvelut → Modbus."
     }
   },
   "options": {
@@ -152,6 +153,10 @@
     }
   },
   "issues": {
+    "modbus_conflict": {
+      "title": "Modbus-integraatioristiriita laitteelle {device_name}",
+      "description": "Sisäänrakennettu Modbus-integraatio on myös määritetty tälle laitteelle:\n\n- **Tämä integraatio:** {host}\n- **Modbus-integraatio:** {modbus_host}\n\nMolemmat viittaavat samaan laitteeseen, joka tukee vain **yhtä Modbus TCP -asiakasta** kerrallaan. Tämä todennäköisesti aiheuttaa yhteysongelmasi.\n\n**Korjaamiseksi:**\n1. Siirry kohtaan Asetukset → Laitteet & Palvelut → Modbus\n2. Poista tai poista käytöstä {modbus_host} -osoitteelle määritetty Modbus-keskitin\n3. Tarkista configuration.yaml-tiedostosi 'modbus:'-merkintöjen varalta\n4. Käynnistä Home Assistant uudelleen\n\nTämä ongelma katoaa automaattisesti, kun ristiriita on ratkaistu."
+    },
     "connection_failed": {
       "title": "Yhteyden muodostaminen laitteeseen {device_name} ei onnistu",
       "description": "Integraatio ei voi muodostaa yhteytta Sinapsi Alfa -laitteeseesi osoitteessa {host}:{port}.\n\n**Mahdolliset syyt:**\n- Laite on pois paalta tai ei ole yhdistetty verkkoon\n- IP-osoite on muuttunut\n- Palomuuri estaa yhteyden\n- Modbus TCP -portti (502) ei ole kaytettavissa\n\n**Ratkaisemiseksi:**\n1. Tarkista, etta laite on paalla ja yhdistetty verkkoon\n2. Tarkista IP-osoite reitittimesi DHCP-taulukosta\n3. Yrita paasta suoraan laitteen verkkokayttoliittymaan\n4. Jos IP on muuttunut, maarita integraatio uudelleen uudella osoitteella"

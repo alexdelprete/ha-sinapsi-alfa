@@ -54,7 +54,7 @@ from .const import (
     MIN_SCAN_INTERVAL,
     MIN_TIMEOUT,
 )
-from .helpers import host_valid, log_debug, log_error
+from .helpers import check_modbus_conflict, host_valid, log_debug, log_error
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -136,6 +136,24 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg
             elif not host_valid(host):
                 errors[CONF_HOST] = "invalid_host"
             else:
+                # Check for conflicting Modbus integration before testing connection
+                conflicting_host = await check_modbus_conflict(self.hass, host)
+                if conflicting_host:
+                    log_debug(
+                        _LOGGER,
+                        "async_step_user",
+                        "Modbus conflict detected",
+                        host=host,
+                        modbus_host=conflicting_host,
+                    )
+                    return self.async_abort(
+                        reason="modbus_conflict",
+                        description_placeholders={
+                            "host": host,
+                            "modbus_host": conflicting_host,
+                        },
+                    )
+
                 uid = await self._test_connection(
                     name, host, port, scan_interval, timeout, skip_mac_detection
                 )
@@ -226,6 +244,24 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg
                 log_debug(_LOGGER, "async_step_reconfigure", "Invalid host", host=host)
                 errors[CONF_HOST] = "invalid_host"
             else:
+                # Check for conflicting Modbus integration before testing connection
+                conflicting_host = await check_modbus_conflict(self.hass, host)
+                if conflicting_host:
+                    log_debug(
+                        _LOGGER,
+                        "async_step_reconfigure",
+                        "Modbus conflict detected",
+                        host=host,
+                        modbus_host=conflicting_host,
+                    )
+                    return self.async_abort(
+                        reason="modbus_conflict",
+                        description_placeholders={
+                            "host": host,
+                            "modbus_host": conflicting_host,
+                        },
+                    )
+
                 # Test connection with new settings (use existing options for scan_interval/timeout)
                 scan_interval = reconfigure_entry.options.get(
                     CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
