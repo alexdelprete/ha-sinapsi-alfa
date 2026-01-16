@@ -25,28 +25,6 @@ local API to get the data (for now it's through ModBus).
 So finally here we are with the first official version of the HA custom
 integration for Alfa devices. :)
 
-## Important: Modbus Integration Conflict
-
-The Sinapsi Alfa device only supports **one Modbus TCP client at a time**.
-
-Many users have the Sinapsi-provided YAML package
-(`alfa-ha-modbus-configuration.yaml`) installed, which uses Home Assistant's
-built-in Modbus integration. If you install this custom integration without
-removing that package, both integrations will try to connect to the same
-device, causing connection failures.
-
-**Before installing this integration:**
-
-1. Check your `configuration.yaml` for any `modbus:` entries pointing to your
-   Alfa device
-2. Go to **Settings** > **Devices & Services** > **Modbus** and remove any
-   hubs configured for your Alfa device's IP address
-3. Restart Home Assistant
-4. Then proceed with installing this integration
-
-The integration will detect this conflict and show a clear error message if
-the built-in Modbus integration is still configured for the same device.
-
 ## Features
 
 - Installation/Configuration through Config Flow UI
@@ -83,6 +61,28 @@ to communicate with the Sinapsi Alfa device:
   `SinapsiModbusError`) provide clear error context
 - **Repair Notifications**: Connection issues are surfaced in Home Assistant's
   repair system after repeated failures
+
+## Important: Modbus Integration Conflict
+
+The Sinapsi Alfa device only supports **one Modbus TCP client at a time**.
+
+Many users have the Sinapsi-provided YAML package
+(`alfa-ha-modbus-configuration.yaml`) installed, which uses Home Assistant's
+built-in Modbus integration. If you install this custom integration without
+removing that package, both integrations will try to connect to the same
+device, causing connection failures.
+
+**Before installing this integration:**
+
+1. Check your `configuration.yaml` for any `modbus:` entries pointing to your
+   Alfa device
+2. Go to **Settings** > **Devices & Services** > **Modbus** and remove any
+   hubs configured for your Alfa device's IP address
+3. Restart Home Assistant
+4. Then proceed with installing this integration
+
+The integration will detect this conflict and show a clear error message if
+the built-in Modbus integration is still configured for the same device.
 
 ## Installation through HACS
 

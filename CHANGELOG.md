@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.7] - 2026-01-16
+
+**Patch release** - Adds Modbus integration conflict detection to prevent connection issues.
+
+### ✨ New Features
+
+- **Modbus conflict detection** - Detects if Home Assistant's built-in Modbus integration is configured for the
+  same device and blocks setup with a clear error message
+- **Runtime conflict detection** - Creates a repair issue if Modbus integration is added after setup
+- **IP vs hostname resolution** - Properly compares IP addresses even when configs use different formats
+
+### 📝 Documentation
+
+- **README updated** - Added "Important: Modbus Integration Conflict" section before installation
+- **Translations** - Added conflict messages in all 10 supported languages
+
+### 🧪 Testing
+
+- **98% test coverage** - Added 24 comprehensive tests for conflict detection
+
+**Full Release Notes:** [docs/releases/v1.2.7.md](docs/releases/v1.2.7.md)
+
+**Full Changelog:** [v1.2.6...v1.2.7](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.2.6...v1.2.7)
+
 ## [1.2.6] - 2026-01-09
 
 **Patch release** - Fixes empty recovery script validation error in options flow.
@@ -675,6 +699,7 @@ ______________________________________________________________________
 [1.2.2]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.2
 [1.2.3]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.3
 [1.2.4]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.4
+[1.2.7]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.7
 [1.2.6]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.6
 [1.2.5]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.5
 [1.2.4-beta.1]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.4-beta.1
