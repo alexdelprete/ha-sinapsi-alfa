@@ -34,67 +34,54 @@ Use `resolve-library-id` first to get the library ID, then `get-library-docs` to
 
 ## GitHub MCP for Repository Operations
 
-Always use GitHub MCP tools (`mcp__github__*`) for GitHub operations instead of the `gh` CLI:
+Use GitHub MCP tools (`mcp__github__*`) for GitHub operations:
 
 - **Issues**: `issue_read`, `issue_write`, `list_issues`, `search_issues`, `add_issue_comment`
 - **Pull Requests**: `list_pull_requests`, `create_pull_request`, `pull_request_read`, `merge_pull_request`
 - **Reviews**: `pull_request_review_write`, `add_comment_to_pending_review`
 - **Repositories**: `search_repositories`, `get_file_contents`, `list_branches`, `list_commits`
 - **Releases**: `list_releases`, `get_latest_release`, `list_tags`
-- **Actions**: `actions_list`, `actions_get` for workflow runs and jobs
 
-Benefits over `gh` CLI:
+### CI Workflow Status and Logs (Use `gh` CLI)
 
-- Direct API access without shell escaping issues
-- Structured JSON responses
-- Better error handling
-- No subprocess overhead
-
-### CI Workflow Status Check (Efficient Method)
+> **IMPORTANT**: Always use `gh` CLI for CI workflow status and logs - it's more efficient than GitHub MCP.
 
 The project has 3 CI workflows: **Lint**, **Tests**, and **Validate**.
 
-**Step 1: Get workflow IDs (one-time lookup)**
-
-```python
-mcp__GitHub_MCP_Remote__actions_list(method="list_workflows", owner="alexdelprete", repo="ha-sinapsi-alfa")
-```
-
-Workflow IDs:
-
-- Lint: `85233856`
-- Tests: `219252281`
-- Validate: `85233855`
-
-**Step 2: Get latest runs for each workflow**
-
-```python
-# Run these 3 calls in parallel for efficiency
-mcp__GitHub_MCP_Remote__actions_list(method="list_workflow_runs", owner="alexdelprete", repo="ha-sinapsi-alfa", resource_id="85233856", per_page=1)   # Lint
-mcp__GitHub_MCP_Remote__actions_list(method="list_workflow_runs", owner="alexdelprete", repo="ha-sinapsi-alfa", resource_id="219252281", per_page=1)  # Tests
-mcp__GitHub_MCP_Remote__actions_list(method="list_workflow_runs", owner="alexdelprete", repo="ha-sinapsi-alfa", resource_id="85233855", per_page=1)   # Validate
-```
-
-Parse each response for `conclusion` (success/failure) and `created_at`.
-
-### Workflow Run Logs (for Test Coverage)
-
-The GitHub MCP `get_job_logs` tool is currently broken. Use `gh` CLI instead:
-
-**Get test coverage from Tests workflow:**
+**List recent workflow runs:**
 
 ```bash
-# Get the run ID from the Tests workflow runs above, then:
-gh run view <run_id> --repo alexdelprete/ha-sinapsi-alfa --log 2>&1 | grep "TOTAL"
+gh run list --repo alexdelprete/ha-sinapsi-alfa --limit 5
+```
+
+**Get workflow status for a specific run:**
+
+```bash
+gh run view <run_id> --repo alexdelprete/ha-sinapsi-alfa
+```
+
+**Get test coverage from Tests workflow logs:**
+
+```bash
+gh run view <run_id> --repo alexdelprete/ha-sinapsi-alfa --log 2>&1 | findstr "TOTAL"
 ```
 
 **Example output:**
 
 ```text
-TOTAL                                 1647     39    98%
+TOTAL                                 851      5    190     16    98%
 ```
 
 The coverage percentage is the last column (98% in this example).
+
+**Quick one-liner to get latest Tests run coverage:**
+
+```bash
+# Get latest Tests run ID and fetch coverage
+gh run list --repo alexdelprete/ha-sinapsi-alfa --limit 5 | findstr Tests
+# Then use the run ID from the output
+gh run view <run_id> --repo alexdelprete/ha-sinapsi-alfa --log 2>&1 | findstr "TOTAL"
+```
 
 ## Project Overview
 
