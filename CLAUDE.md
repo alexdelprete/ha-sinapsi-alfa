@@ -295,12 +295,23 @@ All hooks use `language: system` (local tools) with `verbose: true` for visibili
 
 > **⛔ CRITICAL: ALWAYS run pre-commit checks before ANY git commit.**
 > This is a hard rule - no exceptions. Never commit without passing all checks.
+>
+> **🚨 THIS IS FREQUENTLY FORGOTTEN - DO NOT SKIP THIS STEP!**
+> Before EVERY `git commit` command, you MUST run pre-commit first.
+> This is the #1 most commonly skipped step - make it a habit.
 
 ```bash
 uvx pre-commit run --all-files
 ```
 
 All checks must pass before committing. This applies to ALL commits, not just releases.
+
+**Correct workflow for "commit and push" requests:**
+
+1. Run `uvx pre-commit run --all-files` - FIX any failures
+2. `git add` the files
+3. `git commit` with proper message
+4. `git push`
 
 ### Windows Shell Notes
 
@@ -408,13 +419,13 @@ Verify ALL items show ✅ before proceeding with tag creation. If any item fails
 
 **CRITICAL:** Never create git tags or GitHub releases without explicit user instruction.
 
-### Release Readiness Report (After Every Push)
+### Release Readiness Report (Before Tag and Release)
 
-> **⛔ MANDATORY: After EVERY "commit and push" command, display the Release Readiness Report (RRR).**
+> **⛔ MANDATORY: When user commands "tag and release", display the Release Readiness Report (RRR).**
 >
-> This report gives the user visibility into CI status and test coverage before they decide to release.
+> This report gives the user visibility into CI status and test coverage before creating the release.
 
-**After pushing, wait for CI workflows to complete (usually 1-2 minutes), then display:**
+**Before creating the tag, check CI workflows and display:**
 
 ```markdown
 ## Release Readiness Report (RRR)
