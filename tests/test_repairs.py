@@ -10,10 +10,13 @@ from unittest.mock import MagicMock, patch
 from custom_components.sinapsi_alfa.const import DOMAIN
 from custom_components.sinapsi_alfa.repairs import (
     ISSUE_CONNECTION_FAILED,
+    ISSUE_MODBUS_CONFLICT,
     NOTIFICATION_RECOVERY,
     create_connection_issue,
+    create_modbus_conflict_issue,
     create_recovery_notification,
     delete_connection_issue,
+    delete_modbus_conflict_issue,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import issue_registry as ir
@@ -136,6 +139,10 @@ class TestIssueConstants:
         """Test ISSUE_CONNECTION_FAILED constant value."""
         assert ISSUE_CONNECTION_FAILED == "connection_failed"
 
+    def test_issue_modbus_conflict_value(self) -> None:
+        """Test ISSUE_MODBUS_CONFLICT constant value."""
+        assert ISSUE_MODBUS_CONFLICT == "modbus_conflict"
+
     def test_notification_recovery_value(self) -> None:
         """Test NOTIFICATION_RECOVERY constant value."""
         assert NOTIFICATION_RECOVERY == "recovery"
@@ -146,11 +153,129 @@ class TestIssueConstants:
         expected = f"{ISSUE_CONNECTION_FAILED}_{entry_id}"
         assert expected == "connection_failed_test_123"
 
+    def test_modbus_conflict_issue_id_format(self) -> None:
+        """Test modbus conflict issue ID format is correct."""
+        entry_id = "test_123"
+        expected = f"{ISSUE_MODBUS_CONFLICT}_{entry_id}"
+        assert expected == "modbus_conflict_test_123"
+
     def test_notification_id_format(self) -> None:
         """Test notification ID format is correct."""
         entry_id = "test_456"
         expected = f"{DOMAIN}_{NOTIFICATION_RECOVERY}_{entry_id}"
         assert expected == "sinapsi_alfa_recovery_test_456"
+
+
+class TestCreateModbusConflictIssue:
+    """Tests for create_modbus_conflict_issue function."""
+
+    def test_create_modbus_conflict_issue(self, hass: HomeAssistant) -> None:
+        """Test creating a modbus conflict issue."""
+        entry_id = "test_entry_123"
+        modbus_host = "192.168.1.100"
+
+        with patch.object(ir, "async_create_issue") as mock_create:
+            create_modbus_conflict_issue(
+                hass,
+                entry_id,
+                TEST_NAME,
+                TEST_HOST,
+                modbus_host,
+            )
+
+            mock_create.assert_called_once()
+            call_args = mock_create.call_args
+
+            # Check domain
+            assert call_args[0][0] == hass
+            assert call_args[0][1] == DOMAIN
+
+            # Check issue ID format
+            expected_issue_id = f"{ISSUE_MODBUS_CONFLICT}_{entry_id}"
+            assert call_args[0][2] == expected_issue_id
+
+            # Check keyword arguments
+            kwargs = call_args[1]
+            assert kwargs["is_fixable"] is False
+            assert kwargs["is_persistent"] is True
+            assert kwargs["severity"] == ir.IssueSeverity.ERROR
+            assert kwargs["translation_key"] == ISSUE_MODBUS_CONFLICT
+
+    def test_create_modbus_conflict_issue_placeholders(self, hass: HomeAssistant) -> None:
+        """Test modbus conflict issue has correct placeholders."""
+        entry_id = "test_entry_456"
+        modbus_host = "alfa.local"
+
+        with patch.object(ir, "async_create_issue") as mock_create:
+            create_modbus_conflict_issue(
+                hass,
+                entry_id,
+                TEST_NAME,
+                TEST_HOST,
+                modbus_host,
+            )
+
+            kwargs = mock_create.call_args[1]
+            placeholders = kwargs["translation_placeholders"]
+
+            assert placeholders["device_name"] == TEST_NAME
+            assert placeholders["host"] == TEST_HOST
+            assert placeholders["modbus_host"] == modbus_host
+
+    def test_create_modbus_conflict_issue_unique_per_entry(self, hass: HomeAssistant) -> None:
+        """Test each entry gets a unique modbus conflict issue ID."""
+        entry_id_1 = "entry_1"
+        entry_id_2 = "entry_2"
+        modbus_host = "192.168.1.100"
+
+        with patch.object(ir, "async_create_issue") as mock_create:
+            create_modbus_conflict_issue(hass, entry_id_1, TEST_NAME, TEST_HOST, modbus_host)
+            create_modbus_conflict_issue(hass, entry_id_2, TEST_NAME, TEST_HOST, modbus_host)
+
+            # Should have 2 different issue IDs
+            issue_id_1 = mock_create.call_args_list[0][0][2]
+            issue_id_2 = mock_create.call_args_list[1][0][2]
+
+            assert issue_id_1 != issue_id_2
+            assert entry_id_1 in issue_id_1
+            assert entry_id_2 in issue_id_2
+
+
+class TestDeleteModbusConflictIssue:
+    """Tests for delete_modbus_conflict_issue function."""
+
+    def test_delete_modbus_conflict_issue(self, hass: HomeAssistant) -> None:
+        """Test deleting a modbus conflict issue."""
+        entry_id = "test_entry_789"
+
+        with patch.object(ir, "async_delete_issue") as mock_delete:
+            delete_modbus_conflict_issue(hass, entry_id)
+
+            mock_delete.assert_called_once()
+            call_args = mock_delete.call_args
+
+            # Check domain and issue ID
+            assert call_args[0][0] == hass
+            assert call_args[0][1] == DOMAIN
+
+            expected_issue_id = f"{ISSUE_MODBUS_CONFLICT}_{entry_id}"
+            assert call_args[0][2] == expected_issue_id
+
+    def test_delete_modbus_conflict_issue_correct_id_format(self, hass: HomeAssistant) -> None:
+        """Test delete uses same ID format as create."""
+        entry_id = "matching_entry"
+        modbus_host = "192.168.1.100"
+
+        with patch.object(ir, "async_create_issue") as mock_create:
+            create_modbus_conflict_issue(hass, entry_id, TEST_NAME, TEST_HOST, modbus_host)
+            created_issue_id = mock_create.call_args[0][2]
+
+        with patch.object(ir, "async_delete_issue") as mock_delete:
+            delete_modbus_conflict_issue(hass, entry_id)
+            deleted_issue_id = mock_delete.call_args[0][2]
+
+        # Issue IDs should match
+        assert created_issue_id == deleted_issue_id
 
 
 class TestCreateRecoveryNotification:

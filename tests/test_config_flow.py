@@ -566,10 +566,16 @@ class TestAsyncStepUserDirect:
         flow.hass = mock_hass
         flow.context = {"source": config_entries.SOURCE_USER}
 
-        with patch(
-            "custom_components.sinapsi_alfa.config_flow.SinapsiAlfaAPI",
-            autospec=True,
-        ) as mock_api_class:
+        with (
+            patch(
+                "custom_components.sinapsi_alfa.config_flow.check_modbus_conflict",
+                return_value=None,
+            ),
+            patch(
+                "custom_components.sinapsi_alfa.config_flow.SinapsiAlfaAPI",
+                autospec=True,
+            ) as mock_api_class,
+        ):
             mock_api = mock_api_class.return_value
             mock_api.async_get_data = AsyncMock(
                 side_effect=SinapsiConnectionError("Connection failed")
@@ -589,6 +595,34 @@ class TestAsyncStepUserDirect:
         assert result["type"] == FlowResultType.FORM
         assert result["errors"] == {CONF_HOST: "cannot_connect"}
 
+    async def test_async_step_user_modbus_conflict(self, mock_hass: MagicMock) -> None:
+        """Test abort when Modbus conflict detected."""
+        mock_hass.config_entries.async_entries.return_value = []
+
+        flow = SinapsiAlfaConfigFlow()
+        flow.hass = mock_hass
+        flow.context = {"source": config_entries.SOURCE_USER}
+
+        with patch(
+            "custom_components.sinapsi_alfa.config_flow.check_modbus_conflict",
+            return_value="alfa.local",
+        ):
+            result = await flow.async_step_user(
+                {
+                    CONF_NAME: TEST_NAME,
+                    CONF_HOST: TEST_HOST,
+                    CONF_PORT: DEFAULT_PORT,
+                    CONF_SCAN_INTERVAL: DEFAULT_SCAN_INTERVAL,
+                    CONF_TIMEOUT: DEFAULT_TIMEOUT,
+                    CONF_SKIP_MAC_DETECTION: False,
+                }
+            )
+
+        assert result["type"] == FlowResultType.ABORT
+        assert result["reason"] == "modbus_conflict"
+        assert result["description_placeholders"]["host"] == TEST_HOST
+        assert result["description_placeholders"]["modbus_host"] == "alfa.local"
+
     async def test_async_step_user_success(self, mock_hass: MagicMock, mock_api_data: dict) -> None:
         """Test successful config entry creation."""
         mock_hass.config_entries.async_entries.return_value = []
@@ -600,10 +634,16 @@ class TestAsyncStepUserDirect:
         flow.async_set_unique_id = AsyncMock()
         flow._abort_if_unique_id_configured = MagicMock()
 
-        with patch(
-            "custom_components.sinapsi_alfa.config_flow.SinapsiAlfaAPI",
-            autospec=True,
-        ) as mock_api_class:
+        with (
+            patch(
+                "custom_components.sinapsi_alfa.config_flow.check_modbus_conflict",
+                return_value=None,
+            ),
+            patch(
+                "custom_components.sinapsi_alfa.config_flow.SinapsiAlfaAPI",
+                autospec=True,
+            ) as mock_api_class,
+        ):
             mock_api = mock_api_class.return_value
             mock_api.data = mock_api_data
             mock_api.async_get_data = AsyncMock(return_value=True)
@@ -697,10 +737,16 @@ class TestAsyncStepReconfigureDirect:
         mock_entry = self._create_mock_reconfigure_entry()
         flow._get_reconfigure_entry = MagicMock(return_value=mock_entry)
 
-        with patch(
-            "custom_components.sinapsi_alfa.config_flow.SinapsiAlfaAPI",
-            autospec=True,
-        ) as mock_api_class:
+        with (
+            patch(
+                "custom_components.sinapsi_alfa.config_flow.check_modbus_conflict",
+                return_value=None,
+            ),
+            patch(
+                "custom_components.sinapsi_alfa.config_flow.SinapsiAlfaAPI",
+                autospec=True,
+            ) as mock_api_class,
+        ):
             mock_api = mock_api_class.return_value
             mock_api.async_get_data = AsyncMock(
                 side_effect=SinapsiConnectionError("Connection failed")
@@ -717,6 +763,34 @@ class TestAsyncStepReconfigureDirect:
 
         assert result["type"] == FlowResultType.FORM
         assert result["errors"] == {CONF_HOST: "cannot_connect"}
+
+    async def test_async_step_reconfigure_modbus_conflict(self, mock_hass: MagicMock) -> None:
+        """Test abort when Modbus conflict detected during reconfigure."""
+        flow = SinapsiAlfaConfigFlow()
+        flow.hass = mock_hass
+        flow.context = {"source": config_entries.SOURCE_RECONFIGURE}
+
+        mock_entry = self._create_mock_reconfigure_entry()
+        flow._get_reconfigure_entry = MagicMock(return_value=mock_entry)
+
+        new_host = "192.168.1.200"
+        with patch(
+            "custom_components.sinapsi_alfa.config_flow.check_modbus_conflict",
+            return_value="192.168.1.200",
+        ):
+            result = await flow.async_step_reconfigure(
+                {
+                    CONF_NAME: TEST_NAME,
+                    CONF_HOST: new_host,
+                    CONF_PORT: DEFAULT_PORT,
+                    CONF_SKIP_MAC_DETECTION: False,
+                }
+            )
+
+        assert result["type"] == FlowResultType.ABORT
+        assert result["reason"] == "modbus_conflict"
+        assert result["description_placeholders"]["host"] == new_host
+        assert result["description_placeholders"]["modbus_host"] == "192.168.1.200"
 
     async def test_async_step_reconfigure_success(
         self, mock_hass: MagicMock, mock_api_data: dict
@@ -738,10 +812,16 @@ class TestAsyncStepReconfigureDirect:
         new_port = 503
         new_name = "New Device Name"
 
-        with patch(
-            "custom_components.sinapsi_alfa.config_flow.SinapsiAlfaAPI",
-            autospec=True,
-        ) as mock_api_class:
+        with (
+            patch(
+                "custom_components.sinapsi_alfa.config_flow.check_modbus_conflict",
+                return_value=None,
+            ),
+            patch(
+                "custom_components.sinapsi_alfa.config_flow.SinapsiAlfaAPI",
+                autospec=True,
+            ) as mock_api_class,
+        ):
             mock_api = mock_api_class.return_value
             mock_api.data = mock_api_data
             mock_api.async_get_data = AsyncMock(return_value=True)

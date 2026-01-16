@@ -782,3 +782,151 @@ async def test_coordinator_repair_notification_disabled(
         mock_create_issue.assert_not_called()
         # But should still track that threshold was reached
         assert coordinator._repair_issue_created is True
+
+
+# =============================================================================
+# Modbus Conflict Detection Tests
+# =============================================================================
+
+
+async def test_coordinator_modbus_conflict_detected(
+    hass: HomeAssistant,
+    mock_api_data: dict,
+) -> None:
+    """Test modbus conflict is detected and repair issue created."""
+    entry = create_mock_config_entry()
+
+    with (
+        patch(
+            "custom_components.sinapsi_alfa.coordinator.SinapsiAlfaAPI",
+        ) as mock_api_class,
+        patch(
+            "custom_components.sinapsi_alfa.coordinator.check_modbus_conflict",
+            return_value="alfa.local",
+        ),
+        patch(
+            "custom_components.sinapsi_alfa.coordinator.create_modbus_conflict_issue",
+        ) as mock_create_issue,
+    ):
+        mock_api = mock_api_class.return_value
+        mock_api.async_get_data = AsyncMock(return_value=mock_api_data)
+
+        coordinator = SinapsiAlfaCoordinator(hass, entry)
+        assert coordinator._modbus_conflict_detected is False
+
+        await coordinator.async_update_data()
+
+        # Conflict should be detected and issue created
+        assert coordinator._modbus_conflict_detected is True
+        assert coordinator._modbus_conflict_host == "alfa.local"
+        mock_create_issue.assert_called_once_with(
+            hass,
+            entry.entry_id,
+            TEST_NAME,
+            TEST_HOST,
+            "alfa.local",
+        )
+
+
+async def test_coordinator_modbus_conflict_resolved(
+    hass: HomeAssistant,
+    mock_api_data: dict,
+) -> None:
+    """Test modbus conflict resolution deletes repair issue."""
+    entry = create_mock_config_entry()
+
+    with (
+        patch(
+            "custom_components.sinapsi_alfa.coordinator.SinapsiAlfaAPI",
+        ) as mock_api_class,
+        patch(
+            "custom_components.sinapsi_alfa.coordinator.check_modbus_conflict",
+            return_value=None,  # No conflict
+        ),
+        patch(
+            "custom_components.sinapsi_alfa.coordinator.delete_modbus_conflict_issue",
+        ) as mock_delete_issue,
+    ):
+        mock_api = mock_api_class.return_value
+        mock_api.async_get_data = AsyncMock(return_value=mock_api_data)
+
+        coordinator = SinapsiAlfaCoordinator(hass, entry)
+        # Simulate previous conflict
+        coordinator._modbus_conflict_detected = True
+        coordinator._modbus_conflict_host = "alfa.local"
+
+        await coordinator.async_update_data()
+
+        # Conflict should be resolved
+        assert coordinator._modbus_conflict_detected is False
+        assert coordinator._modbus_conflict_host is None
+        mock_delete_issue.assert_called_once_with(hass, entry.entry_id)
+
+
+async def test_coordinator_modbus_conflict_no_duplicate_issue(
+    hass: HomeAssistant,
+    mock_api_data: dict,
+) -> None:
+    """Test modbus conflict issue is not recreated if already detected."""
+    entry = create_mock_config_entry()
+
+    with (
+        patch(
+            "custom_components.sinapsi_alfa.coordinator.SinapsiAlfaAPI",
+        ) as mock_api_class,
+        patch(
+            "custom_components.sinapsi_alfa.coordinator.check_modbus_conflict",
+            return_value="alfa.local",
+        ),
+        patch(
+            "custom_components.sinapsi_alfa.coordinator.create_modbus_conflict_issue",
+        ) as mock_create_issue,
+    ):
+        mock_api = mock_api_class.return_value
+        mock_api.async_get_data = AsyncMock(return_value=mock_api_data)
+
+        coordinator = SinapsiAlfaCoordinator(hass, entry)
+        # Simulate conflict already detected
+        coordinator._modbus_conflict_detected = True
+        coordinator._modbus_conflict_host = "alfa.local"
+
+        await coordinator.async_update_data()
+
+        # Should not create another issue
+        mock_create_issue.assert_not_called()
+
+
+async def test_coordinator_modbus_no_conflict_no_action(
+    hass: HomeAssistant,
+    mock_api_data: dict,
+) -> None:
+    """Test no action when no modbus conflict exists."""
+    entry = create_mock_config_entry()
+
+    with (
+        patch(
+            "custom_components.sinapsi_alfa.coordinator.SinapsiAlfaAPI",
+        ) as mock_api_class,
+        patch(
+            "custom_components.sinapsi_alfa.coordinator.check_modbus_conflict",
+            return_value=None,
+        ),
+        patch(
+            "custom_components.sinapsi_alfa.coordinator.create_modbus_conflict_issue",
+        ) as mock_create_issue,
+        patch(
+            "custom_components.sinapsi_alfa.coordinator.delete_modbus_conflict_issue",
+        ) as mock_delete_issue,
+    ):
+        mock_api = mock_api_class.return_value
+        mock_api.async_get_data = AsyncMock(return_value=mock_api_data)
+
+        coordinator = SinapsiAlfaCoordinator(hass, entry)
+        assert coordinator._modbus_conflict_detected is False
+
+        await coordinator.async_update_data()
+
+        # No conflict - no actions needed
+        assert coordinator._modbus_conflict_detected is False
+        mock_create_issue.assert_not_called()
+        mock_delete_issue.assert_not_called()

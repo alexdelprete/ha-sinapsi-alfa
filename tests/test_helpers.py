@@ -1,16 +1,19 @@
 """Tests for Sinapsi Alfa helper functions."""
 
 import logging
-from unittest.mock import MagicMock
+import socket
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
 from custom_components.sinapsi_alfa.helpers import (
+    check_modbus_conflict,
     host_valid,
     log_debug,
     log_error,
     log_info,
     log_warning,
+    resolve_host_to_ip,
     unix_timestamp_to_iso8601_local_tz,
 )
 
@@ -83,6 +86,189 @@ class TestUnixTimestampToIso8601:
         result = unix_timestamp_to_iso8601_local_tz(1704067200)  # 2024-01-01 00:00:00 UTC
         assert isinstance(result, str)
         assert "2024" in result
+
+
+class TestResolveHostToIp:
+    """Tests for resolve_host_to_ip function."""
+
+    @pytest.fixture
+    def mock_hass(self):
+        """Create a mock HomeAssistant instance."""
+        hass = MagicMock()
+        hass.async_add_executor_job = AsyncMock()
+        return hass
+
+    @pytest.mark.asyncio
+    async def test_resolve_ip_address_returns_same(self, mock_hass):
+        """Test that an IP address is returned as-is without resolution."""
+        result = await resolve_host_to_ip(mock_hass, "192.168.1.100")
+        assert result == "192.168.1.100"
+        # Should not call executor job for IP addresses
+        mock_hass.async_add_executor_job.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_resolve_ipv6_address_returns_same(self, mock_hass):
+        """Test that an IPv6 address is returned as-is."""
+        result = await resolve_host_to_ip(mock_hass, "::1")
+        assert result == "::1"
+        mock_hass.async_add_executor_job.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_resolve_hostname_success(self, mock_hass):
+        """Test successful hostname resolution."""
+        mock_hass.async_add_executor_job.return_value = "192.168.1.50"
+
+        result = await resolve_host_to_ip(mock_hass, "alfa.local")
+
+        assert result == "192.168.1.50"
+        mock_hass.async_add_executor_job.assert_called_once_with(socket.gethostbyname, "alfa.local")
+
+    @pytest.mark.asyncio
+    async def test_resolve_hostname_failure(self, mock_hass):
+        """Test hostname resolution failure returns None."""
+        mock_hass.async_add_executor_job.side_effect = socket.gaierror("Name resolution failed")
+
+        result = await resolve_host_to_ip(mock_hass, "nonexistent.host")
+
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_resolve_fqdn_success(self, mock_hass):
+        """Test FQDN resolution."""
+        mock_hass.async_add_executor_job.return_value = "10.0.0.5"
+
+        result = await resolve_host_to_ip(mock_hass, "device.home.lan")
+
+        assert result == "10.0.0.5"
+
+
+class TestCheckModbusConflict:
+    """Tests for check_modbus_conflict function."""
+
+    @pytest.fixture
+    def mock_hass(self):
+        """Create a mock HomeAssistant instance."""
+        hass = MagicMock()
+        hass.async_add_executor_job = AsyncMock()
+        hass.config_entries = MagicMock()
+        return hass
+
+    @pytest.mark.asyncio
+    async def test_no_modbus_entries_no_conflict(self, mock_hass):
+        """Test no conflict when no Modbus entries exist."""
+        mock_hass.config_entries.async_entries.return_value = []
+
+        result = await check_modbus_conflict(mock_hass, "192.168.1.100")
+
+        assert result is None
+        mock_hass.config_entries.async_entries.assert_called_once_with(domain="modbus")
+
+    @pytest.mark.asyncio
+    async def test_modbus_entry_different_host_no_conflict(self, mock_hass):
+        """Test no conflict when Modbus entry has different host."""
+        modbus_entry = MagicMock()
+        modbus_entry.data = {"host": "192.168.1.200"}
+        mock_hass.config_entries.async_entries.return_value = [modbus_entry]
+        # Both are IP addresses, no resolution needed for our host
+        # For modbus host, we need to resolve it
+        mock_hass.async_add_executor_job.return_value = "192.168.1.200"
+
+        result = await check_modbus_conflict(mock_hass, "192.168.1.100")
+
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_modbus_entry_same_ip_conflict(self, mock_hass):
+        """Test conflict detected when Modbus entry has same IP."""
+        modbus_entry = MagicMock()
+        modbus_entry.data = {"host": "192.168.1.100"}
+        mock_hass.config_entries.async_entries.return_value = [modbus_entry]
+
+        result = await check_modbus_conflict(mock_hass, "192.168.1.100")
+
+        assert result == "192.168.1.100"
+
+    @pytest.mark.asyncio
+    async def test_modbus_entry_hostname_resolves_to_same_ip(self, mock_hass):
+        """Test conflict when hostname resolves to same IP."""
+        modbus_entry = MagicMock()
+        modbus_entry.data = {"host": "alfa.local"}
+        mock_hass.config_entries.async_entries.return_value = [modbus_entry]
+        # Mock hostname resolution to same IP
+        mock_hass.async_add_executor_job.return_value = "192.168.1.100"
+
+        result = await check_modbus_conflict(mock_hass, "192.168.1.100")
+
+        assert result == "alfa.local"
+
+    @pytest.mark.asyncio
+    async def test_our_hostname_resolves_to_modbus_ip(self, mock_hass):
+        """Test conflict when our hostname resolves to Modbus IP."""
+        modbus_entry = MagicMock()
+        modbus_entry.data = {"host": "192.168.1.100"}
+        mock_hass.config_entries.async_entries.return_value = [modbus_entry]
+        # Our hostname resolves to the Modbus IP
+        mock_hass.async_add_executor_job.return_value = "192.168.1.100"
+
+        result = await check_modbus_conflict(mock_hass, "alfa.local")
+
+        assert result == "192.168.1.100"
+
+    @pytest.mark.asyncio
+    async def test_modbus_entry_without_host_no_conflict(self, mock_hass):
+        """Test no conflict when Modbus entry has no host."""
+        modbus_entry = MagicMock()
+        modbus_entry.data = {}  # No host key
+        mock_hass.config_entries.async_entries.return_value = [modbus_entry]
+
+        result = await check_modbus_conflict(mock_hass, "192.168.1.100")
+
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_modbus_host_resolution_fails_no_conflict(self, mock_hass):
+        """Test no conflict when Modbus hostname cannot be resolved."""
+        modbus_entry = MagicMock()
+        modbus_entry.data = {"host": "unknown.host"}
+        mock_hass.config_entries.async_entries.return_value = [modbus_entry]
+        # Modbus host resolution fails
+        mock_hass.async_add_executor_job.side_effect = socket.gaierror("Resolution failed")
+
+        result = await check_modbus_conflict(mock_hass, "192.168.1.100")
+
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_our_host_resolution_fails_no_conflict(self, mock_hass):
+        """Test no conflict when our hostname cannot be resolved."""
+        modbus_entry = MagicMock()
+        modbus_entry.data = {"host": "192.168.1.100"}
+        mock_hass.config_entries.async_entries.return_value = [modbus_entry]
+        # Our host resolution fails
+        mock_hass.async_add_executor_job.side_effect = socket.gaierror("Resolution failed")
+
+        result = await check_modbus_conflict(mock_hass, "unknown.host")
+
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_multiple_modbus_entries_finds_conflict(self, mock_hass):
+        """Test conflict found among multiple Modbus entries."""
+        modbus_entry1 = MagicMock()
+        modbus_entry1.data = {"host": "192.168.1.50"}
+        modbus_entry2 = MagicMock()
+        modbus_entry2.data = {"host": "192.168.1.100"}  # This conflicts
+        modbus_entry3 = MagicMock()
+        modbus_entry3.data = {"host": "192.168.1.200"}
+        mock_hass.config_entries.async_entries.return_value = [
+            modbus_entry1,
+            modbus_entry2,
+            modbus_entry3,
+        ]
+
+        result = await check_modbus_conflict(mock_hass, "192.168.1.100")
+
+        assert result == "192.168.1.100"
 
 
 class TestLoggingHelpers:
