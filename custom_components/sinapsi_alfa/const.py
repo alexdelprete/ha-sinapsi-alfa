@@ -3,6 +3,8 @@
 https://github.com/alexdelprete/ha-sinapsi-alfa
 """
 
+from modbuslink import __version__ as MODBUSLINK_VERSION
+
 from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
 from homeassistant.const import UnitOfEnergy, UnitOfPower
 
@@ -66,7 +68,7 @@ REGISTER_BATCHES: list[tuple[int, int]] = [
 
 STARTUP_MESSAGE = f"""
 -------------------------------------------------------------------
-{NAME} - Version {VERSION}
+{NAME} - Version {VERSION} (modbuslink {MODBUSLINK_VERSION})
 {ATTRIBUTION}
 This is a custom integration!
 If you have any issues with this you need to open an issue here:
