@@ -28,7 +28,7 @@ dev = [
     "homeassistant-stubs",
     "mdformat",
     "mdformat-gfm",
-    "modbuslink>=1.3.2",
+    "modbuslink>=1.4.1",
     "pre-commit",
     "pymarkdownlnt",
     "ruff>=0.8.0",
@@ -61,7 +61,7 @@ dev = [
     "colorlog>=6.10.0",
     "getmac>=0.9.5",
     "homeassistant>=2025.10.0",
-    "modbuslink>=1.3.2",
+    "modbuslink>=1.4.1",
     { include-group = "lint" },
     { include-group = "pytest" },
 ]

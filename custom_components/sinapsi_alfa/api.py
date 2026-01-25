@@ -15,13 +15,13 @@ from getmac import getmac  # type: ignore[import-untyped]
 from modbuslink import (
     AsyncModbusClient,
     AsyncTcpTransport,
-    ConnectionError as ModbusConnectionError,
-    CRCError,
-    InvalidResponseError,
+    ConnectError as ModbusConnectionError,
+    CrcError,
+    InvalidReplyError,
     Language,
     ModbusException,
     ModbusLinkError,
-    TimeoutError as ModbusTimeoutError,
+    TimeOutError as ModbusTimeoutError,
     set_language,
 )
 
@@ -424,7 +424,7 @@ class SinapsiAlfaAPI:
                     await asyncio.sleep(BATCH_RETRY_DELAY_TIMEOUT)
                 continue
 
-            except InvalidResponseError as e:
+            except InvalidReplyError as e:
                 # Transaction ID mismatch - retriable with connection reset
                 last_error = e
                 self._protocol_errors_this_cycle += 1
@@ -441,7 +441,7 @@ class SinapsiAlfaAPI:
                     await asyncio.sleep(BATCH_RETRY_DELAY_PROTOCOL)
                 continue
 
-            except CRCError as e:
+            except CrcError as e:
                 # CRC errors - retriable with connection reset
                 last_error = e
                 self._protocol_errors_this_cycle += 1

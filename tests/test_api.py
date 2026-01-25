@@ -3,12 +3,12 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from modbuslink import (
-    ConnectionError as ModbusConnectionError,
-    CRCError,
-    InvalidResponseError,
+    ConnectError as ModbusConnectionError,
+    CrcError,
+    InvalidReplyError,
     ModbusException,
     ModbusLinkError,
-    TimeoutError as ModbusTimeoutError,
+    TimeOutError as ModbusTimeoutError,
 )
 import pytest
 
@@ -787,7 +787,7 @@ class TestReadBatch:
     async def test_read_batch_invalid_response_resets_connection(
         self, mock_hass, mock_transport, mock_client
     ):
-        """Test batch read resets connection on InvalidResponseError."""
+        """Test batch read resets connection on InvalidReplyError."""
         api = SinapsiAlfaAPI(
             mock_hass,
             TEST_NAME,
@@ -800,7 +800,7 @@ class TestReadBatch:
         expected_data = [100]
         mock_client.read_holding_registers = AsyncMock(
             side_effect=[
-                InvalidResponseError("Transaction ID mismatch"),
+                InvalidReplyError("Transaction ID mismatch"),
                 expected_data,
             ]
         )
@@ -818,7 +818,7 @@ class TestReadBatch:
     async def test_read_batch_crc_error_resets_connection(
         self, mock_hass, mock_transport, mock_client
     ):
-        """Test batch read resets connection on CRCError."""
+        """Test batch read resets connection on CrcError."""
         api = SinapsiAlfaAPI(
             mock_hass,
             TEST_NAME,
@@ -831,7 +831,7 @@ class TestReadBatch:
         expected_data = [100]
         mock_client.read_holding_registers = AsyncMock(
             side_effect=[
-                CRCError("CRC mismatch"),
+                CrcError("CRC mismatch"),
                 expected_data,
             ]
         )
