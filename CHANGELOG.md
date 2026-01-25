@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.8] - 2026-01-25
+
+**Patch release** - Fixes compatibility with ModbusLink 1.4.x and Home Assistant 2026.1.3+.
+
+### 🐛 Bug Fixes
+
+- **Fixed ModbusLink 1.4.x compatibility** - Updated imports to use renamed exception classes
+  (Fixes [#193](https://github.com/alexdelprete/ha-sinapsi-alfa/issues/193))
+
+### 📦 Dependencies
+
+- Updated `modbuslink` requirement from `>=1.3.2` to `>=1.4.1`
+
+**Full Release Notes:** [docs/releases/v1.2.8.md](docs/releases/v1.2.8.md)
+
+**Full Changelog:** [v1.2.7...v1.2.8](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.2.7...v1.2.8)
+
 ## [1.2.7] - 2026-01-16
 
 **Patch release** - Adds Modbus integration conflict detection to prevent connection issues.
