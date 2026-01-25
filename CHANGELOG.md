@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.9] - 2026-01-25
+
+**Patch release** - Adds modbuslink version to startup log for easier debugging.
+
+### ✨ New Features
+
+- **ModbusLink version in startup log** - Shows installed modbuslink version at startup
+
+**Full Release Notes:** [docs/releases/v1.2.9.md](docs/releases/v1.2.9.md)
+
+**Full Changelog:** [v1.2.8...v1.2.9](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.2.8...v1.2.9)
+
 ## [1.2.8] - 2026-01-25
 
 **Patch release** - Fixes compatibility with ModbusLink 1.4.x and Home Assistant 2026.1.3+.
