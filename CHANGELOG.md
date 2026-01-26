@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.10] - 2026-01-26
+
+**Patch release** - Implements ModbusLink 1.4.2 flush() pattern for robust error recovery.
+
+### ✨ New Features
+
+- **ModbusLink 1.4.2 flush() pattern** - Lightweight error recovery using new `flush()` method
+
+### 📦 Dependencies
+
+- Updated `modbuslink` requirement to `~=1.4.2` (compatible release specifier)
+
+**Full Release Notes:** [docs/releases/v1.2.10.md](docs/releases/v1.2.10.md)
+
+**Full Changelog:** [v1.2.9...v1.2.10](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.2.9...v1.2.10)
+
 ## [1.2.9] - 2026-01-25
 
 **Patch release** - Adds modbuslink version to startup log for easier debugging.
