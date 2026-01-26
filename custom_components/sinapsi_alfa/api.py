@@ -244,11 +244,41 @@ class SinapsiAlfaAPI:
         self._connection_healthy = False
         log_debug(_LOGGER, "close", "API connection closed")
 
-    async def _reset_connection(self) -> None:
-        """Reset the Modbus connection to clear stale responses.
+    async def _flush_buffer(self) -> int:
+        """Flush the receive buffer to clear stale responses.
 
-        Used when protocol errors occur (Transaction ID mismatch, CRC errors)
-        to clear any buffered/stale responses and start fresh.
+        Uses ModbusLink 1.4.2+ flush() method to discard any pending data
+        without closing the connection. This is the recommended first-line
+        recovery for timeout and protocol errors.
+
+        Returns:
+            Number of bytes discarded from the buffer
+
+        """
+        try:
+            discarded = await self._transport.flush()
+        except OSError as e:
+            log_warning(_LOGGER, "_flush_buffer", "Flush failed", error=e)
+            return 0
+        else:
+            if discarded > 0:
+                log_debug(
+                    _LOGGER,
+                    "_flush_buffer",
+                    "Flushed stale data from buffer",
+                    bytes_discarded=discarded,
+                )
+            return discarded
+
+    async def _reset_connection(self) -> None:
+        """Reset the Modbus connection after repeated errors.
+
+        Used when flush() alone is not sufficient to recover. This is a
+        heavier-weight operation that closes and reopens the TCP connection.
+
+        Per ModbusLink 1.4.2 best practices:
+        1. First try flush() to clear stale data (lighter)
+        2. Only reset connection after multiple consecutive errors
         """
         log_debug(_LOGGER, "_reset_connection", "Resetting connection")
         with contextlib.suppress(OSError):
@@ -411,50 +441,65 @@ class SinapsiAlfaAPI:
                 continue
 
             except ModbusTimeoutError as e:
-                # Transient - retry with longer backoff
+                # Transient - flush buffer and retry (per ModbusLink 1.4.2 pattern)
                 last_error = e
+                self._protocol_errors_this_cycle += 1
                 if attempt < BATCH_MAX_RETRIES - 1:
                     log_warning(
                         _LOGGER,
                         "_read_batch",
-                        "Timeout error, retrying",
+                        "Timeout error, flushing buffer and retrying",
                         attempt=attempt + 1,
                         address=start_address,
+                        protocol_errors=self._protocol_errors_this_cycle,
                     )
+                    # Flush buffer to clear any late responses
+                    await self._flush_buffer()
+                    # Reset connection if too many consecutive errors
+                    if self._protocol_errors_this_cycle >= MAX_PROTOCOL_ERRORS_PER_CYCLE:
+                        await self._reset_connection()
                     await asyncio.sleep(BATCH_RETRY_DELAY_TIMEOUT)
                 continue
 
             except InvalidReplyError as e:
-                # Transaction ID mismatch - retriable with connection reset
+                # Transaction ID mismatch - flush buffer first (lighter recovery)
                 last_error = e
                 self._protocol_errors_this_cycle += 1
                 if attempt < BATCH_MAX_RETRIES - 1:
                     log_warning(
                         _LOGGER,
                         "_read_batch",
-                        "Protocol error (Transaction ID mismatch), resetting connection",
+                        "Protocol error (Transaction ID mismatch), flushing buffer",
                         attempt=attempt + 1,
                         address=start_address,
                         protocol_errors=self._protocol_errors_this_cycle,
                     )
-                    await self._reset_connection()
+                    # Flush buffer to clear stale responses
+                    await self._flush_buffer()
+                    # Reset connection if too many consecutive errors
+                    if self._protocol_errors_this_cycle >= MAX_PROTOCOL_ERRORS_PER_CYCLE:
+                        await self._reset_connection()
                     await asyncio.sleep(BATCH_RETRY_DELAY_PROTOCOL)
                 continue
 
             except CrcError as e:
-                # CRC errors - retriable with connection reset
+                # CRC errors - flush buffer first, then reset if needed
                 last_error = e
                 self._protocol_errors_this_cycle += 1
                 if attempt < BATCH_MAX_RETRIES - 1:
                     log_warning(
                         _LOGGER,
                         "_read_batch",
-                        "CRC error, resetting connection",
+                        "CRC error, flushing buffer",
                         attempt=attempt + 1,
                         address=start_address,
                         protocol_errors=self._protocol_errors_this_cycle,
                     )
-                    await self._reset_connection()
+                    # Flush buffer to clear corrupted data
+                    await self._flush_buffer()
+                    # Reset connection if too many consecutive errors
+                    if self._protocol_errors_this_cycle >= MAX_PROTOCOL_ERRORS_PER_CYCLE:
+                        await self._reset_connection()
                     await asyncio.sleep(BATCH_RETRY_DELAY_PROTOCOL)
                 continue
 

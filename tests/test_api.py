@@ -549,6 +549,62 @@ class TestSensorMapBuilding:
         assert len(SENSOR_MAP) == non_calc_count
 
 
+class TestFlushBuffer:
+    """Tests for buffer flush functionality."""
+
+    async def test_flush_buffer_success(self, mock_hass, mock_transport, mock_client):
+        """Test successful buffer flush."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        mock_transport.flush = AsyncMock(return_value=42)
+
+        result = await api._flush_buffer()
+
+        assert result == 42
+        mock_transport.flush.assert_called_once()
+
+    async def test_flush_buffer_zero_bytes(self, mock_hass, mock_transport, mock_client):
+        """Test buffer flush with no data to flush."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        mock_transport.flush = AsyncMock(return_value=0)
+
+        result = await api._flush_buffer()
+
+        assert result == 0
+
+    async def test_flush_buffer_oserror_returns_zero(self, mock_hass, mock_transport, mock_client):
+        """Test buffer flush returns 0 on OSError."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        mock_transport.flush = AsyncMock(side_effect=OSError("Socket error"))
+
+        result = await api._flush_buffer()
+
+        assert result == 0
+
+
 class TestConnectionReset:
     """Tests for connection reset functionality."""
 
@@ -761,7 +817,7 @@ class TestReadBatch:
         assert api._connection_healthy is False
 
     async def test_read_batch_timeout_error_retries(self, mock_hass, mock_transport, mock_client):
-        """Test batch read retries on timeout error."""
+        """Test batch read retries on timeout error with flush."""
         api = SinapsiAlfaAPI(
             mock_hass,
             TEST_NAME,
@@ -779,15 +835,20 @@ class TestReadBatch:
             ]
         )
 
-        with patch("asyncio.sleep", new_callable=AsyncMock):
+        with (
+            patch("asyncio.sleep", new_callable=AsyncMock),
+            patch.object(api, "_flush_buffer", new_callable=AsyncMock) as mock_flush,
+        ):
             result = await api._read_batch(2, 2)
 
         assert result == expected_data
+        # Flush should be called after timeout
+        mock_flush.assert_called_once()
 
-    async def test_read_batch_invalid_response_resets_connection(
+    async def test_read_batch_invalid_response_flushes_buffer(
         self, mock_hass, mock_transport, mock_client
     ):
-        """Test batch read resets connection on InvalidReplyError."""
+        """Test batch read flushes buffer on InvalidReplyError."""
         api = SinapsiAlfaAPI(
             mock_hass,
             TEST_NAME,
@@ -807,18 +868,22 @@ class TestReadBatch:
 
         with (
             patch("asyncio.sleep", new_callable=AsyncMock),
+            patch.object(api, "_flush_buffer", new_callable=AsyncMock) as mock_flush,
             patch.object(api, "_reset_connection", new_callable=AsyncMock) as mock_reset,
         ):
             result = await api._read_batch(2, 1)
 
         assert result == expected_data
-        mock_reset.assert_called_once()
+        # Flush should be called first
+        mock_flush.assert_called_once()
+        # Reset should NOT be called (below error threshold)
+        mock_reset.assert_not_called()
         assert api._protocol_errors_this_cycle == 1
 
-    async def test_read_batch_crc_error_resets_connection(
+    async def test_read_batch_crc_error_flushes_buffer(
         self, mock_hass, mock_transport, mock_client
     ):
-        """Test batch read resets connection on CrcError."""
+        """Test batch read flushes buffer on CrcError."""
         api = SinapsiAlfaAPI(
             mock_hass,
             TEST_NAME,
@@ -838,12 +903,54 @@ class TestReadBatch:
 
         with (
             patch("asyncio.sleep", new_callable=AsyncMock),
+            patch.object(api, "_flush_buffer", new_callable=AsyncMock) as mock_flush,
             patch.object(api, "_reset_connection", new_callable=AsyncMock) as mock_reset,
         ):
             result = await api._read_batch(2, 1)
 
         assert result == expected_data
+        # Flush should be called first
+        mock_flush.assert_called_once()
+        # Reset should NOT be called (below error threshold)
+        mock_reset.assert_not_called()
+
+    async def test_read_batch_resets_connection_at_error_threshold(
+        self, mock_hass, mock_transport, mock_client
+    ):
+        """Test batch read resets connection when protocol errors hit threshold."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        # Set protocol errors just below threshold so next error triggers reset
+        api._protocol_errors_this_cycle = MAX_PROTOCOL_ERRORS_PER_CYCLE - 1
+
+        expected_data = [100]
+        mock_client.read_holding_registers = AsyncMock(
+            side_effect=[
+                InvalidReplyError("Transaction ID mismatch"),
+                expected_data,
+            ]
+        )
+
+        with (
+            patch("asyncio.sleep", new_callable=AsyncMock),
+            patch.object(api, "_flush_buffer", new_callable=AsyncMock) as mock_flush,
+            patch.object(api, "_reset_connection", new_callable=AsyncMock) as mock_reset,
+        ):
+            result = await api._read_batch(2, 1)
+
+        assert result == expected_data
+        # Flush should be called
+        mock_flush.assert_called_once()
+        # Reset SHOULD be called (at error threshold)
         mock_reset.assert_called_once()
+        assert api._protocol_errors_this_cycle == MAX_PROTOCOL_ERRORS_PER_CYCLE
 
     async def test_read_batch_modbus_exception_fails_immediately(
         self, mock_hass, mock_transport, mock_client
