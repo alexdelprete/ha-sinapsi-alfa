@@ -6,7 +6,7 @@ homeassistant>=2025.10.0
 homeassistant-stubs
 mdformat
 mdformat-gfm
-modbuslink~=1.4.2
+modbuslink~=1.5.0
 pre-commit
 pymarkdownlnt
 ruff>=0.8.0
