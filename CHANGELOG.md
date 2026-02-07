@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.11] - 2026-02-07
+
+**Patch release** - Fixes multi-device support bug and Hassfest validation.
+
+### 🐛 Bug Fixes
+
+- **Fixed multi-device support** - Changed `single_config_entry` from `true` to `false` in manifest.json.
+  The codebase already supported multiple devices, but this setting blocked adding more than one.
+  (Fixes [#195](https://github.com/alexdelprete/ha-sinapsi-alfa/issues/195))
+- **Fixed Hassfest validation** - Removed URLs from translation description strings
+
+Thanks to [@jnob1](https://github.com/jnob1) for reporting the multi-device issue!
+
+**Full Release Notes:** [docs/releases/v1.2.11.md](docs/releases/v1.2.11.md)
+
+**Full Changelog:** [v1.2.10...v1.2.11](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.2.10...v1.2.11)
+
 ## [1.2.10] - 2026-01-26
 
 **Patch release** - Implements ModbusLink 1.4.2 flush() pattern for robust error recovery.
@@ -717,6 +734,8 @@ ______________________________________________________________________
 
 [0.4.2]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v0.4.2
 [0.5.0]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v0.5.0
+[1.2.11]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.11
+[1.2.10]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.10
 [0.5.0-beta.1]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v0.5.0-beta.1
 [1.0.0]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.0.0
 [1.0.0-beta.1]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.0.0-beta.1
