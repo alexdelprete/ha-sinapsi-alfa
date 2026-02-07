@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Alfa-Verbindungskonfiguration",
-        "description": "Wenn Sie Hilfe bei der Konfiguration benotigen, besuchen Sie: https://github.com/alexdelprete/ha-sinapsi-alfa",
+        "description": "Wenn Sie Hilfe bei der Konfiguration benotigen, lesen Sie die Dokumentation.",
         "data": {
           "name": "Geratename (wird als Sensorprafix verwendet)",
           "host": "IP oder Hostname",

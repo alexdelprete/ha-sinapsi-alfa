@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Configuracao da Ligacao Alfa",
-        "description": "Se precisar de ajuda com a configuracao, aceda a: https://github.com/alexdelprete/ha-sinapsi-alfa",
+        "description": "Se precisar de ajuda com a configuracao, consulte a documentacao.",
         "data": {
           "name": "Nome do dispositivo (usado como prefixo dos sensores)",
           "host": "IP ou nome do anfitriao",

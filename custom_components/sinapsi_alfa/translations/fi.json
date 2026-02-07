@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Alfa-yhteyden maaritys",
-        "description": "Jos tarvitset apua maarityksessa, kay osoitteessa: https://github.com/alexdelprete/ha-sinapsi-alfa",
+        "description": "Jos tarvitset apua maarityksessa, lue dokumentaatio.",
         "data": {
           "name": "Laitteen nimi (kaytetaan anturien etuliitteena)",
           "host": "IP tai isantanimi",

@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Alfa uhenduse seadistamine",
-        "description": "Kui vajate seadistamisel abi, minge: https://github.com/alexdelprete/ha-sinapsi-alfa",
+        "description": "Kui vajate seadistamisel abi, vaadake dokumentatsiooni.",
         "data": {
           "name": "Seadme nimi (kasutatakse andurite eesliitena)",
           "host": "IP voi hostinimi",

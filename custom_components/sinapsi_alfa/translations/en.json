@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Alfa Connection Configuration",
-        "description": "If you need help with the configuration go to: https://github.com/alexdelprete/ha-sinapsi-alfa",
+        "description": "If you need help with the configuration, see the documentation.",
         "data": {
           "name": "Device name (used for sensors' prefix)",
           "host": "IP or hostname",

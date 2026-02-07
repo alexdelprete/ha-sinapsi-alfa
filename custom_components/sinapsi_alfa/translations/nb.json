@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Alfa-tilkoblingskonfigurasjon",
-        "description": "Hvis du trenger hjelp med konfigurasjonen, ga til: https://github.com/alexdelprete/ha-sinapsi-alfa",
+        "description": "Hvis du trenger hjelp med konfigurasjonen, se dokumentasjonen.",
         "data": {
           "name": "Enhetsnavn (brukes som sensorprefiks)",
           "host": "IP eller vertsnavn",
