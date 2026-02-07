@@ -375,8 +375,9 @@ automation:
 
 ## Known Limitations
 
-- **Single device per integration**: Each config entry supports one Alfa
+- **One device per config entry**: Each config entry supports one Alfa
   device. To monitor multiple devices, add the integration multiple times
+  with different host addresses
 - **Italian market focus**: Sensor names and time bands (F1-F6) are specific
   to the Italian electricity market
 - **Modbus TCP only**: The integration communicates via Modbus TCP; serial

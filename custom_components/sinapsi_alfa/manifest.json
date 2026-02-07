@@ -9,6 +9,6 @@
   "issue_tracker": "https://github.com/alexdelprete/ha-sinapsi-alfa/issues",
   "loggers": ["custom_components.sinapsi_alfa"],
   "requirements": ["modbuslink~=1.4.2", "getmac>=0.9.5"],
-  "single_config_entry": true,
+  "single_config_entry": false,
   "version": "1.2.11"
 }

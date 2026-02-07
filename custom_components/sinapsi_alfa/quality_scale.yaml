@@ -15,22 +15,22 @@ rules:
     comment: Integration does not define any service actions.
 
   # Rule: If it's a polling integration, set an appropriate polling interval
-  appropriate-polling: done  # Configurable scan_interval (30-600s) via options flow
+  appropriate-polling: done # Configurable scan_interval (30-600s) via options flow
 
   # Rule: Has branding assets available for the integration
-  brands: done  # Available in HACS, branding assets submitted
+  brands: done # Available in HACS, branding assets submitted
 
   # Rule: Place common patterns in common modules
-  common-modules: done  # coordinator.py, entity.py, helpers.py, api.py
+  common-modules: done # coordinator.py, entity.py, helpers.py, api.py
 
   # Rule: Integration needs to be able to be set up via the UI
-  config-flow: done  # UI setup via config_flow.py with VERSION = 2
+  config-flow: done # UI setup via config_flow.py with VERSION = 2
 
   # Rule: Full test coverage for the config flow
-  config-flow-test-coverage: done  # tests/test_config_flow.py covers all flows
+  config-flow-test-coverage: done # tests/test_config_flow.py covers all flows
 
   # Rule: Dependency transparency
-  dependency-transparency: done  # modbuslink and getmac are OSI-licensed, on PyPI
+  dependency-transparency: done # modbuslink and getmac are OSI-licensed, on PyPI
 
   # Rule: The documentation describes the provided service actions
   docs-actions:
@@ -38,34 +38,34 @@ rules:
     comment: Integration does not define any service actions.
 
   # Rule: The documentation includes a high-level description
-  docs-high-level-description: done  # README.md describes Sinapsi Alfa device
+  docs-high-level-description: done # README.md describes Sinapsi Alfa device
 
   # Rule: The documentation provides step-by-step installation instructions
-  docs-installation-instructions: done  # README.md with HACS instructions
+  docs-installation-instructions: done # README.md with HACS instructions
 
   # Rule: The documentation provides removal instructions
-  docs-removal-instructions: done  # Standard HA removal via integrations page
+  docs-removal-instructions: done # Standard HA removal via integrations page
 
   # Rule: Entity events are subscribed in the correct lifecycle methods
-  entity-event-setup: done  # Uses DataUpdateCoordinator pattern
+  entity-event-setup: done # Uses DataUpdateCoordinator pattern
 
   # Rule: Entities have a unique ID
-  entity-unique-id: done  # MAC address based unique IDs
+  entity-unique-id: done # MAC address based unique IDs
 
   # Rule: Entities use has_entity_name = True
-  has-entity-name: done  # _attr_has_entity_name = True in sensor.py
+  has-entity-name: done # _attr_has_entity_name = True in sensor.py
 
   # Rule: Use ConfigEntry.runtime_data to store runtime data
-  runtime-data: done  # Uses entry.runtime_data with RuntimeData dataclass
+  runtime-data: done # Uses entry.runtime_data with RuntimeData dataclass
 
   # Rule: Test a connection in the config flow
-  test-before-configure: done  # Validates Modbus connection before setup
+  test-before-configure: done # Validates Modbus connection before setup
 
   # Rule: Check during integration initialization if we can set it up correctly
-  test-before-setup: done  # Raises ConfigEntryNotReady on connection failure
+  test-before-setup: done # Raises ConfigEntryNotReady on connection failure
 
   # Rule: Don't allow the same device or service to be set up twice
-  unique-config-entry: done  # Uses MAC address as unique_id
+  unique-config-entry: done # Uses MAC address as unique_id
 
   # ============================================================================
   # SILVER TIER (10 rules) - Enhanced reliability
@@ -77,22 +77,22 @@ rules:
     comment: Integration does not define any service actions.
 
   # Rule: Support config entry unloading
-  config-entry-unloading: done  # async_unload_entry properly cleans up
+  config-entry-unloading: done # async_unload_entry properly cleans up
 
   # Rule: The documentation describes all integration configuration options
-  docs-configuration-parameters: done  # README documents scan_interval, timeout
+  docs-configuration-parameters: done # README documents scan_interval, timeout
 
   # Rule: The documentation describes all integration installation parameters
-  docs-installation-parameters: done  # README documents host, port, name
+  docs-installation-parameters: done # README documents host, port, name
 
   # Rule: Mark entity unavailable if appropriate
-  entity-unavailable: done  # Coordinator handles availability via UpdateFailed
+  entity-unavailable: done # Coordinator handles availability via UpdateFailed
 
   # Rule: Has an integration owner
-  integration-owner: done  # @alexdelprete in manifest.json codeowners
+  integration-owner: done # @alexdelprete in manifest.json codeowners
 
   # Rule: If unavailable, log once when unavailable and once when back connected
-  log-when-unavailable: done  # DataUpdateCoordinator handles this automatically
+  log-when-unavailable: done # DataUpdateCoordinator handles this automatically
 
   # Rule: Number of parallel updates is specified
   parallel-updates:
@@ -105,17 +105,17 @@ rules:
     comment: Integration does not require authentication credentials.
 
   # Rule: Above 95% test coverage for all integration modules
-  test-coverage: done  # Tests for all modules: init, sensor, helpers, config_flow, coordinator, api
+  test-coverage: done # Tests for all modules: init, sensor, helpers, config_flow, coordinator, api
 
   # ============================================================================
   # GOLD TIER (20 rules) - Best user experience
   # ============================================================================
 
   # Rule: The integration creates devices
-  devices: done  # Creates device with manufacturer, model, MAC address
+  devices: done # Creates device with manufacturer, model, MAC address
 
   # Rule: Implements diagnostics
-  diagnostics: done  # diagnostics.py provides downloadable debug info
+  diagnostics: done # diagnostics.py provides downloadable debug info
 
   # Rule: Devices can be discovered
   discovery:
@@ -128,25 +128,25 @@ rules:
     comment: No discovery mechanism available for Modbus TCP.
 
   # Rule: The documentation describes how data is updated
-  docs-data-update: done  # README explains polling via Modbus TCP
+  docs-data-update: done # README explains polling via Modbus TCP
 
   # Rule: The documentation provides automation examples
-  docs-examples: done  # README includes 3 automation examples (solar surplus, daily report, appliances)
+  docs-examples: done # README includes 3 automation examples (solar surplus, daily report, appliances)
 
   # Rule: The documentation describes known limitations
-  docs-known-limitations: done  # README documents 6 limitations (single device, Italian focus, etc.)
+  docs-known-limitations: done # README documents 5 limitations (Italian focus, time bands, etc.)
 
   # Rule: The documentation describes known supported / unsupported devices
-  docs-supported-devices: done  # README specifies Sinapsi Alfa device
+  docs-supported-devices: done # README specifies Sinapsi Alfa device
 
   # Rule: The documentation describes the supported functionality
-  docs-supported-functions: done  # README lists all 24 sensors
+  docs-supported-functions: done # README lists all 24 sensors
 
   # Rule: The documentation provides troubleshooting information
-  docs-troubleshooting: done  # README includes debug logging, log viewing, issue reporting
+  docs-troubleshooting: done # README includes debug logging, log viewing, issue reporting
 
   # Rule: The documentation describes use cases
-  docs-use-cases: done  # README documents energy dashboard, billing, HA Energy Dashboard
+  docs-use-cases: done # README documents energy dashboard, billing, HA Energy Dashboard
 
   # Rule: Devices added after integration setup
   dynamic-devices:
@@ -154,28 +154,28 @@ rules:
     comment: Single device integration, no dynamic device addition.
 
   # Rule: Entities are assigned an appropriate EntityCategory
-  entity-category: done  # Uses EntityCategory.DIAGNOSTIC where appropriate
+  entity-category: done # Uses EntityCategory.DIAGNOSTIC where appropriate
 
   # Rule: Entities use device classes where possible
-  entity-device-class: done  # Uses POWER, ENERGY device classes
+  entity-device-class: done # Uses POWER, ENERGY device classes
 
   # Rule: Integration disables less popular (or noisy) entities
-  entity-disabled-by-default: done  # F1-F6 time band sensors disabled by default
+  entity-disabled-by-default: done # F1-F6 time band sensors disabled by default
 
   # Rule: Entities have translated names
-  entity-translations: done  # 10 languages: de, en, es, et, fi, fr, it, nb, pt, sv
+  entity-translations: done # 10 languages: de, en, es, et, fi, fr, it, nb, pt, sv
 
   # Rule: Exception messages are translatable
-  exception-translations: done  # exceptions section in all 10 translation files
+  exception-translations: done # exceptions section in all 10 translation files
 
   # Rule: Entities implement icon translations
-  icon-translations: done  # icons.json defines icons for all 24 sensors
+  icon-translations: done # icons.json defines icons for all 24 sensors
 
   # Rule: Integrations should have a reconfigure flow
-  reconfiguration-flow: done  # Reconfigure flow for host/port changes
+  reconfiguration-flow: done # Reconfigure flow for host/port changes
 
   # Rule: Repair issues and repair flows are used when user intervention is needed
-  repair-issues: done  # Creates repair issue after 3 consecutive connection failures
+  repair-issues: done # Creates repair issue after 3 consecutive connection failures
 
   # Rule: Stale devices are removed
   stale-devices:
@@ -187,7 +187,7 @@ rules:
   # ============================================================================
 
   # Rule: Dependency is async
-  async-dependency: done  # ModbusLink is native async
+  async-dependency: done # ModbusLink is native async
 
   # Rule: The integration dependency supports passing in a websession
   inject-websession:
@@ -195,4 +195,4 @@ rules:
     comment: Uses Modbus TCP, not HTTP.
 
   # Rule: Strict typing
-  strict-typing: done  # Full type annotations, mypy validated
+  strict-typing: done # Full type annotations, mypy validated
