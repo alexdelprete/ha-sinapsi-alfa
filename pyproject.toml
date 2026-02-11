@@ -66,6 +66,10 @@ dev = [
     { include-group = "pytest" },
 ]
 
+# <!-- BEGIN SHARED:repo-sync -->
+# Synced by repo-sync on 2026-02-11
+
+
 [tool.codespell]
 skip = "*.json"
 quiet-level = 3
@@ -126,30 +130,14 @@ docstring-code-format = true
 select = [
     "A001",     # Variable {name} is shadowing a Python builtin
     "ASYNC",    # flake8-async
-    "B002",     # Python does not support the unary prefix increment
-    "B005",     # Using .strip() with multi-character strings is misleading
-    "B007",     # Loop control variable {name} not used within loop body
-    "B009",     # Do not call getattr with a constant attribute value
-    "B014",     # Exception handler with duplicate exception
-    "B015",     # Pointless comparison
-    "B017",     # pytest.raises(BaseException) should be considered evil
-    "B018",     # Found useless attribute access
-    "B023",     # Function definition does not bind loop variable {name}
-    "B024",     # Abstract base class with no abstract methods
-    "B026",     # Star-arg unpacking after a keyword argument is discouraged
-    "B032",     # Possible unintentional type annotation
-    "B035",     # Dictionary comprehension uses static key
-    "B904",     # Use raise from to specify exception cause
-    "B905",     # zip() without an explicit strict= parameter
+    "B",        # flake8-bugbear
     "BLE",      # flake8-blind-except
     "C",        # complexity
     "COM818",   # Trailing comma on bare tuple prohibited
     "D",        # pydocstyle
-    "DTZ003",   # Use datetime.now(tz=) instead of datetime.utcnow()
-    "DTZ004",   # Use datetime.fromtimestamp(ts, tz=) instead
+    "DTZ",      # flake8-datetimez
     "E",        # pycodestyle errors
     "F",        # pyflakes
-    "F541",     # f-string without any placeholders
     "FLY",      # flynt
     "FURB",     # refurb
     "G",        # flake8-logging-format
@@ -158,9 +146,7 @@ select = [
     "INP",      # flake8-no-pep420
     "ISC",      # flake8-implicit-str-concat
     "LOG",      # flake8-logging
-    "N804",     # First argument of a class method should be named cls
-    "N805",     # First argument of a method should be named self
-    "N815",     # Variable in class scope should not be mixedCase
+    "N",        # pep8-naming
     "PERF",     # perflint
     "PGH",      # pygrep-hooks
     "PIE",      # flake8-pie
@@ -170,63 +156,28 @@ select = [
     "PYI",      # flake8-pyi
     "RET",      # flake8-return
     "RSE",      # flake8-raise
-    "RUF005",   # Consider iterable unpacking instead of concatenation
-    "RUF006",   # Store a reference to asyncio.create_task return value
-    "RUF007",   # Prefer itertools.pairwise() over zip()
-    "RUF008",   # Do not use mutable default values for dataclass attributes
-    "RUF010",   # Use explicit conversion flag
-    "RUF013",   # PEP 484 prohibits implicit Optional
-    "RUF016",   # Slice in indexed access uses wrong type
-    "RUF017",   # Avoid quadratic list summation
-    "RUF018",   # Avoid assignment expressions in assert statements
-    "RUF019",   # Unnecessary key check before dictionary access
-    "RUF020",   # {never_like} | T is equivalent to T
-    "RUF021",   # Parenthesize a and b expressions when chaining
-    "RUF022",   # Sort __all__
-    "RUF023",   # Sort __slots__
-    "RUF024",   # Do not pass mutable objects to dict.fromkeys
-    "RUF026",   # default_factory is a positional-only argument
-    "RUF030",   # print() call in assert statement
-    "RUF032",   # Decimal() called with float literal argument
-    "RUF033",   # __post_init__ method with argument defaults
-    "RUF034",   # Useless if-else condition
-    "RUF100",   # Unused noqa directive
-    "RUF101",   # noqa directives that use redirected rule codes
-    "RUF200",   # Failed to parse pyproject.toml
-    "S102",     # Use of exec detected
-    "S103",     # bad-file-permissions
-    "S108",     # hardcoded-temp-file
-    "S306",     # suspicious-mktemp-usage
-    "S307",     # suspicious-eval-usage
-    "S313",     # suspicious-xmlc-element-tree-usage
-    "S314",     # suspicious-xml-element-tree-usage
-    "S315",     # suspicious-xml-expat-reader-usage
-    "S316",     # suspicious-xml-expat-builder-usage
-    "S317",     # suspicious-xml-sax-usage
-    "S318",     # suspicious-xml-mini-dom-usage
-    "S319",     # suspicious-xml-pull-dom-usage
-    "S601",     # paramiko-call
-    "S602",     # subprocess-popen-with-shell-equals-true
-    "S604",     # call-with-shell-equals-true
-    "S608",     # hardcoded-sql-expression
-    "S609",     # unix-command-wildcard-injection
+    "RUF",      # ruff-specific rules
+    "S",        # flake8-bandit (security)
     "SIM",      # flake8-simplify
     "SLF",      # flake8-self
     "SLOT",     # flake8-slots
-    "T100",     # Trace found: {name} used
+    "T10",      # flake8-debugger
     "T20",      # flake8-print
     "TC",       # flake8-type-checking
     "TID",      # flake8-tidy-imports
     "TRY",      # tryceratops
     "UP",       # pyupgrade
-    "UP031",    # Use format specifiers instead of percent format
-    "UP032",    # Use f-string instead of format call
     "W",        # pycodestyle warnings
 ]
 
 ignore = [
-    "ASYNC109", # Async function with timeout parameter
-    "ASYNC110", # Use asyncio.Event instead of awaiting asyncio.sleep in while loop
+    "D100",     # Missing docstring in public module
+    "D101",     # Missing docstring in public class
+    "D102",     # Missing docstring in public method
+    "D103",     # Missing docstring in public function
+    "D104",     # Missing docstring in public package
+    "D105",     # Missing docstring in magic method
+    "D107",     # Missing docstring in __init__
     "D202",     # No blank lines allowed after function docstring
     "D203",     # 1 blank line required before class docstring
     "D213",     # Multi-line docstring summary should start at the second line
@@ -235,19 +186,26 @@ ignore = [
     "E501",     # line too long
 
     "PLC1901",  # compare-to-empty-string
+    "PLR0904",  # Too many public methods
     "PLR0911",  # Too many return statements
     "PLR0912",  # Too many branches
-    "PLR0913",  # Too many arguments to function call
+    "PLR0913",  # Too many arguments
+    "PLR0914",  # Too many local variables
     "PLR0915",  # Too many statements
+    "PLR0916",  # Too many Boolean expressions
+    "PLR0917",  # Too many positional arguments
+    "PLR1702",  # Too many nested blocks
     "PLR2004",  # Magic value used in comparison
-    "PLW1641",  # __eq__ without __hash__
     "PLW2901",  # Outer variable overwritten by inner target
+
     "PT011",    # pytest.raises is too broad
-    "PT018",    # Assertion should be broken down into multiple parts
+    "PT018",    # Assertion should be broken down
+
     "RUF001",   # String contains ambiguous unicode
     "RUF002",   # Docstring contains ambiguous unicode
     "RUF003",   # Comment contains ambiguous unicode
     "RUF015",   # Prefer next(...) over single element slice
+
     "SIM102",   # Use a single if statement instead of nested
     "SIM103",   # Return the condition directly
     "SIM108",   # Use ternary operator
@@ -257,15 +215,10 @@ ignore = [
     "TC001",    # Move application import into a type-checking block
     "TC002",    # Move third-party import into a type-checking block
     "TC003",    # Move standard library import into a type-checking block
-    # Quotes for typing.cast generally not necessary
-    "TC006",    # Add quotes to type expression in typing.cast()
 
     "TRY003",   # Avoid specifying long messages outside the exception class
     "TRY400",   # Use logging.exception instead of logging.error
-    # Ignored due to performance
-    "UP046",    # Non PEP 695 generic class
-    "UP047",    # Non PEP 696 generic function
-    "UP049",    # Avoid private type parameter names
+    "PGH003",   # Use specific rule codes when ignoring type issues
 
     # May conflict with the formatter
     "W191",
@@ -277,14 +230,23 @@ ignore = [
     "Q",
     "COM812",
     "COM819",
+    "ISC001",
 
     # Disabled because ruff does not understand type of __all__ generated by a function
     "PLE0605",
+    "ASYNC109",
+    "ASYNC110",
+    "PLW1641",
+    "TC006",
+    "UP046",
+    "UP047",
+    "UP049",
 ]
 
 [tool.ruff.lint.per-file-ignores]
-# Allow missing __init__.py in tests
-"tests/*.py" = ["INP001"]
+"tests/*.py" = [
+    "INP001",
+]
 "tests/*" = [
     "D",        # Docstring rules
     "S101",     # Use of assert detected
@@ -344,3 +306,5 @@ plugins.md040.enabled = true
 plugins.md041.enabled = true
 plugins.md050.enabled = true
 plugins.md050.strong_style = "asterisk"
+
+# <!-- END SHARED:repo-sync -->

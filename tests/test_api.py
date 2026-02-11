@@ -106,7 +106,7 @@ class TestSinapsiAlfaAPI:
 
     def test_api_init_invalid_port(self, mock_hass, mock_transport, mock_client):
         """Test API initialization with invalid port."""
-        with pytest.raises(ValueError, match="Port .* is out of valid range"):
+        with pytest.raises(ValueError, match=r"Port .* is out of valid range"):
             SinapsiAlfaAPI(
                 mock_hass,
                 TEST_NAME,

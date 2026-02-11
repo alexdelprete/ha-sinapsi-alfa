@@ -320,7 +320,7 @@ class SinapsiAlfaAPI:
 
                 # Exponential backoff with jitter for remaining attempts
                 if attempt < MAX_RETRY_ATTEMPTS - 1:
-                    delay = min(2**attempt + random.uniform(0, 1), 10)
+                    delay = min(2**attempt + random.uniform(0, 1), 10)  # noqa: S311
                     log_debug(
                         _LOGGER,
                         "get_mac_address",
@@ -338,7 +338,7 @@ class SinapsiAlfaAPI:
                     error=e,
                 )
                 if attempt < MAX_RETRY_ATTEMPTS - 1:
-                    delay = min(2**attempt + random.uniform(0, 1), 10)
+                    delay = min(2**attempt + random.uniform(0, 1), 10)  # noqa: S311
                     await asyncio.sleep(delay)
 
         log_debug(_LOGGER, "get_mac_address", "MAC address not found after all attempts")
@@ -365,7 +365,7 @@ class SinapsiAlfaAPI:
             # Force IPv4 (AF_INET) to avoid dual-stack timeout issues
             # Some devices only support IPv4, and dual-stack DNS can cause
             # timeouts when IPv6 is tried first but not supported
-            reader, writer = await asyncio.wait_for(
+            _reader, writer = await asyncio.wait_for(
                 asyncio.open_connection(
                     self._host,
                     self._port,

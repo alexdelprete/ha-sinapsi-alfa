@@ -3,7 +3,7 @@
 https://github.com/alexdelprete/ha-sinapsi-alfa
 """
 
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 import logging
 import time
 from typing import Any
@@ -104,7 +104,7 @@ class SinapsiAlfaCoordinator(DataUpdateCoordinator):
             update_interval=self.update_interval,
         )
 
-        self.last_update_time = datetime.now()
+        self.last_update_time = datetime.now(tz=UTC)
         self.last_update_success = True
         self._consecutive_failures = 0
         self._repair_issue_created = False
@@ -163,7 +163,7 @@ class SinapsiAlfaCoordinator(DataUpdateCoordinator):
 
     async def async_update_data(self) -> bool:
         """Update data method."""
-        log_debug(_LOGGER, "async_update_data", "Update started", time=datetime.now())
+        log_debug(_LOGGER, "async_update_data", "Update started", time=datetime.now(tz=UTC))
 
         # Check for Modbus conflict at runtime
         conflicting_host = await check_modbus_conflict(self.hass, self.conf_host)
@@ -200,7 +200,7 @@ class SinapsiAlfaCoordinator(DataUpdateCoordinator):
 
         try:
             self.last_update_status = await self.api.async_get_data()
-            self.last_update_time = datetime.now()
+            self.last_update_time = datetime.now(tz=UTC)
             log_debug(
                 _LOGGER,
                 "async_update_data",

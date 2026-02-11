@@ -26,7 +26,7 @@ class TestHostValid:
         assert host_valid("192.168.1.1") is True
         assert host_valid("10.0.0.1") is True
         assert host_valid("172.16.0.1") is True
-        assert host_valid("0.0.0.0") is True
+        assert host_valid("0.0.0.0") is True  # noqa: S104
         assert host_valid("255.255.255.255") is True
 
     def test_valid_ipv6(self):

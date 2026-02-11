@@ -1,53 +1,28 @@
 {
-  "name": "Sinapsi Alfa Modbus integration development",
-  "image": "mcr.microsoft.com/devcontainers/python:3.13-bullseye",
-  "remoteUser": "vscode",
-  "features": {
-    "ghcr.io/devcontainers/features/python:1": {
-      "installTools": true,
-      "version": "3.13"
-    }
-  },
-  "postCreateCommand": "scripts/setup",
-  "forwardPorts": [8123],
-  "portsAttributes": {
-    "8123": {
-      "label": "Home Assistant",
-      "onAutoForward": "notify"
-    }
-  },
-  "customizations": {
-    "vscode": {
-      "extensions": [
-        "ms-python.python",
-        "github.vscode-pull-request-github",
-        "ryanluker.vscode-coverage-gutters",
-        "ms-python.vscode-pylance",
-        "charliermarsh.ruff",
-        "esbenp.prettier-vscode"
-      ],
-      "settings": {
-        "files.eol": "\n",
-        "files.trimTrailingWhitespace": true,
-        "editor.tabSize": 4,
-        "editor.formatOnPaste": false,
-        "editor.formatOnSave": true,
-        "editor.formatOnType": true,
-        "editor.defaultFormatter": "esbenp.prettier-vscode",
-        "notebook.formatOnSave.enabled": false,
-        "notebook.codeActionsOnSave": {
-          "notebook.source.fixAll": false,
-          "notebook.source.organizeImports": false
-        },
-        "[python]": {
-          "editor.formatOnSave": true,
-          "editor.codeActionsOnSave": {
-            "source.fixAll": true,
-            "source.organizeImports": true
-          },
-          "editor.defaultFormatter": "charliermarsh.ruff"
+    "name": "Alfa by Sinapsi",
+    "image": "mcr.microsoft.com/devcontainers/python:3.13-bullseye",
+    "forwardPorts": [8123],
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.python",
+                "GitHub.vscode-pull-request-github",
+                "ryanluker.vscode-coverage-gutters",
+                "ms-python.vscode-pylance",
+                "charliermarsh.ruff",
+                "esbenp.prettier-vscode"
+            ],
+            "settings": {
+                "python.defaultInterpreterPath": "/usr/local/bin/python",
+                "editor.formatOnSave": true,
+                "[python]": {
+                    "editor.defaultFormatter": "charliermarsh.ruff"
+                },
+                "files.eol": "\n",
+                "files.trimTrailingWhitespace": true,
+                "editor.tabSize": 4,
+                "editor.insertSpaces": true
+            }
         }
-      }
     }
-  }
 }

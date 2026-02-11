@@ -1,0 +1,93 @@
+# .repo-sync.yaml - repo-sync configuration for ha-sinapsi-alfa
+
+template:
+  owner: alexdelprete
+  repo: ha-integration-template
+  branch: main
+
+vars:
+  # -- Identity --
+  repo_name: ha-sinapsi-alfa
+  integration_name: Alfa by Sinapsi
+  component_dir: sinapsi_alfa
+  domain: sinapsi_alfa
+  default_branch: main
+
+  # -- 4noks workaround --
+  needs_symlink: false
+  python_import_name: ""
+
+  # -- HA/HACS --
+  ha_min_version: "2024.12.0"
+  hide_default_branch: false
+  ignore_brands: false
+
+  # -- Workflow tuning --
+  jsonlint_flags: ""
+  pymarkdown_config: ""
+  version_grep_pattern: 'VERSION = '
+
+  # -- Dependabot --
+  dependabot_interval: weekly
+  dependabot_time: ""
+  dependabot_timezone: ""
+
+  # ── Pyproject tools tuning ──
+  include_mypy: false
+  ruff_extend_exclude: ["build", "dist"]
+  ruff_lint_extra_ignores: ["ASYNC109", "ASYNC110", "PLW1641", "TC006", "UP046", "UP047", "UP049"]
+  ruff_lint_extra_perfile_ignores: {}
+  ruff_tests_extra_ignores: ["INP001"]
+  pymarkdown_line_length: 180
+  pymarkdown_strict_md013: true
+
+  # -- Extras --
+  requirements_extra_deps: ["getmac>=0.9.5", "modbuslink~=1.5.0"]
+  gitignore_extra: []
+  bug_extra_fields: []
+  config_extra_links: []
+
+copy_files:
+  - .gitattributes
+  - .github/workflows/dbautomerge.yml
+  - .github/FUNDING.yml
+  - LICENSE
+
+template_files:
+  - .github/workflows/lint.yml
+  - .github/workflows/test.yml
+  - .github/workflows/validate.yml
+  - .github/workflows/release.yml
+  - .github/dependabot.yml
+  - .github/ISSUE_TEMPLATE/bug.yml
+  - .github/ISSUE_TEMPLATE/feature_request.yml
+  - .github/ISSUE_TEMPLATE/config.yml
+  - .pre-commit-config.yaml
+  - hacs.json
+  - .gitignore
+  - requirements-dev.txt
+  - .devcontainer.json
+  - docs/releases/README.md
+
+marker_files:
+  CLAUDE.md:
+    - template: CLAUDE_SHARED.md.j2
+      begin: "<!-- BEGIN SHARED:repo-sync -->"
+      end: "<!-- END SHARED:repo-sync -->"
+  README.md:
+    - template: README_BADGES.md.j2
+      begin: "<!-- BEGIN SHARED:repo-sync:badges -->"
+      end: "<!-- END SHARED:repo-sync:badges -->"
+    - template: README_INSTALLATION.md.j2
+      begin: "<!-- BEGIN SHARED:repo-sync:installation -->"
+      end: "<!-- END SHARED:repo-sync:installation -->"
+    - template: README_CONTRIBUTING.md.j2
+      begin: "<!-- BEGIN SHARED:repo-sync:contributing -->"
+      end: "<!-- END SHARED:repo-sync:contributing -->"
+    - template: README_LICENSE.md.j2
+      begin: "<!-- BEGIN SHARED:repo-sync:license -->"
+      end: "<!-- END SHARED:repo-sync:license -->"
+  pyproject.toml:
+    - template: PYPROJECT_TOOLS.toml.j2
+      begin: "# <!-- BEGIN SHARED:repo-sync -->"
+      end: "# <!-- END SHARED:repo-sync -->"

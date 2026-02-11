@@ -3,7 +3,7 @@
 https://github.com/alexdelprete/ha-sinapsi-alfa
 """
 
-from modbuslink import __version__ as MODBUSLINK_VERSION
+from modbuslink import __version__ as MODBUSLINK_VERSION  # noqa: N812
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
 from homeassistant.const import UnitOfEnergy, UnitOfPower
