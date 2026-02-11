@@ -25,7 +25,7 @@ repos:
       # JSON validation
       - id: jsonlint
         name: jsonlint
-        entry: uvx --from demjson3 jsonlint
+        entry: uvx --from demjson3 jsonlint -S
         language: system
         types: [json]
         exclude: ^\.vscode/

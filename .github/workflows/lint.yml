@@ -27,7 +27,7 @@ jobs:
         uses: astral-sh/setup-uv@v7
 
       - name: Validate JSON files
-        run: find . -name "*.json" -not -path "./.vscode/*" | xargs uvx --from demjson3 jsonlint
+        run: find . -name "*.json" -not -path "./.vscode/*" | xargs uvx --from demjson3 jsonlint -S
 
       - name: Run Ruff format check
         run: uvx ruff format . --check
