@@ -29,6 +29,7 @@ from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.core import HomeAssistant
 
 from .const import (
+    CUMULATIVE_ENERGY_SENSORS,
     DEFAULT_DEVICE_ID,
     DEFAULT_SENSOR_VALUE,
     DEFAULT_TIMEOUT,
@@ -755,6 +756,26 @@ class SinapsiAlfaAPI:
                 key = str(sensor_def["key"])
                 raw_value = self._extract_sensor_value(batches, key)
                 processed_value = self._process_sensor_value(raw_value, sensor_def)
+
+                # Validate cumulative energy sensors: reject values that decrease
+                # This protects against device reboots that return zeroed registers
+                if key in CUMULATIVE_ENERGY_SENSORS:
+                    previous_value = self.data[key]
+                    if (
+                        isinstance(previous_value, (int, float))
+                        and previous_value > 0
+                        and processed_value < previous_value
+                    ):
+                        log_warning(
+                            _LOGGER,
+                            "read_modbus_alfa",
+                            "Cumulative energy value decreased, keeping previous value",
+                            sensor=key,
+                            previous=previous_value,
+                            new=processed_value,
+                        )
+                        continue
+
                 self.data[key] = processed_value
 
                 log_debug(

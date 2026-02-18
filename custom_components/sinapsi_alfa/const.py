@@ -55,6 +55,14 @@ MAX_RETRY_ATTEMPTS = 5
 INVALID_DISTACCO_VALUE = 65535
 MAX_EVENT_VALUE = 4294967294
 
+# Cumulative energy sensors (lifetime meter totals that should never decrease)
+# Used to validate readings during device reboots that return zeroed registers
+CUMULATIVE_ENERGY_SENSORS: set[str] = {
+    "energia_prelevata",
+    "energia_immessa",
+    "energia_prodotta",
+}
+
 # Batch read configuration: (start_address, count)
 # Groups consecutive registers to minimize Modbus requests
 # 5 batches instead of 20 individual reads = ~75% reduction in requests

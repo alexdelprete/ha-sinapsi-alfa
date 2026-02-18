@@ -23,6 +23,7 @@ from custom_components.sinapsi_alfa.api import (
     _build_sensor_map,
 )
 from custom_components.sinapsi_alfa.const import (
+    CUMULATIVE_ENERGY_SENSORS,
     DEFAULT_SCAN_INTERVAL,
     DEFAULT_TIMEOUT,
     MANUFACTURER,
@@ -1299,3 +1300,161 @@ class TestReadModbusAlfa:
             await api.read_modbus_alfa()
 
         assert "Too many protocol errors" in str(exc_info.value)
+
+
+class TestCumulativeEnergyValidation:
+    """Tests for cumulative energy value validation (protects against device reboots)."""
+
+    def test_cumulative_energy_sensors_constant(self):
+        """Test CUMULATIVE_ENERGY_SENSORS contains expected sensors."""
+        assert "energia_prelevata" in CUMULATIVE_ENERGY_SENSORS
+        assert "energia_immessa" in CUMULATIVE_ENERGY_SENSORS
+        assert "energia_prodotta" in CUMULATIVE_ENERGY_SENSORS
+        # Should not include daily or calculated sensors
+        assert "energia_prelevata_giornaliera_f1" not in CUMULATIVE_ENERGY_SENSORS
+        assert "energia_consumata" not in CUMULATIVE_ENERGY_SENSORS
+
+    async def test_rejects_decreased_cumulative_energy_on_device_reboot(
+        self, mock_hass, mock_transport, mock_client
+    ):
+        """Test cumulative energy values preserved when device returns zeros (reboot)."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        # Simulate previous valid readings
+        api.data["energia_prelevata"] = 7240.23
+        api.data["energia_immessa"] = 500.0
+        api.data["energia_prodotta"] = 300.0
+
+        # Device reboot: all registers return 0
+        mock_client.read_holding_registers = AsyncMock(return_value=[0] * 40)
+
+        await api.read_modbus_alfa()
+
+        # Cumulative energy values should be preserved (not overwritten with 0.0)
+        assert api.data["energia_prelevata"] == 7240.23
+        assert api.data["energia_immessa"] == 500.0
+        assert api.data["energia_prodotta"] == 300.0
+
+    async def test_accepts_cumulative_energy_on_first_read(
+        self, mock_hass, mock_transport, mock_client
+    ):
+        """Test first read from default (0.0) accepts values (no false rejection)."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        # Default values are 0.0 (from _initialize_data_structure)
+        assert api.data["energia_prelevata"] == 0.0
+
+        # All registers return 0 - should be accepted since previous is 0.0 (not > 0)
+        mock_client.read_holding_registers = AsyncMock(return_value=[0] * 40)
+
+        await api.read_modbus_alfa()
+
+        # Value should be accepted (0.0 is not > 0, so validation is skipped)
+        assert api.data["energia_prelevata"] == 0.0
+
+    async def test_accepts_increased_cumulative_energy(
+        self, mock_hass, mock_transport, mock_client
+    ):
+        """Test increased cumulative energy values are accepted normally."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        # Pre-set to lower value
+        api.data["energia_prelevata"] = 1000.0
+
+        # Build batch 0 with energia_prelevata = 2000000 Wh = 2000.0 kWh
+        # energia_prelevata at offset 3-4 (addr 5-6, uint32)
+        # 2000000 = (30 << 16) | 33920
+        batch_0 = [0] * 18
+        batch_0[3] = 30  # high word
+        batch_0[4] = 33920  # low word
+
+        call_count = 0
+
+        async def mock_read(*args, **kwargs):
+            nonlocal call_count
+            idx = call_count
+            call_count += 1
+            if idx == 0:
+                return batch_0
+            return [0] * 40
+
+        mock_client.read_holding_registers = AsyncMock(side_effect=mock_read)
+
+        await api.read_modbus_alfa()
+
+        # energia_prelevata should be updated to the higher value
+        assert api.data["energia_prelevata"] == 2000.0
+
+    async def test_non_cumulative_sensors_not_protected(
+        self, mock_hass, mock_transport, mock_client
+    ):
+        """Test that non-cumulative sensors can decrease (e.g., daily midnight reset)."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        # Pre-set a daily sensor to a non-zero value
+        api.data["energia_prelevata_giornaliera_f1"] = 100.0
+
+        # All registers return 0 (simulating midnight reset)
+        mock_client.read_holding_registers = AsyncMock(return_value=[0] * 40)
+
+        await api.read_modbus_alfa()
+
+        # Daily sensor SHOULD be updated to 0.0 (not protected by validation)
+        assert api.data["energia_prelevata_giornaliera_f1"] == 0.0
+
+    async def test_derived_values_use_protected_base_values(
+        self, mock_hass, mock_transport, mock_client
+    ):
+        """Test that derived energy values use protected (not zeroed) base values."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        # Simulate previous valid readings
+        api.data["energia_prelevata"] = 1000.0
+        api.data["energia_immessa"] = 200.0
+        api.data["energia_prodotta"] = 500.0
+
+        # Device reboot: all registers return 0
+        mock_client.read_holding_registers = AsyncMock(return_value=[0] * 40)
+
+        await api.read_modbus_alfa()
+
+        # Derived values should use the protected base values
+        # energia_auto_consumata = energia_prodotta - energia_immessa = 500 - 200 = 300
+        assert api.data["energia_auto_consumata"] == 300.0
+        # energia_consumata = energia_auto_consumata + energia_prelevata = 300 + 1000 = 1300
+        assert api.data["energia_consumata"] == 1300.0

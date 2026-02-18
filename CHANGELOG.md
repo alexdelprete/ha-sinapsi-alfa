@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.12] - 2026-02-18
+
+**Patch release** - Protects cumulative energy sensors from device reboot zeroed readings.
+
+### 🐛 Bug Fixes
+
+- **Fixed energy dashboard corruption from device reboots** - When the Alfa device reboots
+  (e.g., due to blocked internet access), it briefly returns 0 for all Modbus registers.
+  The integration now validates cumulative energy sensors (`energia_prelevata`, `energia_immessa`,
+  `energia_prodotta`) and rejects values that decrease, preserving the last valid reading.
+  (Fixes [#196](https://github.com/alexdelprete/ha-sinapsi-alfa/issues/196))
+
+Thanks to [@M4v3r1cK87](https://github.com/M4v3r1cK87) for reporting and helping diagnose the issue!
+
+**Full Release Notes:** [docs/releases/v1.2.12.md](docs/releases/v1.2.12.md)
+
+**Full Changelog:** [v1.2.11...v1.2.12](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.2.11...v1.2.12)
+
 ## [1.2.11] - 2026-02-07
 
 **Patch release** - Fixes multi-device support bug and Hassfest validation.
