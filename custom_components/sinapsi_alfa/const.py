@@ -11,7 +11,7 @@ from homeassistant.const import UnitOfEnergy, UnitOfPower
 # Base component constants
 NAME = "Sinapsi Alfa"
 DOMAIN = "sinapsi_alfa"
-VERSION = "1.2.12"
+VERSION = "1.2.13"
 ATTRIBUTION = "by @alexdelprete"
 ISSUE_URL = "https://github.com/alexdelprete/ha-sinapsi-alfa/issues"
 
