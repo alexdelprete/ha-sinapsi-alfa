@@ -505,7 +505,7 @@ In addition to the shared Do's and Don'ts:
 - Mix sync/async code improperly
 
 <!-- BEGIN SHARED:repo-sync -->
-<!-- Synced by repo-sync on 2026-02-11 -->
+<!-- Synced by repo-sync on 2026-02-20 -->
 
 ## Context7 for Documentation
 

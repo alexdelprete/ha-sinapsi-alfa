@@ -4,7 +4,7 @@ version = "1.1.12"
 description = "Home Assistant custom integration for Sinapsi Alfa energy monitoring devices using Modbus TCP"
 readme = "README.md"
 license = "MIT"
-requires-python = ">=3.13"
+requires-python = ">=3.13.2"
 authors = [{ name = "alexdelprete" }]
 keywords = ["home-assistant", "sinapsi", "alfa", "modbus", "energy", "monitoring"]
 classifiers = [
@@ -67,7 +67,7 @@ dev = [
 ]
 
 # <!-- BEGIN SHARED:repo-sync -->
-# Synced by repo-sync on 2026-02-11
+# Synced by repo-sync on 2026-02-20
 
 
 [tool.codespell]
