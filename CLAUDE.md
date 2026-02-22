@@ -326,28 +326,6 @@ The project follows industry best practices for release documentation:
 - **`docs/releases/`** - Detailed release notes (one file per version)
 - **`docs/releases/README.md`** - Release directory guide and templates
 
-## Git Workflow
-
-### Commit Messages
-
-Use conventional commits with Claude attribution:
-
-```text
-feat(api): implement new feature
-
-[Description]
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>
-```
-
-### Branch Strategy
-
-- Main branch: `master`
-- Create tags for releases
-- Use pre-release flag for beta versions
-
 ## Configuration Parameters
 
 Following HA best practices, configuration is split between `data` (initial config) and `options` (runtime tuning):
@@ -505,7 +483,7 @@ In addition to the shared Do's and Don'ts:
 - Mix sync/async code improperly
 
 <!-- BEGIN SHARED:repo-sync -->
-<!-- Synced by repo-sync on 2026-02-20 -->
+<!-- Synced by repo-sync on 2026-02-22 -->
 
 ## Context7 for Documentation
 
@@ -534,6 +512,39 @@ Benefits over `gh` CLI:
 - Better error handling
 - No subprocess overhead
 
+## CI Workflow Status and Logs
+
+> **IMPORTANT**: Always use `gh` CLI for CI workflow status and logs — it's more efficient than GitHub MCP.
+
+The project has 3 CI workflows: **Lint**, **Tests**, and **Validate**.
+
+**List recent workflow runs:**
+
+```bash
+gh run list --repo alexdelprete/ha-sinapsi-alfa --limit 5
+```
+
+**Get workflow status for a specific run:**
+
+```bash
+gh run view <run_id> --repo alexdelprete/ha-sinapsi-alfa
+```
+
+**Get test coverage from Tests workflow logs:**
+
+```bash
+gh run view <run_id> --repo alexdelprete/ha-sinapsi-alfa --log 2>&1 | grep "TOTAL"
+```
+
+**Quick one-liner to get latest Tests run coverage:**
+
+```bash
+# Get latest Tests run ID and fetch coverage
+gh run list --repo alexdelprete/ha-sinapsi-alfa --limit 5 | grep Tests
+# Then use the run ID from the output
+gh run view <run_id> --repo alexdelprete/ha-sinapsi-alfa --log 2>&1 | grep "TOTAL"
+```
+
 ## Coding Standards
 
 ### Data Storage Pattern
@@ -556,9 +567,106 @@ _LOGGER.debug("Sensor %s subscribed to %s", key, topic)
 
 **DO NOT** use f-strings in logger calls (deferred formatting is more efficient)
 
+Use centralized logging helpers from `helpers.py` when available:
+
+- `log_debug(logger, context, message, **kwargs)`
+- `log_info(logger, context, message, **kwargs)`
+- `log_warning(logger, context, message, **kwargs)`
+- `log_error(logger, context, message, **kwargs)`
+
+Always include context parameter (function name). Format: `(function_name) [key=value]: message`
+
+**Never log manually what HA logs automatically:**
+
+- **DataUpdateCoordinator**: Just raise `UpdateFailed` — HA handles logging automatically
+- **ConfigEntryNotReady**: HA logs automatically — don't log manually
+- This prevents log spam during extended outages
+
+### Error Handling
+
+- Use custom exceptions (not `return False`) for proper entity availability tracking
+- Raise exceptions in the API layer and let the coordinator handle retries
+- Define integration-specific exceptions (e.g., `ConnectionError`, `DataError`)
+
 ### Type Hints
 
 Always use type hints for function signatures.
+
+### Async/Await Conventions
+
+- All coordinator methods are async
+- API methods use async/await properly
+- Config entry methods follow HA conventions:
+  - `add_update_listener()` — sync
+  - `async_on_unload()` — sync (despite the name)
+  - `async_forward_entry_setups()` — async
+  - `async_unload_platforms()` — async
+- Never use blocking calls in async context
+
+## Configuration Best Practices
+
+Following HA best practices, configuration is split between `data` (initial config) and `options` (runtime tuning):
+
+### config_entry.data (changed via Reconfigure flow)
+
+Connection and identity parameters: name, host, port, device ID, etc.
+
+### config_entry.options (changed via Options flow)
+
+Runtime tuning parameters: scan_interval, timeout, etc. Use OptionsFlowWithReload for auto-reload.
+
+### Config Flow Patterns
+
+- Use `vol.Clamp()` for numeric inputs with min/max bounds (better UX than validation errors)
+- Use `async_update_reload_and_abort()` for reconfigure flows
+- Implement config entry migration (`async_migrate_entry()`) when changing config schema versions
+
+## Entity and Device Patterns
+
+### Device Registry
+
+- Device identifier tuple: `(DOMAIN, unique_id)` where `unique_id` is MAC address, serial number, or similar
+- Use `DeviceInfo` with manufacturer, model, sw_version, and configuration_url
+- Changing host/IP should not affect entity IDs or historical data
+
+### Entity Unique IDs
+
+- Sensor unique_id pattern: `{device_unique_id}_{sensor_key}`
+- Use stable identifiers (MAC address, serial number) — not connection parameters (IP, hostname)
+- Config entry type alias: `type MyConfigEntry = ConfigEntry[RuntimeData]`
+
+## Dependencies Best Practices
+
+### Dependency Update Checklist
+
+**Before updating any dependency version in `manifest.json`:**
+
+1. Verify the new version exists on PyPI: `https://pypi.org/project/PACKAGE_NAME/`
+1. Check release notes for breaking changes
+1. Test locally if possible
+
+> **WARNING**: Always verify PyPI availability before committing dependency updates. Upstream maintainers
+> sometimes create GitHub releases but forget to publish to PyPI, breaking the integration for users.
+
+## Git Workflow
+
+### Commit Messages
+
+Use conventional commits with Claude attribution:
+
+```text
+feat(api): implement new feature
+
+[Description]
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+### Branch Strategy
+
+- Default branch (`main` or `master`) = next release
+- Create tags for releases
+- Use pre-release flag for beta versions
 
 ## Pre-Commit Configuration
 
@@ -668,18 +776,19 @@ in manifest.json and const.py.
 | Step | Tool           | Action                                                                  |
 | ---- | -------------- | ----------------------------------------------------------------------- |
 | 1    | Edit           | Update `CHANGELOG.md` with version summary                              |
-| 2    | Edit           | Ensure `manifest.json` and `const.py` have correct version              |
-| 3    | Bash           | Run linting: `uvx pre-commit run --all-files`                           |
-| 4    | Bash           | `git add . && git commit -m "..."`                                      |
-| 5    | Bash           | `git push`                                                              |
-| 6    | **STOP**       | Wait for user "tag and release" command                                 |
-| 7    | **CI Check**   | Verify ALL CI workflows pass (see CI Verification below)                |
-| 8    | **Checklist**  | Display Release Readiness Checklist (see below)                         |
-| 9    | Bash           | `git tag -a vX.Y.Z -m "Release vX.Y.Z"`                                |
-| 10   | Bash           | `git push --tags`                                                       |
-| 11   | gh CLI         | `gh release create vX.Y.Z --title "vX.Y.Z" --notes "$(RELEASE_NOTES)"` |
-| 12   | GitHub Actions | Validates versions match, then auto-uploads ZIP asset                   |
-| 13   | Edit           | Bump versions in `manifest.json` and `const.py` to next version         |
+| 2    | Write          | Create `docs/releases/vX.Y.Z.md` release notes (see format below)      |
+| 3    | Edit           | Ensure `manifest.json` and `const.py` have correct version              |
+| 4    | Bash           | Run linting: `uvx pre-commit run --all-files`                           |
+| 5    | Bash           | `git add . && git commit -m "..."`                                      |
+| 6    | Bash           | `git push`                                                              |
+| 7    | **STOP**       | Wait for user "tag and release" command                                 |
+| 8    | **CI Check**   | Verify ALL CI workflows pass (see CI Verification below)                |
+| 9    | **RRR**        | Display Release Readiness Report (see below)                            |
+| 10   | Bash           | `git tag -a vX.Y.Z -m "Release vX.Y.Z"`                                |
+| 11   | Bash           | `git push --tags`                                                       |
+| 12   | gh CLI         | `gh release create vX.Y.Z --title "vX.Y.Z" --notes-file docs/releases/vX.Y.Z.md` |
+| 13   | GitHub Actions | Validates versions match, then auto-uploads ZIP asset                   |
+| 14   | Edit           | Bump versions in `manifest.json` and `const.py` to next version         |
 
 ### CI Verification (MANDATORY)
 
@@ -714,7 +823,8 @@ in manifest.json and const.py.
 
 ### Release Notes Format (MANDATORY)
 
-When creating a release, use this format for the release notes:
+Create a release notes file at `docs/releases/vX.Y.Z.md` using this template.
+This file is then used as the body when creating the GitHub release.
 
 ```markdown
 # Release vX.Y.Z
@@ -723,40 +833,94 @@ When creating a release, use this format for the release notes:
 
 **Release Date:** YYYY-MM-DD
 
-**Type:** [Major/Minor/Patch] release - Brief description.
+**Type:** [Major/Minor/Patch/Beta] release - Brief description.
 
 ## What's Changed
 
-### ✨ Added
+### Added
+
 - Feature 1
 
-### 🔄 Changed
+### Changed
+
 - Change 1
 
-### 🐛 Fixed
+### Fixed
+
 - Fix 1
 
-**Full Changelog**: https://github.com/alexdelprete/ha-sinapsi-alfa/compare/vPREV...vX.Y.Z
+**Full Changelog**:
+[compare/vPREV...vX.Y.Z](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/vPREV...vX.Y.Z)
 ```
 
-### Release Readiness Checklist (MANDATORY)
+### Release Readiness Report (MANDATORY)
 
-> **When user commands "tag and release", ALWAYS display this checklist BEFORE proceeding.**
+> **When user commands "tag and release", ALWAYS display the Release Readiness Report (RRR) BEFORE proceeding.**
+
+Check CI workflows and display:
 
 ```markdown
-## Release Readiness Checklist
+## Release Readiness Report (RRR)
 
-| Item | Status |
-|------|--------|
-| Version in `manifest.json` | X.Y.Z |
-| Version in `const.py` | X.Y.Z |
-| CHANGELOG.md updated | Updated |
-| GitHub Actions (lint/test/validate) | PASSING |
-| Working tree clean | Clean |
-| Git tag | vX.Y.Z created/pushed |
+| Check | Status | Details |
+|-------|--------|---------|
+| **Lint** | status | date |
+| **Tests** | status | date |
+| **Validate** | status | date |
+| **Test Coverage** | status | Minimum required: 97% |
+| **Version** | X.Y.Z | manifest.json + const.py |
+| **CHANGELOG.md** | status | Updated |
+| **Release notes** | status | docs/releases/vX.Y.Z.md |
+| **Working Tree** | status | No uncommitted changes |
 ```
 
-Verify ALL items before proceeding with tag creation. If any item fails, fix it first.
+**Test Coverage Requirement:**
+
+> **CRITICAL: Test coverage MUST be at minimum 97%.**
+> If coverage drops below 97%, flag it and do not proceed with release until fixed.
+
+**How to get test coverage:**
+
+```bash
+gh run list --repo alexdelprete/ha-sinapsi-alfa --limit 5 | grep Tests
+gh run view <run_id> --repo alexdelprete/ha-sinapsi-alfa --log 2>&1 | grep "TOTAL"
+```
+
+The coverage percentage is the last column in the TOTAL line.
+
+### Issue References in Release Notes
+
+When a release fixes a specific GitHub issue:
+
+- Reference the issue number in release notes (e.g., "Fixes #42")
+- Thank the user who opened the issue by name and GitHub handle
+- **NEVER close the issue** — the user will do it manually
+
+### After Publishing a Release
+
+1. Immediately bump versions in `manifest.json` and `const.py` to next version
+1. Create new release notes file for next version
+1. Mark previous version's documentation as frozen
+
+### Release Documentation Structure
+
+#### Stable/Official Release Notes (e.g., v1.0.0)
+
+- **Scope**: ALL changes since previous stable release
+- **Example**: v1.1.0 includes everything since v1.0.0
+- **Purpose**: Complete picture for users upgrading from last stable
+
+#### Beta Release Notes (e.g., v1.0.0-beta.1)
+
+- **Scope**: Only incremental changes in this beta
+- **Example**: v1.0.0-beta.2 shows only what's new since beta.1
+- **Purpose**: Help beta testers focus on what to test
+
+### Documentation Files
+
+- **`CHANGELOG.md`** (root) — quick overview of all releases, Keep a Changelog format
+- **`docs/releases/`** — detailed release notes (one file per version)
+- **`docs/releases/README.md`** — release directory guide and templates
 
 ## Do's and Don'ts
 
@@ -770,6 +934,8 @@ Verify ALL items before proceeding with tag creation. If any item fails, fix it 
 - Handle missing data gracefully
 - Update both manifest.json AND const.py for version bumps
 - Get approval before creating tags/releases
+- Use custom exceptions for error handling
+- Verify PyPI availability before updating dependencies
 
 **NEVER:**
 
@@ -782,6 +948,8 @@ Verify ALL items before proceeding with tag creation. If any item fails, fix it 
 - Forget to update VERSION in both manifest.json AND const.py
 - Use blocking calls in async context
 - Close GitHub issues without explicit user instruction
+- Log manually what HA logs automatically (coordinator errors, ConfigEntryNotReady)
+- Create documentation files without user request
 
 <!-- END SHARED:repo-sync -->
 
