@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.13-beta.1] - 2026-02-23
+
+**Beta release** - Fixes ~264% over-counting in calculated energy sensors caused by Alfa firmware
+register timing. Testing required.
+
+### 🐛 Bug Fixes
+
+- **Fixed energy over-counting in calculated sensors** - The Alfa firmware updates `energia_prodotta`
+  ~1 min before `energia_immessa` on a ~15-min cycle. The calculated difference oscillated between polls,
+  and HA's `TOTAL_INCREASING` state class treated each dip as a meter reset, causing ~264% over-counting
+  on `energia_auto_consumata` and `energia_consumata`. The fix synchronizes calculation to wait for both
+  base sensors to update before recalculating, with a 2-poll timeout fallback.
+
+### ⚠️ User Action Required
+
+Utility meters or template sensors based on `energia_auto_consumata` or `energia_consumata` will have
+inflated historical values. See release notes for remediation steps.
+
+**Full Release Notes:** [docs/releases/v1.2.13-beta.1.md](docs/releases/v1.2.13-beta.1.md)
+
+**Full Changelog:** [v1.2.12...v1.2.13-beta.1](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.2.12...v1.2.13-beta.1)
+
 ## [1.2.12] - 2026-02-18
 
 **Patch release** - Protects cumulative energy sensors from device reboot zeroed readings.
@@ -785,3 +807,7 @@ ______________________________________________________________________
 [1.2.6]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.6
 [1.2.5]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.5
 [1.2.4-beta.1]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.4-beta.1
+[1.2.8]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.8
+[1.2.9]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.9
+[1.2.12]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.12
+[1.2.13-beta.1]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.13-beta.1
