@@ -151,6 +151,10 @@ The integration provides 4 calculated sensors derived from device readings:
 - **Energia Consumata**: Total energy consumed (Prelevata + Prodotta - Immessa)
 - **Energia Auto Consumata**: Self-consumed PV energy (Prodotta - Immessa)
 
+**Synchronized energy calculation**: Energy sensors use a sync mechanism to prevent
+over-counting caused by the Alfa firmware updating registers asynchronously.
+See `docs/analysis/energy-oscillation-fix.md` and the "Calculated Sensor Formulas" section for details.
+
 ### Italian Sensor Names
 
 All sensors use Italian names for the local market:
@@ -411,6 +415,7 @@ Monitor these ModbusLink issues for potential improvements:
 - `docs/releases/` - Detailed release notes
 - `docs/releases/README.md` - Release documentation guidelines
 - `docs/analysis/modbuslink-migration-analysis.md` - ModbusLink migration documentation
+- `docs/analysis/energy-oscillation-fix.md` - Energy oscillation root cause and fix
 
 ## Sinapsi-Specific Considerations
 
@@ -423,14 +428,37 @@ Monitor these ModbusLink issues for potential improvements:
 ### Calculated Sensor Formulas
 
 ```python
-# Power calculations
+# Power calculations (always calculated immediately — MEASUREMENT state class)
 potenza_consumata = potenza_prelevata + potenza_prodotta - potenza_immessa
 potenza_auto_consumata = potenza_prodotta - potenza_immessa
 
-# Energy calculations
+# Energy calculations (synchronized — TOTAL_INCREASING state class)
 energia_consumata = energia_prelevata + energia_prodotta - energia_immessa
 energia_auto_consumata = energia_prodotta - energia_immessa
 ```
+
+### Alfa Firmware Register Update Behavior
+
+The Alfa device updates `energia_prodotta` and `energia_immessa` registers on a ~15-minute
+internal cycle. **Prodotta always updates ~1 minute before immessa.** With our 60s polling,
+this causes the two values to appear on alternating polls:
+
+- **Poll N**: `energia_prodotta` is new, `energia_immessa` is stale
+- **Poll N+1**: `energia_immessa` catches up, `energia_prodotta` unchanged
+
+Calculating `prodotta - immessa` when only one has updated produces a temporary spike/dip.
+HA's `TOTAL_INCREASING` state class treats each dip as a meter reset, causing **double-counting**
+(~264% over-count on daily self-consumption).
+
+**Fix (synchronized calculation with timeout fallback):**
+
+- Energy sensors are only recalculated when **both** base sensors have changed since the last calculation
+- A timeout of `SYNC_TIMEOUT_POLLS` (2 polls) allows calculation when only one sensor is changing
+  (e.g., no-export periods where immessa stays constant — no oscillation risk)
+- Power sensors (`MEASUREMENT`) are always calculated immediately (no accumulation issue)
+- Tracking state: `_last_calc_prodotta`, `_last_calc_immessa`, `_unsync_poll_count` in `api.py`
+
+See `docs/analysis/energy-oscillation-fix.md` for the full investigation and data analysis.
 
 ### Time Band Sensors (F1-F6)
 
