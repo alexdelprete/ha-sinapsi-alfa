@@ -63,6 +63,14 @@ CUMULATIVE_ENERGY_SENSORS: set[str] = {
     "energia_prodotta",
 }
 
+# Timeout (in polls) before calculating derived energy values when only one
+# base sensor has changed. The Alfa firmware updates energia_prodotta and
+# energia_immessa on a ~15-min internal cycle, with prodotta always updating
+# ~1 min before immessa. Our 60s polling captures them on alternating polls.
+# A timeout of 2 polls distinguishes real alternation (triggers on poll 2)
+# from genuine single-sensor changes (no oscillation risk, safe to calculate).
+SYNC_TIMEOUT_POLLS: int = 2
+
 # Batch read configuration: (start_address, count)
 # Groups consecutive registers to minimize Modbus requests
 # 5 batches instead of 20 individual reads = ~75% reduction in requests

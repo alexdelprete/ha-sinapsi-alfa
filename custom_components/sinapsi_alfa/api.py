@@ -42,6 +42,7 @@ from .const import (
     MODEL,
     REGISTER_BATCHES,
     SENSOR_ENTITIES,
+    SYNC_TIMEOUT_POLLS,
 )
 from .helpers import log_debug, log_error, log_warning, unix_timestamp_to_iso8601_local_tz
 
@@ -178,6 +179,13 @@ class SinapsiAlfaAPI:
         self._last_successful_read: float | None = None
         # Protocol error tracking for early abort
         self._protocol_errors_this_cycle = 0
+        # Sync tracking for derived energy calculation: the Alfa firmware updates
+        # energia_prodotta ~1 min before energia_immessa, causing oscillation in
+        # calculated sensors (prodotta - immessa). We only recalculate when both
+        # base sensors have updated since the last calculation.
+        self._last_calc_prodotta: float | None = None
+        self._last_calc_immessa: float | None = None
+        self._unsync_poll_count: int = 0
         # Initialize ModBus data structure before first read
         self._initialize_data_structure()
 
@@ -621,19 +629,68 @@ class SinapsiAlfaAPI:
         return value
 
     def _calculate_derived_values(self) -> None:
-        """Calculate derived values from base measurements."""
+        """Calculate derived values from base measurements.
+
+        Power sensors (MEASUREMENT state class) are always calculated - oscillations
+        in instantaneous values are normal and don't cause accumulation errors.
+
+        Energy sensors (TOTAL_INCREASING state class) use synchronized calculation:
+        the Alfa firmware updates energia_prodotta ~1 min before energia_immessa,
+        so our 60s polling captures them on alternating polls. Calculating
+        (prodotta - immessa) on a poll where only one updated produces a temporary
+        spike/dip that HA's TOTAL_INCREASING logic misinterprets as a meter reset,
+        causing ~264% over-counting. We wait for both to update before recalculating,
+        with a timeout fallback for periods when only one sensor is changing.
+        """
+        # Power sensors: always calculate (instantaneous, no accumulation issue)
         self.data["potenza_auto_consumata"] = (
             self.data["potenza_prodotta"] - self.data["potenza_immessa"]
         )
         self.data["potenza_consumata"] = (
             self.data["potenza_auto_consumata"] + self.data["potenza_prelevata"]
         )
-        self.data["energia_auto_consumata"] = (
-            self.data["energia_prodotta"] - self.data["energia_immessa"]
-        )
-        self.data["energia_consumata"] = (
-            self.data["energia_auto_consumata"] + self.data["energia_prelevata"]
-        )
+
+        # Energy sensors: wait for both base sensors to update before recalculating
+        curr_prodotta = self.data["energia_prodotta"]
+        curr_immessa = self.data["energia_immessa"]
+
+        prodotta_fresh = curr_prodotta != self._last_calc_prodotta
+        immessa_fresh = curr_immessa != self._last_calc_immessa
+
+        should_calculate = False
+
+        if self._last_calc_prodotta is None:
+            # First poll — no previous data, must calculate
+            should_calculate = True
+        elif prodotta_fresh and immessa_fresh:
+            # Both updated since last calc — synchronized reading, always safe
+            should_calculate = True
+            self._unsync_poll_count = 0
+        else:
+            # Only one (or neither) changed — possible timing skew
+            self._unsync_poll_count += 1
+            if self._unsync_poll_count >= SYNC_TIMEOUT_POLLS:
+                # Waited long enough; if only one sensor is changing,
+                # there's no alternating pattern and no oscillation risk
+                should_calculate = True
+                self._unsync_poll_count = 0
+
+        if should_calculate:
+            self.data["energia_auto_consumata"] = curr_prodotta - curr_immessa
+            self.data["energia_consumata"] = (
+                self.data["energia_auto_consumata"] + self.data["energia_prelevata"]
+            )
+            self._last_calc_prodotta = curr_prodotta
+            self._last_calc_immessa = curr_immessa
+        else:
+            log_debug(
+                _LOGGER,
+                "_calculate_derived_values",
+                "Skipping energy calc, waiting for synchronized base sensor update",
+                prodotta_fresh=prodotta_fresh,
+                immessa_fresh=immessa_fresh,
+                unsync_polls=self._unsync_poll_count,
+            )
 
     async def async_get_data(self) -> bool:
         """Read data using client context manager.

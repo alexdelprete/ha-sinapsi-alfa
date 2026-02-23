@@ -31,6 +31,7 @@ from custom_components.sinapsi_alfa.const import (
     MODEL,
     REGISTER_BATCHES,
     SENSOR_ENTITIES,
+    SYNC_TIMEOUT_POLLS,
 )
 
 from .conftest import TEST_HOST, TEST_NAME, TEST_PORT
@@ -1458,3 +1459,304 @@ class TestCumulativeEnergyValidation:
         assert api.data["energia_auto_consumata"] == 300.0
         # energia_consumata = energia_auto_consumata + energia_prelevata = 300 + 1000 = 1300
         assert api.data["energia_consumata"] == 1300.0
+
+
+class TestSynchronizedEnergyCalculation:
+    """Tests for synchronized derived energy calculation.
+
+    The Alfa firmware updates energia_prodotta ~1 min before energia_immessa,
+    causing our 60s polling to capture them on alternating polls. Calculating
+    (prodotta - immessa) when only one has updated produces a temporary spike/dip
+    that HA's TOTAL_INCREASING misinterprets as a meter reset, causing over-counting.
+    The fix waits for both base sensors to update before recalculating.
+    """
+
+    def _create_api(self, mock_hass):
+        """Create a test API instance."""
+        return SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+    def test_first_poll_always_calculates(self, mock_hass, mock_transport, mock_client):
+        """Test first poll calculates derived values (no previous tracking data)."""
+        api = self._create_api(mock_hass)
+
+        api.data["potenza_prelevata"] = 1.0
+        api.data["potenza_immessa"] = 0.5
+        api.data["potenza_prodotta"] = 2.0
+        api.data["energia_prelevata"] = 1000.0
+        api.data["energia_immessa"] = 200.0
+        api.data["energia_prodotta"] = 500.0
+
+        assert api._last_calc_prodotta is None
+
+        api._calculate_derived_values()
+
+        # Energy values should be calculated on first poll
+        assert api.data["energia_auto_consumata"] == 300.0
+        assert api.data["energia_consumata"] == 1300.0
+        # Tracking variables should be set
+        assert api._last_calc_prodotta == 500.0
+        assert api._last_calc_immessa == 200.0
+
+    def test_both_fresh_recalculates_immediately(self, mock_hass, mock_transport, mock_client):
+        """Test both sensors changed since last calc → immediate recalculation."""
+        api = self._create_api(mock_hass)
+
+        # Establish baseline (first poll)
+        api.data["energia_prelevata"] = 1000.0
+        api.data["energia_immessa"] = 200.0
+        api.data["energia_prodotta"] = 500.0
+        api.data["potenza_prelevata"] = 1.0
+        api.data["potenza_immessa"] = 0.5
+        api.data["potenza_prodotta"] = 2.0
+        api._calculate_derived_values()
+
+        # Both base sensors change
+        api.data["energia_prodotta"] = 510.0
+        api.data["energia_immessa"] = 205.0
+        api._calculate_derived_values()
+
+        # Should recalculate with new synchronized values
+        assert api.data["energia_auto_consumata"] == 305.0
+        assert api.data["energia_consumata"] == 1305.0
+        assert api._last_calc_prodotta == 510.0
+        assert api._last_calc_immessa == 205.0
+
+    def test_only_prodotta_fresh_skips_calculation(self, mock_hass, mock_transport, mock_client):
+        """Test only prodotta changed → skip (wait for immessa to catch up)."""
+        api = self._create_api(mock_hass)
+
+        # Establish baseline
+        api.data["energia_prelevata"] = 1000.0
+        api.data["energia_immessa"] = 200.0
+        api.data["energia_prodotta"] = 500.0
+        api.data["potenza_prelevata"] = 1.0
+        api.data["potenza_immessa"] = 0.5
+        api.data["potenza_prodotta"] = 2.0
+        api._calculate_derived_values()
+
+        assert api.data["energia_auto_consumata"] == 300.0
+
+        # Only prodotta changes (immessa stale — firmware timing skew)
+        api.data["energia_prodotta"] = 510.0
+        api._calculate_derived_values()
+
+        # Energy values should NOT change (skip to avoid spike)
+        assert api.data["energia_auto_consumata"] == 300.0
+        assert api.data["energia_consumata"] == 1300.0
+        # Tracking should NOT be updated
+        assert api._last_calc_prodotta == 500.0
+        assert api._unsync_poll_count == 1
+
+    def test_only_immessa_fresh_skips_calculation(self, mock_hass, mock_transport, mock_client):
+        """Test only immessa changed → skip (wait for prodotta)."""
+        api = self._create_api(mock_hass)
+
+        # Establish baseline
+        api.data["energia_prelevata"] = 1000.0
+        api.data["energia_immessa"] = 200.0
+        api.data["energia_prodotta"] = 500.0
+        api.data["potenza_prelevata"] = 1.0
+        api.data["potenza_immessa"] = 0.5
+        api.data["potenza_prodotta"] = 2.0
+        api._calculate_derived_values()
+
+        # Only immessa changes
+        api.data["energia_immessa"] = 205.0
+        api._calculate_derived_values()
+
+        # Energy values should NOT change
+        assert api.data["energia_auto_consumata"] == 300.0
+        assert api._unsync_poll_count == 1
+
+    def test_timeout_fallback_calculates(self, mock_hass, mock_transport, mock_client):
+        """Test after SYNC_TIMEOUT_POLLS with only one changing → calculate."""
+        api = self._create_api(mock_hass)
+
+        # Establish baseline
+        api.data["energia_prelevata"] = 1000.0
+        api.data["energia_immessa"] = 200.0
+        api.data["energia_prodotta"] = 500.0
+        api.data["potenza_prelevata"] = 1.0
+        api.data["potenza_immessa"] = 0.5
+        api.data["potenza_prodotta"] = 2.0
+        api._calculate_derived_values()
+
+        # Only prodotta changes for SYNC_TIMEOUT_POLLS consecutive polls
+        api.data["energia_prodotta"] = 510.0
+        for _ in range(SYNC_TIMEOUT_POLLS - 1):
+            api._calculate_derived_values()
+            # Still waiting — not enough polls yet
+            assert api.data["energia_auto_consumata"] == 300.0
+
+        # One more poll hits the timeout → should calculate
+        api._calculate_derived_values()
+
+        # Now calculated with current values
+        # energia_auto_consumata = 510 - 200 = 310
+        assert api.data["energia_auto_consumata"] == 310.0
+        assert api.data["energia_consumata"] == 1310.0
+        assert api._unsync_poll_count == 0
+
+    def test_neither_changed_timeout_then_calculates(self, mock_hass, mock_transport, mock_client):
+        """Test neither sensor changed → timeout then calculate (harmless, same values)."""
+        api = self._create_api(mock_hass)
+
+        # Establish baseline
+        api.data["energia_prelevata"] = 1000.0
+        api.data["energia_immessa"] = 200.0
+        api.data["energia_prodotta"] = 500.0
+        api.data["potenza_prelevata"] = 1.0
+        api.data["potenza_immessa"] = 0.5
+        api.data["potenza_prodotta"] = 2.0
+        api._calculate_derived_values()
+
+        # No changes at all for SYNC_TIMEOUT_POLLS polls
+        for _ in range(SYNC_TIMEOUT_POLLS):
+            api._calculate_derived_values()
+
+        # Values are the same (harmless recalculation)
+        assert api.data["energia_auto_consumata"] == 300.0
+        assert api.data["energia_consumata"] == 1300.0
+
+    def test_oscillation_prevented_alternating_pattern(
+        self, mock_hass, mock_transport, mock_client
+    ):
+        """Test real-world alternating pattern: self_consumed never decreases.
+
+        Simulates the actual Alfa firmware behavior observed across multiple days:
+        - Poll 1: prodotta changes, immessa same (would spike without fix)
+        - Poll 2: immessa changes, prodotta same (both fresh → recalculate)
+        - Repeat...
+        """
+        api = self._create_api(mock_hass)
+
+        api.data["energia_prelevata"] = 5000.0
+        api.data["potenza_prelevata"] = 0.0
+        api.data["potenza_immessa"] = 1.0
+        api.data["potenza_prodotta"] = 2.0
+
+        # Initial state: prodotta=27286.06, immessa=974.49
+        api.data["energia_prodotta"] = 27286.06
+        api.data["energia_immessa"] = 974.49
+        api._calculate_derived_values()
+
+        initial_auto = api.data["energia_auto_consumata"]
+        assert initial_auto == pytest.approx(26311.57)
+
+        prev_auto = initial_auto
+
+        # Simulate 5 complete alternating cycles (10 polls)
+        alternating_data = [
+            # (prodotta, immessa) — real values from Feb 23 history
+            (27286.53, 974.49),  # Poll 1: prodotta up, immessa same → SKIP
+            (27286.53, 974.57),  # Poll 2: immessa up, both fresh → CALC
+            (27286.78, 974.57),  # Poll 3: prodotta up, immessa same → SKIP
+            (27286.78, 975.45),  # Poll 4: immessa up, both fresh → CALC
+            (27287.27, 975.45),  # Poll 5: prodotta up → SKIP
+            (27287.27, 975.95),  # Poll 6: immessa up → CALC
+            (27287.84, 975.95),  # Poll 7: prodotta up → SKIP
+            (27287.84, 976.46),  # Poll 8: immessa up → CALC
+            (27288.48, 976.46),  # Poll 9: prodotta up → SKIP
+            (27288.48, 977.03),  # Poll 10: immessa up → CALC
+        ]
+
+        for prodotta, immessa in alternating_data:
+            api.data["energia_prodotta"] = prodotta
+            api.data["energia_immessa"] = immessa
+            api._calculate_derived_values()
+
+            curr_auto = api.data["energia_auto_consumata"]
+            # CRITICAL: self_consumed must NEVER decrease
+            assert curr_auto >= prev_auto, (
+                f"energia_auto_consumata decreased: {prev_auto} → {curr_auto}"
+            )
+            prev_auto = curr_auto
+
+        # Final value should reflect the real cumulative difference
+        assert api.data["energia_auto_consumata"] == pytest.approx(27288.48 - 977.03)
+
+    def test_no_export_period_timeout_allows_updates(self, mock_hass, mock_transport, mock_client):
+        """Test no-export period: only prodotta changes, immessa stays constant.
+
+        The timeout fallback allows calculation to proceed because there's
+        no alternating pattern and therefore no oscillation risk.
+        """
+        api = self._create_api(mock_hass)
+
+        api.data["energia_prelevata"] = 5000.0
+        api.data["potenza_prelevata"] = 1.0
+        api.data["potenza_immessa"] = 0.0
+        api.data["potenza_prodotta"] = 1.0
+
+        # Baseline: all production is self-consumed (no export)
+        api.data["energia_prodotta"] = 500.0
+        api.data["energia_immessa"] = 200.0  # Stays constant (no export)
+        api._calculate_derived_values()
+
+        assert api.data["energia_auto_consumata"] == 300.0
+
+        # Prodotta increases every poll, immessa never changes
+        prodotta_values = [501.0, 502.0, 503.0, 504.0, 505.0, 506.0]
+        for val in prodotta_values:
+            api.data["energia_prodotta"] = val
+            api._calculate_derived_values()
+
+        # After timeouts, value should be updated to latest
+        # energia_auto_consumata = 506.0 - 200.0 = 306.0
+        assert api.data["energia_auto_consumata"] == 306.0
+
+    def test_power_sensors_always_calculated(self, mock_hass, mock_transport, mock_client):
+        """Test power sensors (MEASUREMENT) are always calculated regardless of sync state."""
+        api = self._create_api(mock_hass)
+
+        # Establish baseline
+        api.data["energia_prelevata"] = 1000.0
+        api.data["energia_immessa"] = 200.0
+        api.data["energia_prodotta"] = 500.0
+        api.data["potenza_prelevata"] = 1.0
+        api.data["potenza_immessa"] = 0.5
+        api.data["potenza_prodotta"] = 2.0
+        api._calculate_derived_values()
+
+        # Only prodotta changes (energy calc will be skipped)
+        api.data["energia_prodotta"] = 510.0
+        api.data["potenza_prodotta"] = 3.0
+        api._calculate_derived_values()
+
+        # Power sensors should ALWAYS update (not affected by sync logic)
+        assert api.data["potenza_auto_consumata"] == 2.5  # 3.0 - 0.5
+        assert api.data["potenza_consumata"] == 3.5  # 2.5 + 1.0
+
+        # Energy sensors should NOT update (waiting for sync)
+        assert api.data["energia_auto_consumata"] == 300.0
+
+    def test_sync_counter_resets_on_both_fresh(self, mock_hass, mock_transport, mock_client):
+        """Test unsync counter resets when both sensors become fresh."""
+        api = self._create_api(mock_hass)
+
+        # Establish baseline
+        api.data["energia_prelevata"] = 1000.0
+        api.data["energia_immessa"] = 200.0
+        api.data["energia_prodotta"] = 500.0
+        api.data["potenza_prelevata"] = 1.0
+        api.data["potenza_immessa"] = 0.5
+        api.data["potenza_prodotta"] = 2.0
+        api._calculate_derived_values()
+
+        # One unsync poll
+        api.data["energia_prodotta"] = 510.0
+        api._calculate_derived_values()
+        assert api._unsync_poll_count == 1
+
+        # Now immessa also changes → both fresh → counter resets
+        api.data["energia_immessa"] = 205.0
+        api._calculate_derived_values()
+        assert api._unsync_poll_count == 0
+        assert api.data["energia_auto_consumata"] == 305.0
