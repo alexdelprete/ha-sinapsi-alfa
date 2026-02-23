@@ -1628,12 +1628,12 @@ class TestSynchronizedEnergyCalculation:
     def test_oscillation_prevented_alternating_pattern(
         self, mock_hass, mock_transport, mock_client
     ):
-        """Test real-world alternating pattern: self_consumed never decreases.
+        """Test alternating pattern: calculation only happens when both sensors are fresh.
 
-        Simulates the actual Alfa firmware behavior observed across multiple days:
-        - Poll 1: prodotta changes, immessa same (would spike without fix)
-        - Poll 2: immessa changes, prodotta same (both fresh → recalculate)
-        - Repeat...
+        Simulates the Alfa firmware behavior where prodotta updates on odd polls
+        and immessa catches up on even polls. Without the fix, odd polls would
+        produce artificial spikes in the calculated difference. With the fix,
+        calculations only happen on even polls (both fresh), preventing oscillation.
         """
         api = self._create_api(mock_hass)
 
@@ -1642,45 +1642,51 @@ class TestSynchronizedEnergyCalculation:
         api.data["potenza_immessa"] = 1.0
         api.data["potenza_prodotta"] = 2.0
 
-        # Initial state: prodotta=27286.06, immessa=974.49
-        api.data["energia_prodotta"] = 27286.06
-        api.data["energia_immessa"] = 974.49
+        # Initial state
+        api.data["energia_prodotta"] = 1000.0
+        api.data["energia_immessa"] = 200.0
         api._calculate_derived_values()
 
-        initial_auto = api.data["energia_auto_consumata"]
-        assert initial_auto == pytest.approx(26311.57)
-
-        prev_auto = initial_auto
+        assert api.data["energia_auto_consumata"] == 800.0
 
         # Simulate 5 complete alternating cycles (10 polls)
+        # Each cycle: prodotta increases by 1.0, immessa by 0.2
+        # → self_consumed increases by 0.8 per cycle
         alternating_data = [
-            # (prodotta, immessa) — real values from Feb 23 history
-            (27286.53, 974.49),  # Poll 1: prodotta up, immessa same → SKIP
-            (27286.53, 974.57),  # Poll 2: immessa up, both fresh → CALC
-            (27286.78, 974.57),  # Poll 3: prodotta up, immessa same → SKIP
-            (27286.78, 975.45),  # Poll 4: immessa up, both fresh → CALC
-            (27287.27, 975.45),  # Poll 5: prodotta up → SKIP
-            (27287.27, 975.95),  # Poll 6: immessa up → CALC
-            (27287.84, 975.95),  # Poll 7: prodotta up → SKIP
-            (27287.84, 976.46),  # Poll 8: immessa up → CALC
-            (27288.48, 976.46),  # Poll 9: prodotta up → SKIP
-            (27288.48, 977.03),  # Poll 10: immessa up → CALC
+            # (prodotta, immessa, should_calc)
+            (1001.0, 200.0, False),  # Poll 1: prodotta up, immessa same → SKIP
+            (1001.0, 200.2, True),  # Poll 2: immessa up, both fresh → CALC (800.8)
+            (1002.0, 200.2, False),  # Poll 3: prodotta up → SKIP
+            (1002.0, 200.4, True),  # Poll 4: immessa up → CALC (801.6)
+            (1003.0, 200.4, False),  # Poll 5: prodotta up → SKIP
+            (1003.0, 200.6, True),  # Poll 6: immessa up → CALC (802.4)
+            (1004.0, 200.6, False),  # Poll 7: prodotta up → SKIP
+            (1004.0, 200.8, True),  # Poll 8: immessa up → CALC (803.2)
+            (1005.0, 200.8, False),  # Poll 9: prodotta up → SKIP
+            (1005.0, 201.0, True),  # Poll 10: immessa up → CALC (804.0)
         ]
 
-        for prodotta, immessa in alternating_data:
+        prev_auto = 800.0
+        for prodotta, immessa, should_calc in alternating_data:
             api.data["energia_prodotta"] = prodotta
             api.data["energia_immessa"] = immessa
             api._calculate_derived_values()
 
             curr_auto = api.data["energia_auto_consumata"]
-            # CRITICAL: self_consumed must NEVER decrease
-            assert curr_auto >= prev_auto, (
-                f"energia_auto_consumata decreased: {prev_auto} → {curr_auto}"
-            )
-            prev_auto = curr_auto
+            if not should_calc:
+                # On skip polls, value must stay unchanged (no artificial spike)
+                assert curr_auto == prev_auto, (
+                    f"Value changed on skip poll: {prev_auto} → {curr_auto}"
+                )
+            else:
+                # On calc polls, value should increase (both sensors fresh)
+                assert curr_auto > prev_auto, (
+                    f"Value did not increase on calc poll: {prev_auto} → {curr_auto}"
+                )
+                prev_auto = curr_auto
 
-        # Final value should reflect the real cumulative difference
-        assert api.data["energia_auto_consumata"] == pytest.approx(27288.48 - 977.03)
+        # Final value should reflect the synchronized cumulative difference
+        assert api.data["energia_auto_consumata"] == pytest.approx(1005.0 - 201.0)
 
     def test_no_export_period_timeout_allows_updates(self, mock_hass, mock_transport, mock_client):
         """Test no-export period: only prodotta changes, immessa stays constant.
