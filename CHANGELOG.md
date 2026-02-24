@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.13-beta.3] - 2026-02-24
+
+**Beta release** - Fixes consumed energy sensor freezing when production stops.
+
+### Bug Fixes
+
+- **Fixed `energia_consumata` freezing when production stops** - The consumed energy sensor was
+  locked inside the sync guard alongside `energia_auto_consumata`. When PV production stops
+  (evening/night), the sync guard stays closed because `prodotta`/`immessa` stop changing,
+  but `prelevata` (import) keeps growing. The consumed sensor froze for 10-14 hours nightly.
+  The fix moves `energia_consumata` outside the sync guard so it always reflects the latest
+  `prelevata` value. Safe for `TOTAL_INCREASING` (sum of two non-decreasing values).
+- **Fixed debug log spam during nighttime** - Sync waiting message now only fires when one sensor
+  is actually fresh, not on every idle poll.
+
+**Full Release Notes:** [docs/releases/v1.2.13-beta.3.md](docs/releases/v1.2.13-beta.3.md)
+
+**Full Changelog:** [v1.2.13-beta.2...v1.2.13-beta.3](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.2.13-beta.2...v1.2.13-beta.3)
+
 ## [1.2.13-beta.2] - 2026-02-24
 
 **Beta release** - Fixes sync mechanism that failed to prevent oscillation under real-world conditions.
@@ -827,4 +846,6 @@ ______________________________________________________________________
 [1.2.8]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.8
 [1.2.9]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.9
 [1.2.12]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.12
+[1.2.13-beta.3]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.13-beta.3
+[1.2.13-beta.2]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.13-beta.2
 [1.2.13-beta.1]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.13-beta.1
