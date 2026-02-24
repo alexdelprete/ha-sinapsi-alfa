@@ -631,16 +631,25 @@ class SinapsiAlfaAPI:
     def _calculate_derived_values(self) -> None:
         """Calculate derived values from base measurements.
 
-        Power sensors (MEASUREMENT state class) are always calculated - oscillations
+        Power sensors (MEASUREMENT state class) are always calculated — oscillations
         in instantaneous values are normal and don't cause accumulation errors.
 
-        Energy sensors (TOTAL_INCREASING state class) use synchronized calculation:
+        Energy sensors use two different strategies:
+
+        energia_auto_consumata (prodotta - immessa) uses synchronized calculation:
         the Alfa firmware updates energia_prodotta ~1 min before energia_immessa,
-        so our 60s polling captures them on alternating polls. Calculating
-        (prodotta - immessa) on a poll where only one updated produces a temporary
-        spike/dip that HA's TOTAL_INCREASING logic misinterprets as a meter reset,
-        causing ~264% over-counting. We wait for both to update before recalculating,
+        so our 60s polling captures them on alternating polls. Calculating the
+        difference on a poll where only one updated produces a temporary spike/dip
+        that HA's TOTAL_INCREASING logic misinterprets as a meter reset, causing
+        ~264% over-counting. We wait for both to update before recalculating,
         with a timeout fallback for periods when only one sensor is changing.
+
+        energia_consumata (auto_consumata + prelevata) is always recalculated
+        because it depends on energia_prelevata (import from grid) which changes
+        independently every poll. Without this, the sensor freezes when production
+        stops and prodotta/immessa stop changing, even though prelevata keeps growing.
+        This is safe for TOTAL_INCREASING: both addends are monotonically
+        non-decreasing, so their sum can never dip.
         """
         # Power sensors: always calculate (instantaneous, no accumulation issue)
         self.data["potenza_auto_consumata"] = (
@@ -681,20 +690,25 @@ class SinapsiAlfaAPI:
 
         if should_calculate:
             self.data["energia_auto_consumata"] = curr_prodotta - curr_immessa
-            self.data["energia_consumata"] = (
-                self.data["energia_auto_consumata"] + self.data["energia_prelevata"]
-            )
             self._last_calc_prodotta = curr_prodotta
             self._last_calc_immessa = curr_immessa
-        else:
+        elif prodotta_fresh or immessa_fresh:
             log_debug(
                 _LOGGER,
                 "_calculate_derived_values",
-                "Skipping energy calc: waiting for synchronized base sensor update",
+                "Waiting for synchronized base sensor update",
                 prodotta_fresh=prodotta_fresh,
                 immessa_fresh=immessa_fresh,
                 unsync_polls=self._unsync_poll_count,
             )
+
+        # Always update consumed energy — it depends on prelevata (import)
+        # which changes independently of the prodotta/immessa sync mechanism.
+        # Without this, energia_consumata freezes when production stops and
+        # prodotta/immessa stop changing, even though prelevata keeps growing.
+        self.data["energia_consumata"] = (
+            self.data["energia_auto_consumata"] + self.data["energia_prelevata"]
+        )
 
     async def async_get_data(self) -> bool:
         """Read data using client context manager.

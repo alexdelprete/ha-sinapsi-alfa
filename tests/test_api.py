@@ -1761,6 +1761,8 @@ class TestSynchronizedEnergyCalculation:
         # After timeouts, value should be updated to latest
         # energia_auto_consumata = 506.0 - 200.0 = 306.0
         assert api.data["energia_auto_consumata"] == 306.0
+        # energia_consumata = 306.0 + 5000.0 = 5306.0
+        assert api.data["energia_consumata"] == 5306.0
 
     def test_power_sensors_always_calculated(self, mock_hass, mock_transport, mock_client):
         """Test power sensors (MEASUREMENT) are always calculated regardless of sync state."""
@@ -1810,3 +1812,197 @@ class TestSynchronizedEnergyCalculation:
         api._calculate_derived_values()
         assert api._unsync_poll_count == 0
         assert api.data["energia_auto_consumata"] == 305.0
+
+    def test_consumata_updates_when_only_prelevata_changes(
+        self, mock_hass, mock_transport, mock_client
+    ):
+        """Test energia_consumata updates when only prelevata changes.
+
+        This is the critical test for the beta.3 fix: when production stops,
+        prodotta/immessa stop changing so should_calculate stays False.
+        But prelevata (import) keeps growing and energia_consumata must reflect that.
+        """
+        api = self._create_api(mock_hass)
+
+        # Establish baseline (first poll)
+        api.data["energia_prelevata"] = 1000.0
+        api.data["energia_immessa"] = 200.0
+        api.data["energia_prodotta"] = 500.0
+        api.data["potenza_prelevata"] = 1.0
+        api.data["potenza_immessa"] = 0.5
+        api.data["potenza_prodotta"] = 2.0
+        api._calculate_derived_values()
+
+        assert api.data["energia_auto_consumata"] == 300.0  # 500 - 200
+        assert api.data["energia_consumata"] == 1300.0  # 300 + 1000
+
+        # Only prelevata changes — prodotta and immessa unchanged
+        api.data["energia_prelevata"] = 1001.0
+        api._calculate_derived_values()
+
+        # auto_consumata must stay frozen (sync guard holds — neither is fresh)
+        assert api.data["energia_auto_consumata"] == 300.0
+        # consumata must update to reflect new prelevata
+        assert api.data["energia_consumata"] == 1301.0  # 300 + 1001
+
+    def test_night_scenario_full_cycle(self, mock_hass, mock_transport, mock_client):
+        """Test nighttime scenario: only prelevata changes for many polls.
+
+        Simulates evening/night when PV production stops. energia_prodotta and
+        energia_immessa stop changing, but energia_prelevata (import from grid)
+        keeps growing. energia_consumata must track that growth.
+        """
+        api = self._create_api(mock_hass)
+
+        # Daytime baseline
+        api.data["energia_prelevata"] = 5000.0
+        api.data["energia_immessa"] = 200.0
+        api.data["energia_prodotta"] = 1000.0
+        api.data["potenza_prelevata"] = 1.0
+        api.data["potenza_immessa"] = 0.0
+        api.data["potenza_prodotta"] = 0.0
+        api._calculate_derived_values()
+
+        baseline_auto = api.data["energia_auto_consumata"]
+        assert baseline_auto == 800.0  # 1000 - 200
+
+        # 10 nighttime polls: only prelevata increases (1.0 per poll)
+        for i in range(1, 11):
+            api.data["energia_prelevata"] = 5000.0 + i
+            api._calculate_derived_values()
+
+            # auto_consumata must stay frozen (no production changes)
+            assert api.data["energia_auto_consumata"] == baseline_auto
+            # consumata must increase with prelevata
+            expected_consumata = baseline_auto + 5000.0 + i
+            assert api.data["energia_consumata"] == expected_consumata
+
+    def test_day_to_night_transition(self, mock_hass, mock_transport, mock_client):
+        """Test full lifecycle: daytime → transition → nighttime.
+
+        Verifies energia_consumata tracks correctly through all phases:
+        1. Daytime: both sensors fresh, full recalculation
+        2. Transition: last firmware update (one fresh → timeout → calc)
+        3. Nighttime: only prelevata changes, consumata keeps updating
+        """
+        api = self._create_api(mock_hass)
+
+        # Phase 1: Daytime — both sensors fresh
+        api.data["energia_prelevata"] = 5000.0
+        api.data["energia_immessa"] = 200.0
+        api.data["energia_prodotta"] = 1000.0
+        api.data["potenza_prelevata"] = 1.0
+        api.data["potenza_immessa"] = 0.5
+        api.data["potenza_prodotta"] = 2.0
+        api._calculate_derived_values()
+
+        assert api.data["energia_auto_consumata"] == 800.0
+        assert api.data["energia_consumata"] == 5800.0  # 800 + 5000
+
+        # Both sensors update together
+        api.data["energia_prodotta"] = 1010.0
+        api.data["energia_immessa"] = 202.0
+        api.data["energia_prelevata"] = 5001.0
+        api._calculate_derived_values()
+
+        assert api.data["energia_auto_consumata"] == 808.0  # 1010 - 202
+        assert api.data["energia_consumata"] == 5809.0  # 808 + 5001
+
+        # Phase 2: Transition — last firmware update, prodotta changes alone
+        api.data["energia_prodotta"] = 1011.0
+        api.data["energia_prelevata"] = 5002.0
+        api._calculate_derived_values()
+
+        # auto_consumata frozen (waiting for immessa), consumata updates with prelevata
+        assert api.data["energia_auto_consumata"] == 808.0
+        assert api.data["energia_consumata"] == 5810.0  # 808 + 5002
+
+        # Timeout triggers after SYNC_TIMEOUT_POLLS
+        for _ in range(SYNC_TIMEOUT_POLLS - 1):
+            api.data["energia_prelevata"] += 1.0
+            api._calculate_derived_values()
+
+        # After timeout: auto_consumata recalculated, consumata uses latest prelevata
+        assert api.data["energia_auto_consumata"] == 809.0  # 1011 - 202
+        latest_prelevata = api.data["energia_prelevata"]
+        assert api.data["energia_consumata"] == 809.0 + latest_prelevata
+
+        # Phase 3: Nighttime — no more production changes, only prelevata
+        frozen_auto = api.data["energia_auto_consumata"]
+        for i in range(5):
+            api.data["energia_prelevata"] = latest_prelevata + i + 1
+            api._calculate_derived_values()
+
+            assert api.data["energia_auto_consumata"] == frozen_auto
+            assert api.data["energia_consumata"] == frozen_auto + latest_prelevata + i + 1
+
+    def test_consumata_uses_latest_prelevata_after_sync_calc(
+        self, mock_hass, mock_transport, mock_client
+    ):
+        """Test consumata uses latest prelevata even when should_calculate is True.
+
+        When both prodotta and immessa are fresh, auto_consumata is recalculated.
+        energia_consumata must use the latest prelevata value (which may have also
+        changed), not a stale one.
+        """
+        api = self._create_api(mock_hass)
+
+        # Establish baseline
+        api.data["energia_prelevata"] = 1000.0
+        api.data["energia_immessa"] = 200.0
+        api.data["energia_prodotta"] = 500.0
+        api.data["potenza_prelevata"] = 1.0
+        api.data["potenza_immessa"] = 0.5
+        api.data["potenza_prodotta"] = 2.0
+        api._calculate_derived_values()
+
+        assert api.data["energia_consumata"] == 1300.0  # 300 + 1000
+
+        # All three change simultaneously
+        api.data["energia_prodotta"] = 510.0
+        api.data["energia_immessa"] = 205.0
+        api.data["energia_prelevata"] = 1005.0
+        api._calculate_derived_values()
+
+        # auto_consumata = 510 - 205 = 305
+        assert api.data["energia_auto_consumata"] == 305.0
+        # consumata must use latest prelevata, not stale 1000
+        assert api.data["energia_consumata"] == 1310.0  # 305 + 1005
+
+    def test_debug_log_only_when_waiting(self, mock_hass, mock_transport, mock_client):
+        """Test debug log fires only when one sensor is fresh (actual waiting state).
+
+        The log should NOT fire when neither sensor is fresh (idle polls),
+        as that would create misleading log spam during nighttime hours.
+        """
+        api = self._create_api(mock_hass)
+
+        # Establish baseline
+        api.data["energia_prelevata"] = 1000.0
+        api.data["energia_immessa"] = 200.0
+        api.data["energia_prodotta"] = 500.0
+        api.data["potenza_prelevata"] = 1.0
+        api.data["potenza_immessa"] = 0.5
+        api.data["potenza_prodotta"] = 2.0
+        api._calculate_derived_values()
+
+        with patch.object(api_module, "log_debug") as mock_log:
+            # Scenario 1: Neither sensor changed (idle poll) — NO log
+            api._calculate_derived_values()
+            mock_log.assert_not_called()
+
+            # Scenario 2: Only prodotta changes (waiting for immessa) — YES log
+            api.data["energia_prodotta"] = 510.0
+            api._calculate_derived_values()
+            assert mock_log.call_count == 1
+
+            mock_log.reset_mock()
+
+            # Scenario 3: Both change (sync calc succeeds) — NO log
+            api.data["energia_immessa"] = 205.0
+            api._calculate_derived_values()
+            mock_log.assert_not_called()
+
+            # Scenario 4: Neither changed after sync (idle) — NO log
+            api._calculate_derived_values()
+            mock_log.assert_not_called()

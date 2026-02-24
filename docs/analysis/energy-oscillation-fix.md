@@ -12,8 +12,10 @@ captures them on alternating polls, causing calculated sensors (`energia_auto_co
 `energia_consumata`) to oscillate. HA's `TOTAL_INCREASING` state class treats each dip as a meter
 reset, resulting in **~264% over-counting** on daily self-consumption.
 
-**Fix**: Only recalculate cumulative energy sensors when both base sensors have updated since the
-last calculation, with a 2-poll timeout fallback for single-sensor-changing periods.
+**Fix**: `energia_auto_consumata` (prodotta - immessa) is only recalculated when both base sensors
+have updated since the last calculation, with a 2-poll timeout fallback for single-sensor-changing
+periods. `energia_consumata` (auto_consumata + prelevata) is always recalculated because it depends
+on `prelevata` which changes independently every poll.
 
 ______________________________________________________________________
 
@@ -94,26 +96,29 @@ ______________________________________________________________________
 On each poll:
   1. Always calculate power sensors (potenza_*)
   2. Compare current energia_prodotta/immessa with last-calculated values
-  3. If first poll (no previous data) → calculate
-  4. If both changed → calculate immediately, reset counter
+  3. If first poll (no previous data) → calculate energia_auto_consumata
+  4. If both changed → calculate energia_auto_consumata immediately, reset counter
   5. If exactly one changed → increment counter
-     - If counter >= SYNC_TIMEOUT_POLLS → calculate, reset counter
-     - Otherwise → skip, keep previous energy values
-  6. If neither changed → reset counter to 0 (no new data)
+     - If counter >= SYNC_TIMEOUT_POLLS → calculate energia_auto_consumata, reset counter
+     - Otherwise → skip energia_auto_consumata, log waiting state
+  6. If neither changed → reset counter to 0 (no new data, no log)
+  7. Always recalculate energia_consumata = auto_consumata + prelevata
+     (prelevata changes independently of the prodotta/immessa sync mechanism)
 ```
 
 ### Behavior by Scenario
 
-| Scenario | Behavior | Result |
-|----------|----------|--------|
-| First poll after startup | Always calculates | Baseline established |
-| Both sensors updated | Immediate recalculation | Synchronized, accurate |
-| Only prodotta updated (poll 1/2) | Skip calculation | Prevents spike |
-| Only prodotta updated (poll 2/2) | Timeout → calculate | Safe: no alternation pattern |
-| Only immessa updated | Same as above | Same timeout logic |
-| Neither changed | Counter resets to 0 | No new data, no action needed |
-| No-export period (immessa constant) | Timeout every 2 polls | Correct: prodotta - constant |
-| Device reboot (zeroed registers) | Base sensors protected by reboot check | Derived uses protected values |
+| Scenario | auto_consumata | consumata | Result |
+|----------|----------------|-----------|--------|
+| First poll after startup | Calculated | Calculated | Baseline established |
+| Both sensors updated | Recalculated | Recalculated | Synchronized, accurate |
+| Only prodotta updated (1/2) | Frozen | Recalculated | Prevents spike in auto, consumata tracks prelevata |
+| Only prodotta updated (2/2) | Timeout → calc | Recalculated | Safe: no alternation pattern |
+| Only immessa updated | Same as above | Recalculated | Same timeout logic |
+| Neither changed (idle) | Frozen | Recalculated | No new data, counter resets to 0 |
+| Only prelevata changes (night) | Frozen | Recalculated | consumata tracks grid import growth |
+| No-export period | Timeout every 2 polls | Recalculated | Correct: prodotta - constant |
+| Device reboot | Protected by reboot check | Recalculated | Derived uses protected values |
 
 ### Why SYNC_TIMEOUT_POLLS = 2
 
@@ -131,12 +136,12 @@ ______________________________________________________________________
 
 ### Directly Fixed (Integration Sensors)
 
-| Sensor | State Class | Fix |
-|--------|-------------|-----|
-| `energia_auto_consumata` | TOTAL_INCREASING | Synchronized calculation |
-| `energia_consumata` | TOTAL_INCREASING | Synchronized calculation |
-| `potenza_auto_consumata` | MEASUREMENT | Unchanged (always calculated) |
-| `potenza_consumata` | MEASUREMENT | Unchanged (always calculated) |
+| Sensor | State Class | Strategy |
+|--------|-------------|----------|
+| `energia_auto_consumata` | TOTAL_INCREASING | Synchronized (inside sync guard) |
+| `energia_consumata` | TOTAL_INCREASING | Always recalculated (depends on prelevata) |
+| `potenza_auto_consumata` | MEASUREMENT | Always calculated (instantaneous) |
+| `potenza_consumata` | MEASUREMENT | Always calculated (instantaneous) |
 
 ### Affected Utility Meters (12 Sensors)
 
@@ -182,9 +187,11 @@ After deployment, verify the fix by monitoring:
 
 1. **`sensor.alfa_energy_self_consumed`** — Should increase monotonically, no sawtooth pattern
 2. **`sensor.daily_energy_autoconsumption`** — Should show realistic values (~4-5 kWh, not ~15 kWh)
-3. **Debug logs** — Look for "Skipping energy calc" messages confirming sync logic is active
+3. **Debug logs** — Look for "Waiting for synchronized base sensor update" messages (only when
+   one sensor is fresh, not on idle polls)
 4. **Peak sun hours** — Verify the alternating pattern is handled correctly
 5. **Early morning (no export)** — Verify the timeout fallback allows updates
+6. **Nighttime (no production)** — Verify `energia_consumata` keeps updating as `prelevata` grows
 
 ______________________________________________________________________
 
@@ -194,11 +201,17 @@ The `TestSynchronizedEnergyCalculation` class in `tests/test_api.py` covers:
 
 - First poll always calculates (no previous tracking data)
 - Both sensors fresh → immediate recalculation
-- Only prodotta fresh → skip (wait for immessa)
-- Only immessa fresh → skip (wait for prodotta)
+- Only prodotta fresh → skip auto_consumata (wait for immessa)
+- Only immessa fresh → skip auto_consumata (wait for prodotta)
 - Timeout fallback after SYNC_TIMEOUT_POLLS
-- Neither changed → timeout then calculate (harmless)
-- Full oscillation prevention with real alternating data from Feb 23
-- No-export period with timeout allowing updates
+- Neither changed → counter resets, no unnecessary timeout
+- Idle polls don't poison the unsync counter (beta.1 regression)
+- Full oscillation prevention with real alternating data
+- No-export period with timeout allowing updates (consumata verified)
 - Power sensors always calculated regardless of sync state
 - Sync counter resets when both sensors become fresh
+- **consumata updates when only prelevata changes** (beta.3 critical fix)
+- Night scenario: 10 polls with only prelevata growing
+- Day-to-night transition: full lifecycle verification
+- consumata uses latest prelevata after sync calc
+- Debug log fires only when waiting (one sensor fresh), not on idle polls
