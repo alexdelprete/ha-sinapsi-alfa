@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.13-beta.2] - 2026-02-24
+
+**Beta release** - Fixes sync mechanism that failed to prevent oscillation under real-world conditions.
+
+### Bug Fixes
+
+- **Fixed sync timeout counter poisoned by idle polls** - The v1.2.13-beta.1 sync mechanism's
+  timeout counter incremented on every poll, including idle polls where neither sensor changed.
+  During the ~14 minutes between firmware updates, the counter would cycle to near-timeout,
+  causing ~50% of firmware updates to calculate with desynchronized values. The fix resets
+  the counter when neither sensor has changed, ensuring a full timeout window for each
+  actual firmware update.
+
+**Full Release Notes:** [docs/releases/v1.2.13-beta.2.md](docs/releases/v1.2.13-beta.2.md)
+
+**Full Changelog:** [v1.2.13-beta.1...v1.2.13-beta.2](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.2.13-beta.1...v1.2.13-beta.2)
+
 ## [1.2.13-beta.1] - 2026-02-23
 
 **Beta release** - Fixes ~264% over-counting in calculated energy sensors caused by Alfa firmware
