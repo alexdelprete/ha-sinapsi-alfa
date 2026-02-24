@@ -96,9 +96,10 @@ On each poll:
   2. Compare current energia_prodotta/immessa with last-calculated values
   3. If first poll (no previous data) → calculate
   4. If both changed → calculate immediately, reset counter
-  5. If only one (or neither) changed → increment counter
+  5. If exactly one changed → increment counter
      - If counter >= SYNC_TIMEOUT_POLLS → calculate, reset counter
      - Otherwise → skip, keep previous energy values
+  6. If neither changed → reset counter to 0 (no new data)
 ```
 
 ### Behavior by Scenario
@@ -110,7 +111,7 @@ On each poll:
 | Only prodotta updated (poll 1/2) | Skip calculation | Prevents spike |
 | Only prodotta updated (poll 2/2) | Timeout → calculate | Safe: no alternation pattern |
 | Only immessa updated | Same as above | Same timeout logic |
-| Neither changed | Counter increments → timeout | Same values, harmless |
+| Neither changed | Counter resets to 0 | No new data, no action needed |
 | No-export period (immessa constant) | Timeout every 2 polls | Correct: prodotta - constant |
 | Device reboot (zeroed registers) | Base sensors protected by reboot check | Derived uses protected values |
 

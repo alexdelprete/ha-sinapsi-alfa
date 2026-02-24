@@ -666,14 +666,18 @@ class SinapsiAlfaAPI:
             # Both updated since last calc — synchronized reading, always safe
             should_calculate = True
             self._unsync_poll_count = 0
-        else:
-            # Only one (or neither) changed — possible timing skew
+        elif prodotta_fresh or immessa_fresh:
+            # Exactly one changed — possible firmware timing skew, wait for the other
             self._unsync_poll_count += 1
             if self._unsync_poll_count >= SYNC_TIMEOUT_POLLS:
                 # Waited long enough; if only one sensor is changing,
                 # there's no alternating pattern and no oscillation risk
                 should_calculate = True
                 self._unsync_poll_count = 0
+        else:
+            # Neither changed — no new data, reset counter so the next
+            # actual change gets a full timeout window to wait for its pair
+            self._unsync_poll_count = 0
 
         if should_calculate:
             self.data["energia_auto_consumata"] = curr_prodotta - curr_immessa
@@ -686,7 +690,7 @@ class SinapsiAlfaAPI:
             log_debug(
                 _LOGGER,
                 "_calculate_derived_values",
-                "Skipping energy calc, waiting for synchronized base sensor update",
+                "Skipping energy calc: waiting for synchronized base sensor update",
                 prodotta_fresh=prodotta_fresh,
                 immessa_fresh=immessa_fresh,
                 unsync_polls=self._unsync_poll_count,
