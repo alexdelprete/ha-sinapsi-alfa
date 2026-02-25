@@ -30,6 +30,7 @@ from homeassistant.core import HomeAssistant
 
 from .const import (
     CUMULATIVE_ENERGY_SENSORS,
+    DEFAULT_CONNECTION_TIMEOUT,
     DEFAULT_DEVICE_ID,
     DEFAULT_SENSOR_VALUE,
     DEFAULT_TIMEOUT,
@@ -169,6 +170,7 @@ class SinapsiAlfaAPI:
             host=self._host,
             port=self._port,
             timeout=self._timeout,
+            connection_timeout=float(DEFAULT_CONNECTION_TIMEOUT),
         )
         self._client = AsyncModbusClient(self._transport)
         self._uid = ""  # Initialize empty, will be set during first data fetch

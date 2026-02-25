@@ -366,7 +366,7 @@ Version 1 → 2 migration moves `scan_interval` and `timeout` from `data` to `op
 ## Dependencies
 
 - Home Assistant core (>= 2025.10.0)
-- `modbuslink>=1.4.1` - Modern Modbus TCP client library (native async)
+- `modbuslink>=1.5.1` - Modern Modbus TCP client library (native async, granular timeouts)
 - `getmac>=0.9.5` - MAC address detection
 - Compatible with Python 3.13+
 
@@ -396,14 +396,18 @@ As of v1.0.0, this integration uses [ModbusLink](https://github.com/Miraitowa-la
 
 See `docs/analysis/modbuslink-migration-analysis.md` for detailed migration documentation.
 
-### Upstream Issues to Watch
+### Upstream Issues (Resolved)
 
-Monitor these ModbusLink issues for potential improvements:
+All previously tracked ModbusLink issues have been resolved:
 
-- **[#3](https://github.com/Miraitowa-la/ModbusLink/issues/3)** (Enhancement, Medium) - Replace manual
-  `_extract_uint16()`/`_extract_uint32()` in `api.py:451-475` with native methods when available
-- **[#4](https://github.com/Miraitowa-la/ModbusLink/issues/4)** (Bug, High) - Test parallel batch reads with
-  `asyncio.gather()` in `api.py:627-631` for performance (currently sequential due to Transaction ID mismatches)
+- **[#3](https://github.com/Miraitowa-la/ModbusLink/issues/3)** (v1.4.0) - Native `read_uint32()` etc. added.
+  Not applicable: our batch read approach (5 reads vs 20 individual) is more efficient.
+- **[#4](https://github.com/Miraitowa-la/ModbusLink/issues/4)** (v1.4.0) - Concurrent async safety fixed with
+  locks. Not applicable: the Alfa device doesn't support parallel Modbus connections.
+- **[#5](https://github.com/Miraitowa-la/ModbusLink/issues/5)** (v1.4.2/v1.5.0) - TCP `flush()` added in v1.4.2
+  (already used by our `_flush_buffer()`). v1.5.0 extended flush to RTU/ASCII (not applicable, we use TCP).
+- **[#6](https://github.com/Miraitowa-la/ModbusLink/issues/6)** (v1.5.1) - `connection_timeout` parameter added.
+  Integrated in v1.2.14.
 
 ## Key Files to Review
 
