@@ -101,7 +101,10 @@ On each poll:
   5. If exactly one changed → increment counter
      - If counter >= SYNC_TIMEOUT_POLLS → calculate energia_auto_consumata, reset counter
      - Otherwise → skip energia_auto_consumata, log waiting state
-  6. If neither changed → reset counter to 0 (no new data, no log)
+  6. If neither changed → reset counter to 0, then:
+     - If auto_consumata != prodotta - immessa (gap > 0.001) →
+       reconcile auto_consumata to true value (quiescent reconciliation)
+     - Otherwise → no-op (already aligned)
   7. Always recalculate energia_consumata = auto_consumata + prelevata
      (prelevata changes independently of the prodotta/immessa sync mechanism)
 ```
@@ -115,7 +118,8 @@ On each poll:
 | Only prodotta updated (1/2) | Frozen | Recalculated | Prevents spike in auto, consumata tracks prelevata |
 | Only prodotta updated (2/2) | Timeout → calc | Recalculated | Safe: no alternation pattern |
 | Only immessa updated | Same as above | Recalculated | Same timeout logic |
-| Neither changed (idle) | Frozen | Recalculated | No new data, counter resets to 0 |
+| Neither changed (idle, aligned) | Unchanged | Recalculated | No-op, counter resets to 0 |
+| Neither changed (idle, gap) | Reconciled | Recalculated | Quiescent reconciliation flushes residual gap |
 | Only prelevata changes (night) | Frozen | Recalculated | consumata tracks grid import growth |
 | No-export period | Timeout every 2 polls | Recalculated | Correct: prodotta - constant |
 | Device reboot | Protected by reboot check | Recalculated | Derived uses protected values |

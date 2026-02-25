@@ -325,6 +325,202 @@ class TestDerivedValues:
         # energia_consumata = energia_auto_consumata + energia_prelevata = 300 + 1000 = 1300
         assert api.data["energia_consumata"] == 1300.0
 
+    def test_sync_guard_both_fresh(self, mock_hass, mock_transport, mock_client):
+        """Test sync guard recalculates when both sensors update."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        # First poll: initializes tracking
+        api.data["potenza_prelevata"] = 0.0
+        api.data["potenza_immessa"] = 0.0
+        api.data["potenza_prodotta"] = 0.0
+        api.data["energia_prelevata"] = 1000.0
+        api.data["energia_immessa"] = 200.0
+        api.data["energia_prodotta"] = 500.0
+        api._calculate_derived_values()
+        assert api.data["energia_auto_consumata"] == 300.0
+
+        # Both sensors update — should recalculate
+        api.data["energia_prodotta"] = 501.0
+        api.data["energia_immessa"] = 200.5
+        api._calculate_derived_values()
+        assert api.data["energia_auto_consumata"] == 300.5
+
+    def test_sync_guard_one_fresh_waits(self, mock_hass, mock_transport, mock_client):
+        """Test sync guard holds when only one sensor updates."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        # First poll
+        api.data["potenza_prelevata"] = 0.0
+        api.data["potenza_immessa"] = 0.0
+        api.data["potenza_prodotta"] = 0.0
+        api.data["energia_prelevata"] = 1000.0
+        api.data["energia_immessa"] = 200.0
+        api.data["energia_prodotta"] = 500.0
+        api._calculate_derived_values()
+        assert api.data["energia_auto_consumata"] == 300.0
+
+        # Only prodotta updates — should wait
+        api.data["energia_prodotta"] = 501.0
+        api._calculate_derived_values()
+        assert api.data["energia_auto_consumata"] == 300.0  # Held
+        assert api._unsync_poll_count == 1
+
+    def test_sync_guard_timeout_fires(self, mock_hass, mock_transport, mock_client):
+        """Test sync guard timeout calculates after SYNC_TIMEOUT_POLLS."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        # First poll
+        api.data["potenza_prelevata"] = 0.0
+        api.data["potenza_immessa"] = 0.0
+        api.data["potenza_prodotta"] = 0.0
+        api.data["energia_prelevata"] = 1000.0
+        api.data["energia_immessa"] = 200.0
+        api.data["energia_prodotta"] = 500.0
+        api._calculate_derived_values()
+
+        # Only prodotta updates — wait for timeout
+        api.data["energia_prodotta"] = 501.0
+        for _ in range(SYNC_TIMEOUT_POLLS - 1):
+            api._calculate_derived_values()
+            assert api.data["energia_auto_consumata"] == 300.0  # Still held
+
+        # Timeout fires on next poll
+        api._calculate_derived_values()
+        assert api.data["energia_auto_consumata"] == 301.0  # 501 - 200
+        assert api._unsync_poll_count == 0
+
+    def test_quiescent_reconciliation_fires(self, mock_hass, mock_transport, mock_client):
+        """Test quiescent reconciliation aligns auto_consumata when sensors stabilize."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        # First poll — initialize
+        api.data["potenza_prelevata"] = 0.0
+        api.data["potenza_immessa"] = 0.0
+        api.data["potenza_prodotta"] = 0.0
+        api.data["energia_prelevata"] = 1000.0
+        api.data["energia_immessa"] = 200.0
+        api.data["energia_prodotta"] = 500.0
+        api._calculate_derived_values()
+        assert api.data["energia_auto_consumata"] == 300.0
+
+        # Simulate a gap: manually set auto_consumata to a stale value
+        # (as if the sync guard held it during a firmware update cycle)
+        api.data["energia_auto_consumata"] = 299.0
+
+        # Neither sensor changes — quiescent reconciliation should fire
+        api._calculate_derived_values()
+        assert api.data["energia_auto_consumata"] == 300.0  # Reconciled
+        assert api._last_calc_prodotta == 500.0
+        assert api._last_calc_immessa == 200.0
+
+    def test_quiescent_reconciliation_noop_when_aligned(
+        self, mock_hass, mock_transport, mock_client
+    ):
+        """Test quiescent reconciliation is a no-op when values already match."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        # First poll
+        api.data["potenza_prelevata"] = 0.0
+        api.data["potenza_immessa"] = 0.0
+        api.data["potenza_prodotta"] = 0.0
+        api.data["energia_prelevata"] = 1000.0
+        api.data["energia_immessa"] = 200.0
+        api.data["energia_prodotta"] = 500.0
+        api._calculate_derived_values()
+        assert api.data["energia_auto_consumata"] == 300.0
+
+        # Neither changes, already aligned — should stay at 300.0
+        api._calculate_derived_values()
+        assert api.data["energia_auto_consumata"] == 300.0
+
+    def test_quiescent_reconciliation_tolerance(self, mock_hass, mock_transport, mock_client):
+        """Test quiescent reconciliation ignores gaps smaller than tolerance."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        # First poll
+        api.data["potenza_prelevata"] = 0.0
+        api.data["potenza_immessa"] = 0.0
+        api.data["potenza_prodotta"] = 0.0
+        api.data["energia_prelevata"] = 1000.0
+        api.data["energia_immessa"] = 200.0
+        api.data["energia_prodotta"] = 500.0
+        api._calculate_derived_values()
+
+        # Set a tiny gap below tolerance (0.001)
+        api.data["energia_auto_consumata"] = 300.0005
+
+        # Neither changes — gap is below tolerance, should NOT reconcile
+        api._calculate_derived_values()
+        assert api.data["energia_auto_consumata"] == 300.0005  # Unchanged
+
+    def test_consumata_always_updates(self, mock_hass, mock_transport, mock_client):
+        """Test energia_consumata always reflects latest prelevata (beta.3 fix)."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        # First poll
+        api.data["potenza_prelevata"] = 0.0
+        api.data["potenza_immessa"] = 0.0
+        api.data["potenza_prodotta"] = 0.0
+        api.data["energia_prelevata"] = 1000.0
+        api.data["energia_immessa"] = 200.0
+        api.data["energia_prodotta"] = 500.0
+        api._calculate_derived_values()
+        assert api.data["energia_consumata"] == 1300.0  # 300 + 1000
+
+        # Only prelevata changes (nighttime import), prodotta/immessa frozen
+        api.data["energia_prelevata"] = 1001.0
+        api._calculate_derived_values()
+        assert api.data["energia_consumata"] == 1301.0  # 300 + 1001
+
 
 class TestPortCheck:
     """Tests for port availability check."""

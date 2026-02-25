@@ -689,6 +689,21 @@ class SinapsiAlfaAPI:
             # Neither changed — no new data, reset counter so the next
             # actual change gets a full timeout window to wait for its pair
             self._unsync_poll_count = 0
+            # Reconcile any residual gap from the last sync guard delay.
+            # During quiescent periods (neither sensor changing), there is
+            # zero oscillation risk, so it is safe to force-align the
+            # calculated value with the current base sensor values.
+            true_auto = curr_prodotta - curr_immessa
+            if abs(self.data["energia_auto_consumata"] - true_auto) > 0.001:
+                log_debug(
+                    _LOGGER,
+                    "_calculate_derived_values",
+                    "Quiescent reconciliation: aligned auto_consumata",
+                    gap=round(self.data["energia_auto_consumata"] - true_auto, 3),
+                )
+                self.data["energia_auto_consumata"] = true_auto
+                self._last_calc_prodotta = curr_prodotta
+                self._last_calc_immessa = curr_immessa
 
         if should_calculate:
             self.data["energia_auto_consumata"] = curr_prodotta - curr_immessa
