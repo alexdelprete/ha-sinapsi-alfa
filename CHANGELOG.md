@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.13-beta.7] - 2026-02-25
+
+**Beta release** - Replaces poll-count timeout with time-based timeout to fix overcounting
+at short scan intervals.
+
+### Bug Fixes
+
+- **Fixed sync guard timeout too short with fast polling** - The poll-count-based
+  `SYNC_TIMEOUT_POLLS` broke with scan intervals shorter than 60s (e.g., 10s polling x 3 polls
+  = 30s timeout, too short for the ~55s firmware delay). Replaced with time-based
+  `SYNC_TIMEOUT_SECONDS = 120` using `time.monotonic()`, which works correctly regardless
+  of scan interval.
+
+**Full Release Notes:** [docs/releases/v1.2.13-beta.7.md](docs/releases/v1.2.13-beta.7.md)
+
+**Full Changelog:** [v1.2.13-beta.6...v1.2.13-beta.7](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.2.13-beta.6...v1.2.13-beta.7)
+
 ## [1.2.13-beta.6] - 2026-02-25
 
 **Beta release** - Fixes daily autoconsumption overcounting caused by aggressive sync guard timeout.
