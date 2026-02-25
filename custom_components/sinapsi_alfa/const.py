@@ -68,9 +68,12 @@ CUMULATIVE_ENERGY_SENSORS: set[str] = {
 # base sensor has changed. The Alfa firmware updates energia_prodotta and
 # energia_immessa on a ~15-min internal cycle, with prodotta always updating
 # ~1 min before immessa. Our 60s polling captures them on alternating polls.
-# A timeout of 2 polls distinguishes real alternation (triggers on poll 2)
-# from genuine single-sensor changes (no oscillation risk, safe to calculate).
-SYNC_TIMEOUT_POLLS: int = 2
+# A timeout of 3 polls gives immessa enough time to catch up with prodotta
+# before force-calculating. With timeout=2, borderline firmware timing could
+# cause a timeout with stale immessa, producing a temporary overshoot followed
+# by a dip when immessa catches up — and TOTAL_INCREASING treats the dip as a
+# meter reset, overcounting by the export amount each firmware cycle.
+SYNC_TIMEOUT_POLLS: int = 3
 
 # Batch read configuration: (start_address, count)
 # Groups consecutive registers to minimize Modbus requests

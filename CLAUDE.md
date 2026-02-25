@@ -457,7 +457,7 @@ HA's `TOTAL_INCREASING` state class treats each dip as a meter reset, causing **
 **Fix (synchronized calculation with timeout fallback):**
 
 - Energy sensors are only recalculated when **both** base sensors have changed since the last calculation
-- A timeout of `SYNC_TIMEOUT_POLLS` (2 polls) allows calculation when only one sensor is changing
+- A timeout of `SYNC_TIMEOUT_POLLS` (3 polls) allows calculation when only one sensor is changing
   (e.g., no-export periods where immessa stays constant — no oscillation risk)
 - Power sensors (`MEASUREMENT`) are always calculated immediately (no accumulation issue)
 - Tracking state: `_last_calc_prodotta`, `_last_calc_immessa`, `_unsync_poll_count` in `api.py`

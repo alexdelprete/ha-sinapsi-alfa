@@ -681,8 +681,10 @@ class SinapsiAlfaAPI:
             # Exactly one changed — possible firmware timing skew, wait for the other
             self._unsync_poll_count += 1
             if self._unsync_poll_count >= SYNC_TIMEOUT_POLLS:
-                # Waited long enough; if only one sensor is changing,
-                # there's no alternating pattern and no oscillation risk
+                # Waited long enough (3 polls = 180s at 60s interval); if only
+                # one sensor is changing, there's no alternating pattern and no
+                # oscillation risk. 3 polls gives the firmware's ~60s immessa
+                # delay safe margin to be caught on the 2nd poll as "both fresh".
                 should_calculate = True
                 self._unsync_poll_count = 0
         else:

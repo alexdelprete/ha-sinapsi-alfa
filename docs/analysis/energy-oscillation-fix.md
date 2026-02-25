@@ -13,7 +13,7 @@ captures them on alternating polls, causing calculated sensors (`energia_auto_co
 reset, resulting in **~264% over-counting** on daily self-consumption.
 
 **Fix**: `energia_auto_consumata` (prodotta - immessa) is only recalculated when both base sensors
-have updated since the last calculation, with a 2-poll timeout fallback for single-sensor-changing
+have updated since the last calculation, with a 3-poll timeout fallback for single-sensor-changing
 periods. `energia_consumata` (auto_consumata + prelevata) is always recalculated because it depends
 on `prelevata` which changes independently every poll.
 
@@ -86,7 +86,7 @@ ______________________________________________________________________
 
 **Files modified:**
 
-- `const.py` — Added `SYNC_TIMEOUT_POLLS = 2` constant
+- `const.py` — Added `SYNC_TIMEOUT_POLLS = 3` constant
 - `api.py` — Replaced `_calculate_derived_values()` with synchronized logic, added 3 tracking
   instance variables (`_last_calc_prodotta`, `_last_calc_immessa`, `_unsync_poll_count`)
 
@@ -115,24 +115,30 @@ On each poll:
 |----------|----------------|-----------|--------|
 | First poll after startup | Calculated | Calculated | Baseline established |
 | Both sensors updated | Recalculated | Recalculated | Synchronized, accurate |
-| Only prodotta updated (1/2) | Frozen | Recalculated | Prevents spike in auto, consumata tracks prelevata |
-| Only prodotta updated (2/2) | Timeout → calc | Recalculated | Safe: no alternation pattern |
+| Only prodotta updated (1/3) | Frozen | Recalculated | Prevents spike in auto, consumata tracks prelevata |
+| Only prodotta updated (2/3) | Frozen | Recalculated | Extra poll gives immessa time to catch up |
+| Only prodotta updated (3/3) | Timeout → calc | Recalculated | Safe: no alternation pattern |
 | Only immessa updated | Same as above | Recalculated | Same timeout logic |
 | Neither changed (idle, aligned) | Unchanged | Recalculated | No-op, counter resets to 0 |
 | Neither changed (idle, gap) | Reconciled | Recalculated | Quiescent reconciliation flushes residual gap |
 | Only prelevata changes (night) | Frozen | Recalculated | consumata tracks grid import growth |
-| No-export period | Timeout every 2 polls | Recalculated | Correct: prodotta - constant |
+| No-export period | Timeout every 3 polls | Recalculated | Correct: prodotta - constant |
 | Device reboot | Protected by reboot check | Recalculated | Derived uses protected values |
 
-### Why SYNC_TIMEOUT_POLLS = 2
+### Why SYNC_TIMEOUT_POLLS = 3
 
 The Alfa firmware's ~15-minute cycle with ~1-minute offset means:
 
 - **Normal alternation**: Prodotta on poll N, immessa on poll N+1 → both fresh on poll N+1
-- **Timeout = 2**: If only one sensor changes for 2 consecutive polls, it means the other genuinely
-  isn't changing (e.g., no export). Safe to calculate because there's no alternating pattern
-- **Timeout = 1** would be too aggressive: could trigger on the first unsync poll before the
-  second sensor has a chance to update
+- **Timeout = 3**: Gives immessa safe margin to catch up with prodotta. With 60s polling and
+  ~60s firmware delay, immessa should be caught on poll N+1 (both fresh). The extra poll
+  before timeout prevents the overshoot-dip cycle that occurs when timeout fires with stale
+  immessa — TOTAL_INCREASING treats the subsequent dip as a reset, overcounting by the
+  export increment each firmware cycle
+- **Timeout = 2** was too aggressive: with borderline firmware timing (>60s delay), the timeout
+  could fire on poll N+1 before immessa updated. This produced overcount = daily export.
+- **Timeout = 1** would be even worse: triggers on the first unsync poll before the second
+  sensor has any chance to update
 
 ______________________________________________________________________
 
