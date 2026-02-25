@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.13-beta.6] - 2026-02-25
+
+**Beta release** - Fixes daily autoconsumption overcounting caused by aggressive sync guard timeout.
+
+### Bug Fixes
+
+- **Fixed autoconsumption = production overcounting** - `SYNC_TIMEOUT_POLLS` was 2, which was too
+  aggressive for the firmware's ~60s immessa delay. The timeout fired with stale `immessa`, producing
+  an overshoot followed by a dip that `TOTAL_INCREASING` misinterpreted as a meter reset. Increased
+  timeout to 3 polls, giving `immessa` safe margin to be caught as "both fresh".
+
+**Full Release Notes:** [docs/releases/v1.2.13-beta.6.md](docs/releases/v1.2.13-beta.6.md)
+
+**Full Changelog:** [v1.2.13-beta.5...v1.2.13-beta.6](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.2.13-beta.5...v1.2.13-beta.6)
+
 ## [1.2.13-beta.5] - 2026-02-25
 
 **Beta release** - Adds quiescent reconciliation to eliminate cross-midnight timing artifact
