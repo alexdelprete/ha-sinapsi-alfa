@@ -86,9 +86,9 @@ ______________________________________________________________________
 
 **Files modified:**
 
-- `const.py` — Added `SYNC_TIMEOUT_POLLS = 3` constant
+- `const.py` — Added `SYNC_TIMEOUT_SECONDS = 120` constant
 - `api.py` — Replaced `_calculate_derived_values()` with synchronized logic, added 3 tracking
-  instance variables (`_last_calc_prodotta`, `_last_calc_immessa`, `_unsync_poll_count`)
+  instance variables (`_last_calc_prodotta`, `_last_calc_immessa`, `_first_unsync_time`)
 
 ### Algorithm
 
@@ -97,11 +97,11 @@ On each poll:
   1. Always calculate power sensors (potenza_*)
   2. Compare current energia_prodotta/immessa with last-calculated values
   3. If first poll (no previous data) → calculate energia_auto_consumata
-  4. If both changed → calculate energia_auto_consumata immediately, reset counter
-  5. If exactly one changed → increment counter
-     - If counter >= SYNC_TIMEOUT_POLLS → calculate energia_auto_consumata, reset counter
+  4. If both changed → calculate energia_auto_consumata immediately, reset timer
+  5. If exactly one changed → start timer (if not already running)
+     - If elapsed >= SYNC_TIMEOUT_SECONDS (120s) → calculate, reset timer
      - Otherwise → skip energia_auto_consumata, log waiting state
-  6. If neither changed → reset counter to 0, then:
+  6. If neither changed → reset timer to None, then:
      - If auto_consumata != prodotta - immessa (gap > 0.001) →
        reconcile auto_consumata to true value (quiescent reconciliation)
      - Otherwise → no-op (already aligned)
@@ -115,30 +115,31 @@ On each poll:
 |----------|----------------|-----------|--------|
 | First poll after startup | Calculated | Calculated | Baseline established |
 | Both sensors updated | Recalculated | Recalculated | Synchronized, accurate |
-| Only prodotta updated (1/3) | Frozen | Recalculated | Prevents spike in auto, consumata tracks prelevata |
-| Only prodotta updated (2/3) | Frozen | Recalculated | Extra poll gives immessa time to catch up |
-| Only prodotta updated (3/3) | Timeout → calc | Recalculated | Safe: no alternation pattern |
+| Only prodotta updated (<120s) | Frozen | Recalculated | Prevents spike, consumata tracks prelevata |
+| Only prodotta updated (>=120s) | Timeout → calc | Recalculated | Safe: no alternation after 120s |
 | Only immessa updated | Same as above | Recalculated | Same timeout logic |
-| Neither changed (idle, aligned) | Unchanged | Recalculated | No-op, counter resets to 0 |
+| Neither changed (idle, aligned) | Unchanged | Recalculated | No-op, timer resets to None |
 | Neither changed (idle, gap) | Reconciled | Recalculated | Quiescent reconciliation flushes residual gap |
 | Only prelevata changes (night) | Frozen | Recalculated | consumata tracks grid import growth |
-| No-export period | Timeout every 3 polls | Recalculated | Correct: prodotta - constant |
+| No-export period | Timeout after 120s | Recalculated | Correct: prodotta - constant |
 | Device reboot | Protected by reboot check | Recalculated | Derived uses protected values |
 
-### Why SYNC_TIMEOUT_POLLS = 3
+### Why Time-Based Timeout (SYNC_TIMEOUT_SECONDS = 120)
 
-The Alfa firmware's ~15-minute cycle with ~1-minute offset means:
+The Alfa firmware updates prodotta ~55-60 seconds before immessa. A poll-count-based timeout
+breaks when the scan interval varies:
 
-- **Normal alternation**: Prodotta on poll N, immessa on poll N+1 → both fresh on poll N+1
-- **Timeout = 3**: Gives immessa safe margin to catch up with prodotta. With 60s polling and
-  ~60s firmware delay, immessa should be caught on poll N+1 (both fresh). The extra poll
-  before timeout prevents the overshoot-dip cycle that occurs when timeout fires with stale
-  immessa — TOTAL_INCREASING treats the subsequent dip as a reset, overcounting by the
-  export increment each firmware cycle
-- **Timeout = 2** was too aggressive: with borderline firmware timing (>60s delay), the timeout
-  could fire on poll N+1 before immessa updated. This produced overcount = daily export.
-- **Timeout = 1** would be even worse: triggers on the first unsync poll before the second
-  sensor has any chance to update
+- **Poll-count timeout failure**: With `SYNC_TIMEOUT_POLLS = 3` and `scan_interval = 10s`,
+  the effective timeout was 30 seconds — too short for the ~55s firmware delay. The timeout
+  fired with stale immessa, producing an overshoot. When immessa caught up, the correction
+  dip caused TOTAL_INCREASING to overcount by the export amount each firmware cycle.
+- **Time-based timeout (120s)**: Works correctly regardless of scan_interval. The sync guard
+  holds auto_consumata frozen until either:
+  1. **Both sensors update** ("both fresh" — typically within ~60s) → correct synchronized calc
+  2. **120 seconds elapse** with only one sensor changing → genuine no-export period, safe to calc
+- **Why 120s**: Must be longer than the firmware delay (~60s) with comfortable margin.
+  During normal alternation, "both fresh" fires well before 120s. The timeout only fires
+  during genuine single-sensor-changing periods (no export, no oscillation risk).
 
 ______________________________________________________________________
 
@@ -213,13 +214,13 @@ The `TestSynchronizedEnergyCalculation` class in `tests/test_api.py` covers:
 - Both sensors fresh → immediate recalculation
 - Only prodotta fresh → skip auto_consumata (wait for immessa)
 - Only immessa fresh → skip auto_consumata (wait for prodotta)
-- Timeout fallback after SYNC_TIMEOUT_POLLS
-- Neither changed → counter resets, no unnecessary timeout
-- Idle polls don't poison the unsync counter (beta.1 regression)
+- Time-based timeout fallback after SYNC_TIMEOUT_SECONDS
+- Neither changed → timer resets, no unnecessary timeout
+- Idle polls don't start the unsync timer (beta.1 regression)
 - Full oscillation prevention with real alternating data
 - No-export period with timeout allowing updates (consumata verified)
 - Power sensors always calculated regardless of sync state
-- Sync counter resets when both sensors become fresh
+- Sync timer resets when both sensors become fresh
 - **consumata updates when only prelevata changes** (beta.3 critical fix)
 - Night scenario: 10 polls with only prelevata growing
 - Day-to-night transition: full lifecycle verification

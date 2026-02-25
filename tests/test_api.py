@@ -1,5 +1,6 @@
 """Tests for Sinapsi Alfa API."""
 
+import time
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from modbuslink import (
@@ -31,7 +32,7 @@ from custom_components.sinapsi_alfa.const import (
     MODEL,
     REGISTER_BATCHES,
     SENSOR_ENTITIES,
-    SYNC_TIMEOUT_POLLS,
+    SYNC_TIMEOUT_SECONDS,
 )
 
 from .conftest import TEST_HOST, TEST_NAME, TEST_PORT
@@ -377,10 +378,10 @@ class TestDerivedValues:
         api.data["energia_prodotta"] = 501.0
         api._calculate_derived_values()
         assert api.data["energia_auto_consumata"] == 300.0  # Held
-        assert api._unsync_poll_count == 1
+        assert api._first_unsync_time is not None
 
     def test_sync_guard_timeout_fires(self, mock_hass, mock_transport, mock_client):
-        """Test sync guard timeout calculates after SYNC_TIMEOUT_POLLS."""
+        """Test sync guard timeout calculates after SYNC_TIMEOUT_SECONDS."""
         api = SinapsiAlfaAPI(
             mock_hass,
             TEST_NAME,
@@ -399,16 +400,19 @@ class TestDerivedValues:
         api.data["energia_prodotta"] = 500.0
         api._calculate_derived_values()
 
-        # Only prodotta updates — wait for timeout
+        # Only prodotta updates — starts timer, should wait
         api.data["energia_prodotta"] = 501.0
-        for _ in range(SYNC_TIMEOUT_POLLS - 1):
-            api._calculate_derived_values()
-            assert api.data["energia_auto_consumata"] == 300.0  # Still held
+        api._calculate_derived_values()
+        assert api.data["energia_auto_consumata"] == 300.0  # Still held
+        assert api._first_unsync_time is not None
 
-        # Timeout fires on next poll
+        # Simulate time passing beyond timeout
+        api._first_unsync_time = time.monotonic() - SYNC_TIMEOUT_SECONDS - 1
+
+        # Next poll — timeout fires
         api._calculate_derived_values()
         assert api.data["energia_auto_consumata"] == 301.0  # 501 - 200
-        assert api._unsync_poll_count == 0
+        assert api._first_unsync_time is None
 
     def test_quiescent_reconciliation_fires(self, mock_hass, mock_transport, mock_client):
         """Test quiescent reconciliation aligns auto_consumata when sensors stabilize."""
@@ -1748,7 +1752,7 @@ class TestSynchronizedEnergyCalculation:
         assert api.data["energia_consumata"] == 1300.0
         # Tracking should NOT be updated
         assert api._last_calc_prodotta == 500.0
-        assert api._unsync_poll_count == 1
+        assert api._first_unsync_time is not None
 
     def test_only_immessa_fresh_skips_calculation(self, mock_hass, mock_transport, mock_client):
         """Test only immessa changed → skip (wait for prodotta)."""
@@ -1769,10 +1773,10 @@ class TestSynchronizedEnergyCalculation:
 
         # Energy values should NOT change
         assert api.data["energia_auto_consumata"] == 300.0
-        assert api._unsync_poll_count == 1
+        assert api._first_unsync_time is not None
 
     def test_timeout_fallback_calculates(self, mock_hass, mock_transport, mock_client):
-        """Test after SYNC_TIMEOUT_POLLS with only one changing → calculate."""
+        """Test after SYNC_TIMEOUT_SECONDS with only one changing → calculate."""
         api = self._create_api(mock_hass)
 
         # Establish baseline
@@ -1784,24 +1788,26 @@ class TestSynchronizedEnergyCalculation:
         api.data["potenza_prodotta"] = 2.0
         api._calculate_derived_values()
 
-        # Only prodotta changes for SYNC_TIMEOUT_POLLS consecutive polls
+        # Only prodotta changes — starts timer, should wait
         api.data["energia_prodotta"] = 510.0
-        for _ in range(SYNC_TIMEOUT_POLLS - 1):
-            api._calculate_derived_values()
-            # Still waiting — not enough polls yet
-            assert api.data["energia_auto_consumata"] == 300.0
+        api._calculate_derived_values()
+        assert api.data["energia_auto_consumata"] == 300.0  # Still held
+        assert api._first_unsync_time is not None
 
-        # One more poll hits the timeout → should calculate
+        # Simulate time passing beyond timeout
+        api._first_unsync_time = time.monotonic() - SYNC_TIMEOUT_SECONDS - 1
+
+        # Next poll hits the timeout → should calculate
         api._calculate_derived_values()
 
         # Now calculated with current values
         # energia_auto_consumata = 510 - 200 = 310
         assert api.data["energia_auto_consumata"] == 310.0
         assert api.data["energia_consumata"] == 1310.0
-        assert api._unsync_poll_count == 0
+        assert api._first_unsync_time is None
 
-    def test_neither_changed_resets_counter(self, mock_hass, mock_transport, mock_client):
-        """Test neither sensor changed → counter resets, no unnecessary timeout calc."""
+    def test_neither_changed_resets_timer(self, mock_hass, mock_transport, mock_client):
+        """Test neither sensor changed → timer resets, no unnecessary timeout calc."""
         api = self._create_api(mock_hass)
 
         # Establish baseline
@@ -1813,21 +1819,20 @@ class TestSynchronizedEnergyCalculation:
         api.data["potenza_prodotta"] = 2.0
         api._calculate_derived_values()
 
-        # No changes at all for many polls (more than SYNC_TIMEOUT_POLLS)
-        for _ in range(SYNC_TIMEOUT_POLLS + 5):
+        # No changes at all for many polls
+        for _ in range(10):
             api._calculate_derived_values()
 
-        # Values unchanged, counter stays at 0 (not accumulated)
+        # Values unchanged, timer stays None (not started)
         assert api.data["energia_auto_consumata"] == 300.0
         assert api.data["energia_consumata"] == 1300.0
-        assert api._unsync_poll_count == 0
+        assert api._first_unsync_time is None
 
-    def test_idle_period_does_not_poison_counter(self, mock_hass, mock_transport, mock_client):
-        """Regression: idle polls must not push counter near timeout.
+    def test_idle_period_does_not_poison_timer(self, mock_hass, mock_transport, mock_client):
+        """Regression: idle polls must not start the unsync timer.
 
-        Before the fix, the counter incremented on idle polls (neither changed),
-        so after an idle period the counter could be at 1 (out of timeout=2).
-        The first poll with a single-sensor update would then immediately trigger
+        Before the fix, idle polls could accumulate state that caused the
+        first poll with a single-sensor update to immediately trigger
         the timeout and calculate with desynchronized values, causing oscillation.
         """
         api = self._create_api(mock_hass)
@@ -1846,8 +1851,8 @@ class TestSynchronizedEnergyCalculation:
         for _ in range(13):
             api._calculate_derived_values()
 
-        # Counter must be 0 after idle polls, not accumulated
-        assert api._unsync_poll_count == 0
+        # Timer must be None after idle polls (not started)
+        assert api._first_unsync_time is None
 
         # Now production updates (immessa still stale) — must NOT trigger timeout
         api.data["energia_prodotta"] = 1010.0
@@ -1855,7 +1860,7 @@ class TestSynchronizedEnergyCalculation:
 
         # Energy value must NOT change (waiting for immessa to catch up)
         assert api.data["energia_auto_consumata"] == 800.0
-        assert api._unsync_poll_count == 1
+        assert api._first_unsync_time is not None
 
         # Next poll: immessa catches up — now both fresh, calculate
         api.data["energia_immessa"] = 202.0
@@ -1863,7 +1868,7 @@ class TestSynchronizedEnergyCalculation:
 
         # Correct synchronized calculation: 1010 - 202 = 808
         assert api.data["energia_auto_consumata"] == 808.0
-        assert api._unsync_poll_count == 0
+        assert api._first_unsync_time is None
 
     def test_oscillation_prevented_alternating_pattern(
         self, mock_hass, mock_transport, mock_client
@@ -1948,13 +1953,19 @@ class TestSynchronizedEnergyCalculation:
 
         assert api.data["energia_auto_consumata"] == 300.0
 
-        # Prodotta increases every poll, immessa never changes
-        prodotta_values = [501.0, 502.0, 503.0, 504.0, 505.0, 506.0]
-        for val in prodotta_values:
-            api.data["energia_prodotta"] = val
-            api._calculate_derived_values()
+        # Only prodotta changes — starts timer, should wait
+        api.data["energia_prodotta"] = 506.0
+        api._calculate_derived_values()
+        assert api.data["energia_auto_consumata"] == 300.0  # Held
+        assert api._first_unsync_time is not None
 
-        # After timeouts, value should be updated to latest
+        # Simulate time passing beyond timeout
+        api._first_unsync_time = time.monotonic() - SYNC_TIMEOUT_SECONDS - 1
+
+        # Next poll — timeout fires
+        api._calculate_derived_values()
+
+        # After timeout, value should be updated to latest
         # energia_auto_consumata = 506.0 - 200.0 = 306.0
         assert api.data["energia_auto_consumata"] == 306.0
         # energia_consumata = 306.0 + 5000.0 = 5306.0
@@ -1985,8 +1996,8 @@ class TestSynchronizedEnergyCalculation:
         # Energy sensors should NOT update (waiting for sync)
         assert api.data["energia_auto_consumata"] == 300.0
 
-    def test_sync_counter_resets_on_both_fresh(self, mock_hass, mock_transport, mock_client):
-        """Test unsync counter resets when both sensors become fresh."""
+    def test_sync_timer_resets_on_both_fresh(self, mock_hass, mock_transport, mock_client):
+        """Test unsync timer resets when both sensors become fresh."""
         api = self._create_api(mock_hass)
 
         # Establish baseline
@@ -1998,15 +2009,15 @@ class TestSynchronizedEnergyCalculation:
         api.data["potenza_prodotta"] = 2.0
         api._calculate_derived_values()
 
-        # One unsync poll
+        # One unsync poll — timer starts
         api.data["energia_prodotta"] = 510.0
         api._calculate_derived_values()
-        assert api._unsync_poll_count == 1
+        assert api._first_unsync_time is not None
 
-        # Now immessa also changes → both fresh → counter resets
+        # Now immessa also changes → both fresh → timer resets
         api.data["energia_immessa"] = 205.0
         api._calculate_derived_values()
-        assert api._unsync_poll_count == 0
+        assert api._first_unsync_time is None
         assert api.data["energia_auto_consumata"] == 305.0
 
     def test_consumata_updates_when_only_prelevata_changes(
@@ -2113,18 +2124,20 @@ class TestSynchronizedEnergyCalculation:
         assert api.data["energia_auto_consumata"] == 808.0
         assert api.data["energia_consumata"] == 5810.0  # 808 + 5002
 
-        # Timeout triggers after SYNC_TIMEOUT_POLLS
-        for _ in range(SYNC_TIMEOUT_POLLS - 1):
-            api.data["energia_prelevata"] += 1.0
-            api._calculate_derived_values()
+        # Simulate time passing beyond timeout
+        api._first_unsync_time = time.monotonic() - SYNC_TIMEOUT_SECONDS - 1
+
+        # Prelevata keeps growing during wait
+        api.data["energia_prelevata"] = 5004.0
+        api._calculate_derived_values()
 
         # After timeout: auto_consumata recalculated, consumata uses latest prelevata
         assert api.data["energia_auto_consumata"] == 809.0  # 1011 - 202
-        latest_prelevata = api.data["energia_prelevata"]
-        assert api.data["energia_consumata"] == 809.0 + latest_prelevata
+        assert api.data["energia_consumata"] == 5813.0  # 809 + 5004
 
         # Phase 3: Nighttime — no more production changes, only prelevata
         frozen_auto = api.data["energia_auto_consumata"]
+        latest_prelevata = api.data["energia_prelevata"]
         for i in range(5):
             api.data["energia_prelevata"] = latest_prelevata + i + 1
             api._calculate_derived_values()

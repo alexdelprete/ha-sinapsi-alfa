@@ -64,16 +64,19 @@ CUMULATIVE_ENERGY_SENSORS: set[str] = {
     "energia_prodotta",
 }
 
-# Timeout (in polls) before calculating derived energy values when only one
-# base sensor has changed. The Alfa firmware updates energia_prodotta and
-# energia_immessa on a ~15-min internal cycle, with prodotta always updating
-# ~1 min before immessa. Our 60s polling captures them on alternating polls.
-# A timeout of 3 polls gives immessa enough time to catch up with prodotta
-# before force-calculating. With timeout=2, borderline firmware timing could
-# cause a timeout with stale immessa, producing a temporary overshoot followed
-# by a dip when immessa catches up — and TOTAL_INCREASING treats the dip as a
-# meter reset, overcounting by the export amount each firmware cycle.
-SYNC_TIMEOUT_POLLS: int = 3
+# Time-based timeout (seconds) before calculating derived energy values when
+# only one base sensor has changed. The Alfa firmware updates energia_prodotta
+# ~55-60s before energia_immessa on a ~15-min cycle. The sync guard holds
+# auto_consumata frozen until both sensors update ("both fresh"). If only one
+# sensor keeps changing (e.g., no-export periods where immessa stays constant),
+# the timeout allows calculation after SYNC_TIMEOUT_SECONDS — safe because
+# there's no alternating pattern when only one sensor changes.
+#
+# This MUST be longer than the firmware delay (~60s) to prevent calculating
+# with stale immessa. A poll-count-based timeout breaks when scan_interval
+# varies (e.g., 10s polling × 3 polls = 30s timeout, too short for 55s delay).
+# Time-based timeout works correctly regardless of scan_interval.
+SYNC_TIMEOUT_SECONDS: int = 120
 
 # Batch read configuration: (start_address, count)
 # Groups consecutive registers to minimize Modbus requests

@@ -43,7 +43,7 @@ from .const import (
     MODEL,
     REGISTER_BATCHES,
     SENSOR_ENTITIES,
-    SYNC_TIMEOUT_POLLS,
+    SYNC_TIMEOUT_SECONDS,
 )
 from .helpers import log_debug, log_error, log_warning, unix_timestamp_to_iso8601_local_tz
 
@@ -187,7 +187,7 @@ class SinapsiAlfaAPI:
         # base sensors have updated since the last calculation.
         self._last_calc_prodotta: float | None = None
         self._last_calc_immessa: float | None = None
-        self._unsync_poll_count: int = 0
+        self._first_unsync_time: float | None = None
         # Initialize ModBus data structure before first read
         self._initialize_data_structure()
 
@@ -639,12 +639,13 @@ class SinapsiAlfaAPI:
         Energy sensors use two different strategies:
 
         energia_auto_consumata (prodotta - immessa) uses synchronized calculation:
-        the Alfa firmware updates energia_prodotta ~1 min before energia_immessa,
-        so our 60s polling captures them on alternating polls. Calculating the
-        difference on a poll where only one updated produces a temporary spike/dip
-        that HA's TOTAL_INCREASING logic misinterprets as a meter reset, causing
-        ~264% over-counting. We wait for both to update before recalculating,
-        with a timeout fallback for periods when only one sensor is changing.
+        the Alfa firmware updates energia_prodotta ~55-60s before energia_immessa,
+        so polling captures them on different cycles. Calculating the difference
+        when only one updated produces a temporary spike/dip that HA's
+        TOTAL_INCREASING logic misinterprets as a meter reset, causing
+        over-counting. We wait for both to update before recalculating,
+        with a time-based timeout fallback for periods when only one sensor
+        is changing (e.g., no-export periods where immessa stays constant).
 
         energia_consumata (auto_consumata + prelevata) is always recalculated
         because it depends on energia_prelevata (import from grid) which changes
@@ -676,21 +677,23 @@ class SinapsiAlfaAPI:
         elif prodotta_fresh and immessa_fresh:
             # Both updated since last calc — synchronized reading, always safe
             should_calculate = True
-            self._unsync_poll_count = 0
+            self._first_unsync_time = None
         elif prodotta_fresh or immessa_fresh:
-            # Exactly one changed — possible firmware timing skew, wait for the other
-            self._unsync_poll_count += 1
-            if self._unsync_poll_count >= SYNC_TIMEOUT_POLLS:
-                # Waited long enough (3 polls = 180s at 60s interval); if only
-                # one sensor is changing, there's no alternating pattern and no
-                # oscillation risk. 3 polls gives the firmware's ~60s immessa
-                # delay safe margin to be caught on the 2nd poll as "both fresh".
+            # Exactly one changed — possible firmware timing skew, wait for the other.
+            # Use a time-based timeout so the guard works regardless of scan_interval.
+            now = time.monotonic()
+            if self._first_unsync_time is None:
+                self._first_unsync_time = now
+            elapsed = now - self._first_unsync_time
+            if elapsed >= SYNC_TIMEOUT_SECONDS:
+                # Waited long enough; if only one sensor is changing after 120s,
+                # there's no alternating pattern and no oscillation risk.
                 should_calculate = True
-                self._unsync_poll_count = 0
+                self._first_unsync_time = None
         else:
-            # Neither changed — no new data, reset counter so the next
+            # Neither changed — no new data, reset timer so the next
             # actual change gets a full timeout window to wait for its pair
-            self._unsync_poll_count = 0
+            self._first_unsync_time = None
             # Reconcile any residual gap from the last sync guard delay.
             # During quiescent periods (neither sensor changing), there is
             # zero oscillation risk, so it is safe to force-align the
@@ -712,13 +715,18 @@ class SinapsiAlfaAPI:
             self._last_calc_prodotta = curr_prodotta
             self._last_calc_immessa = curr_immessa
         elif prodotta_fresh or immessa_fresh:
+            elapsed = (
+                round(time.monotonic() - self._first_unsync_time, 1)
+                if self._first_unsync_time is not None
+                else 0
+            )
             log_debug(
                 _LOGGER,
                 "_calculate_derived_values",
                 "Waiting for synchronized base sensor update",
                 prodotta_fresh=prodotta_fresh,
                 immessa_fresh=immessa_fresh,
-                unsync_polls=self._unsync_poll_count,
+                elapsed_seconds=elapsed,
             )
 
         # Always update consumed energy — it depends on prelevata (import)
