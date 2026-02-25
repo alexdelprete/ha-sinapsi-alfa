@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.13-beta.5] - 2026-02-25
+
+**Beta release** - Adds quiescent reconciliation to eliminate cross-midnight timing artifact
+in self-consumption utility meters.
+
+### Bug Fixes
+
+- **Fixed cross-midnight timing artifact in `energia_auto_consumata`** - The sync guard that
+  prevents oscillation double-counting would freeze `auto_consumata` when production stops
+  (sunset), holding any residual gap overnight. Daily utility meters attributed the catch-up
+  delta to the wrong day, causing `self-consumed = production` despite exports. The fix adds
+  quiescent reconciliation: when both base sensors stop changing, force-align `auto_consumata`
+  with `prodotta - immessa`. Zero oscillation risk during quiescent periods.
+
+**Full Release Notes:** [docs/releases/v1.2.13-beta.5.md](docs/releases/v1.2.13-beta.5.md)
+
+**Full Changelog:** [v1.2.13-beta.4...v1.2.13-beta.5](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.2.13-beta.4...v1.2.13-beta.5)
+
 ## [1.2.13-beta.4] - 2026-02-25
 
 **Beta release** - Upgrades ModbusLink to v1.5.1 with separate connection timeout.
