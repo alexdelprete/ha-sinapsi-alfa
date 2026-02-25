@@ -407,7 +407,7 @@ All previously tracked ModbusLink issues have been resolved:
 - **[#5](https://github.com/Miraitowa-la/ModbusLink/issues/5)** (v1.4.2/v1.5.0) - TCP `flush()` added in v1.4.2
   (already used by our `_flush_buffer()`). v1.5.0 extended flush to RTU/ASCII (not applicable, we use TCP).
 - **[#6](https://github.com/Miraitowa-la/ModbusLink/issues/6)** (v1.5.1) - `connection_timeout` parameter added.
-  Integrated in v1.2.14.
+  Integrated in v1.2.13.
 
 ## Key Files to Review
 

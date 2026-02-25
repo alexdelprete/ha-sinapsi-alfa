@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.13-beta.4] - 2026-02-25
+
+**Beta release** - Upgrades ModbusLink to v1.5.1 with separate connection timeout.
+
+### Changed
+
+- **Upgraded ModbusLink from v1.4.2 to v1.5.1** - Adds `connection_timeout` parameter for TCP
+  connection establishment, separate from the data operation timeout. Connection timeout is set
+  to 5 seconds (fixed), while the user-configurable timeout (default 10s) covers Modbus read/write
+  operations. This improves error detection for unreachable devices.
+
+**Full Release Notes:** [docs/releases/v1.2.13-beta.4.md](docs/releases/v1.2.13-beta.4.md)
+
+**Full Changelog:** [v1.2.13-beta.3...v1.2.13-beta.4](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.2.13-beta.3...v1.2.13-beta.4)
+
 ## [1.2.13-beta.3] - 2026-02-24
 
 **Beta release** - Fixes consumed energy sensor freezing when production stops.
