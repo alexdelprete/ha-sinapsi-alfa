@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.13.0] - 2026-02-27
+
+**Minor release** - Fixes energy over-counting caused by Alfa firmware register timing and upgrades ModbusLink.
+
+### Fixed
+
+- **Fixed energy over-counting in calculated sensors** - The Alfa firmware updates `energia_prodotta`
+  ~55-60s before `energia_immessa` on its ~15-minute internal cycle. This desynchronization caused
+  calculated sensors (`energia_auto_consumata`, `energia_consumata`) to oscillate between polls, and
+  HA's `TOTAL_INCREASING` state class treated each dip as a meter reset, causing significant
+  over-counting. The fix implements a sync guard that waits for both base sensors to update before
+  recalculating, with a time-based timeout fallback for single-sensor-changing periods.
+- **Fixed consumed energy sensor freezing at night** - `energia_consumata` was locked inside the sync
+  guard. When PV production stops, the consumed sensor froze overnight. Moved outside the sync guard.
+- **Fixed cross-midnight timing artifact** - Added quiescent reconciliation to prevent stale values
+  from carrying over to the next day's utility meters.
+- **Fixed debug log spam during nighttime** - Sync waiting messages only fire when relevant.
+
+### Changed
+
+- **Upgraded ModbusLink from v1.4.2 to v1.5.1** - Adds separate `connection_timeout` (5s) for
+  faster detection of unreachable devices.
+
+**Full Release Notes:** [docs/releases/v1.13.0.md](docs/releases/v1.13.0.md)
+
+**Full Changelog:** [v1.2.12...v1.13.0](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.2.12...v1.13.0)
+
 ## [1.2.13-beta.7] - 2026-02-25
 
 **Beta release** - Replaces poll-count timeout with time-based timeout to fix overcounting
@@ -907,10 +934,14 @@ ______________________________________________________________________
 [1.2.7]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.7
 [1.2.6]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.6
 [1.2.5]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.5
-[1.2.4-beta.1]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.4-beta.1
 [1.2.8]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.8
 [1.2.9]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.9
 [1.2.12]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.12
-[1.2.13-beta.3]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.13-beta.3
-[1.2.13-beta.2]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.13-beta.2
 [1.2.13-beta.1]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.13-beta.1
+[1.2.13-beta.2]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.13-beta.2
+[1.2.13-beta.3]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.13-beta.3
+[1.2.13-beta.4]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.13-beta.4
+[1.2.13-beta.5]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.13-beta.5
+[1.2.13-beta.6]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.13-beta.6
+[1.2.13-beta.7]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.13-beta.7
+[1.13.0]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.13.0
