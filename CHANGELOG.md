@@ -334,7 +334,8 @@ Thanks to [@sigitm](https://github.com/sigitm) for the feature request!
 
 ### 🐛 Bug Fixes
 
-- **Fixed hassfest validation** - Removed invalid `fix_flow` sections from translation files (issues using `ConfirmRepairFlow` don't need custom translations)
+- **Fixed hassfest validation** - Removed invalid `fix_flow` sections from translation files (issues using
+  `ConfirmRepairFlow` don't need custom translations)
 
 **Full Release Notes:** [docs/releases/v1.2.2.md](docs/releases/v1.2.2.md)
 
@@ -500,8 +501,10 @@ Thanks to [@sigitm](https://github.com/sigitm) for the feature request!
 
 ### 🐛 Bug Fixes
 
-- **Fixed integration reload** - Added missing `close()` method to API class, allowing integration to reload without requiring Home Assistant restart
-- **Improved protocol error recovery** - Transaction ID mismatch and CRC errors now trigger connection reset and retry instead of immediate failure
+- **Fixed integration reload** - Added missing `close()` method to API class, allowing integration to reload without
+  requiring Home Assistant restart
+- **Improved protocol error recovery** - Transaction ID mismatch and CRC errors now trigger connection reset and retry
+  instead of immediate failure
 - **Added connection reset method** - New `_reset_connection()` clears stale responses by closing and reopening the transport
 
 **Full Release Notes:** [docs/releases/v1.1.8.md](docs/releases/v1.1.8.md)
@@ -516,7 +519,8 @@ ______________________________________________________________________
 
 ### 🐛 Bug Fixes
 
-- **Fixed ModbusLink import path** - Import `Language` and `ModbusLogger` from `modbuslink.utils.logging` (not exported from main package)
+- **Fixed ModbusLink import path** - Import `Language` and `ModbusLogger` from `modbuslink.utils.logging` (not exported
+  from main package)
 
 **Full Release Notes:** [docs/releases/v1.1.7.md](docs/releases/v1.1.7.md)
 
@@ -561,7 +565,8 @@ ______________________________________________________________________
 
 ### 🐛 Bug Fixes
 
-- **Changed Connection Timeout to number input** - Replaced slider with text input field for better UX (matches Polling Period style)
+- **Changed Connection Timeout to number input** - Replaced slider with text input field for better UX (matches Polling
+  Period style)
 - **Added timeout bounds enforcement** - Coordinator now enforces 5-60s range like scan_interval
 
 **Full Release Notes:** [docs/releases/v1.1.4.md](docs/releases/v1.1.4.md)
@@ -576,7 +581,8 @@ ______________________________________________________________________
 
 ### 🐛 Bug Fixes
 
-- **Fixed Connection Timeout description display** - Removed `data_description` for slider fields (doesn't render properly in HA UI), moved range info back to field label
+- **Fixed Connection Timeout description display** - Removed `data_description` for slider fields (doesn't render
+  properly in HA UI), moved range info back to field label
 
 **Full Release Notes:** [docs/releases/v1.1.3.md](docs/releases/v1.1.3.md)
 
@@ -610,14 +616,17 @@ ______________________________________________________________________
 
 ### 🐛 Bug Fixes
 
-- **Fixed VPN connection timeout** - MAC retrieval now happens before Modbus connection, preventing connection death during long network operations (Fixes #180)
+- **Fixed VPN connection timeout** - MAC retrieval now happens before Modbus connection, preventing connection death
+  during long network operations (Fixes #180)
 - **Reduced MAC retry attempts** - Changed from 10 to 5 for faster fallback on high-latency networks
 
 ### ✨ New Features
 
-- **Skip MAC Detection option** - New configuration option for VPN users to bypass MAC address retrieval and eliminate startup delay
+- **Skip MAC Detection option** - New configuration option for VPN users to bypass MAC address retrieval and eliminate
+  startup delay
 
-Thanks to Lorenzo Canale ([@lorenzocanalelc](https://github.com/lorenzocanalelc)) for the detailed debug logs that helped identify the root cause.
+Thanks to Lorenzo Canale ([@lorenzocanalelc](https://github.com/lorenzocanalelc)) for the detailed debug logs that
+helped identify the root cause.
 
 **Full Release Notes:** [docs/releases/v1.1.1.md](docs/releases/v1.1.1.md)
 
@@ -653,7 +662,8 @@ ______________________________________________________________________
 
 ### 🐛 Bug Fixes
 
-- **Fixed inverted import/export icons** - Swapped `transmission-tower-import` and `transmission-tower-export` icons to match grid perspective (Fixes #178)
+- **Fixed inverted import/export icons** - Swapped `transmission-tower-import` and `transmission-tower-export` icons to
+  match grid perspective (Fixes #178)
 
 Thanks to Marco Lusini ([@met67](https://github.com/met67)) for reporting.
 
@@ -707,7 +717,8 @@ ______________________________________________________________________
 
 ### 🐛 Bug Fixes
 
-- **Fixed Transaction ID mismatch** - Replaced parallel `asyncio.gather()` with sequential batch reads (Modbus TCP can't handle concurrent requests on single connection)
+- **Fixed Transaction ID mismatch** - Replaced parallel `asyncio.gather()` with sequential batch reads (Modbus TCP
+  can't handle concurrent requests on single connection)
 
 ### ⚠️ Beta Notice
 
@@ -725,7 +736,8 @@ ______________________________________________________________________
 
 ### 🐛 Bug Fixes
 
-- **Fixed connection timeout** - `check_port()` now forces IPv4 (`socket.AF_INET`) to avoid timeouts when device only supports IPv4 but DNS returns IPv6 first
+- **Fixed connection timeout** - `check_port()` now forces IPv4 (`socket.AF_INET`) to avoid timeouts when device only
+  supports IPv4 but DNS returns IPv6 first
 
 ### ⚠️ Beta Notice
 
@@ -796,7 +808,8 @@ ______________________________________________________________________
 
 ## [0.5.0] - 2025-10-15
 
-Official stable release with Python 3.13 support, Home Assistant 2025.10 compatibility, comprehensive code quality improvements, and critical bug fixes.
+Official stable release with Python 3.13 support, Home Assistant 2025.10 compatibility, comprehensive code quality
+improvements, and critical bug fixes.
 
 ### 🚀 Platform Compatibility
 
@@ -860,7 +873,8 @@ Beta release aligning ha-sinapsi-alfa with critical fixes and improvements from 
 
 ### ✅ Preserved Features
 
-All Sinapsi-specific features remain unchanged: Modbus addresses, Italian sensor names, special value handling, calculated sensors.
+All Sinapsi-specific features remain unchanged: Modbus addresses, Italian sensor names, special value handling,
+calculated sensors.
 
 **Full Release Notes:** [docs/releases/v0.5.0-beta.1.md](docs/releases/v0.5.0-beta.1.md)
 

@@ -348,7 +348,8 @@ Following HA best practices, configuration is split between `data` (initial conf
 
 ### Config Entry Migration
 
-Version 1 → 2 migration moves `scan_interval` and `timeout` from `data` to `options`. The `async_migrate_entry()` function in `__init__.py` handles this automatically for existing installations.
+Version 1 → 2 migration moves `scan_interval` and `timeout` from `data` to `options`.
+The `async_migrate_entry()` function in `__init__.py` handles this automatically for existing installations.
 
 ## Entity Unique IDs
 

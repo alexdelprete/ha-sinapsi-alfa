@@ -16,13 +16,15 @@ The analysis includes a comprehensive pros/cons comparison and a detailed surgic
 
 ### Risk Acknowledgment
 
-ModbusLink is currently in **Alpha status** (Development Status 3). This migration prioritizes modern API design over production stability guarantees. A rollback strategy is included.
+ModbusLink is currently in **Alpha status** (Development Status 3).
+This migration prioritizes modern API design over production stability guarantees.
+A rollback strategy is included.
 
 ______________________________________________________________________
 
 ## Library Comparison
 
-| Aspect              | pymodbus              | ModbusLink |
+| Aspect | pymodbus | ModbusLink |
 | ------------------- | --------------------- | ---------- |
 | **Version**         | 3.11.4                | 1.2.0      |
 | **Status**          | Production/Stable (5) | Alpha (3)  |
@@ -109,11 +111,11 @@ ______________________________________________________________________
 
 ### Files Using pymodbus
 
-| File                                                                                | Lines | Usage                                         |
-| ----------------------------------------------------------------------------------- | ----- | --------------------------------------------- |
-| [api.py](../../custom_components/sinapsi_alfa/api.py)                               | 560   | Main Modbus communication                     |
-| [pymodbus_constants.py](../../custom_components/sinapsi_alfa/pymodbus_constants.py) | 147   | Local copy of deprecated Endian enum          |
-| [pymodbus_payload.py](../../custom_components/sinapsi_alfa/pymodbus_payload.py)     | 516   | Local copy of deprecated BinaryPayloadDecoder |
+| File | Lines | Usage |
+| ----- | ----- | ----- |
+| [api.py](api.py) | 560 | Main Modbus communication |
+| [pymodbus_constants.py](pymodbus_constants.py) | 147 | Local copy of deprecated Endian enum |
+| [pymodbus_payload.py](pymodbus_payload.py) | 516 | Local copy of deprecated BinaryPayloadDecoder |
 
 ### Current Imports (api.py)
 
@@ -490,7 +492,7 @@ ______________________________________________________________________
 | ---------------------- | -------- | ---------- | -------------------------------- |
 | Library bugs           | HIGH     | MEDIUM     | Extensive testing, rollback plan |
 | API changes            | MEDIUM   | LOW        | Pin version `>=1.2.0,<2.0.0`     |
-| Maintainer abandonment | MEDIUM   | LOW        | Keep pymodbus branch ready       |
+| Maintainer abandonment | MEDIUM | LOW | Keep pymodbus branch ready |
 | HA compatibility       | LOW      | LOW        | Test with HA betas               |
 | Performance regression | LOW      | LOW        | Benchmark before/after           |
 
