@@ -24,7 +24,6 @@ vars:
 
   # -- Workflow tuning --
   jsonlint_flags: ""
-  pymarkdown_config: ""
   version_grep_pattern: 'VERSION = '
 
   # -- Dependabot --
@@ -38,8 +37,6 @@ vars:
   ruff_lint_extra_ignores: ["ASYNC109", "ASYNC110", "PLW1641", "TC006", "UP046", "UP047", "UP049"]
   ruff_lint_extra_perfile_ignores: {}
   ruff_tests_extra_ignores: ["INP001"]
-  pymarkdown_line_length: 180
-  pymarkdown_strict_md013: true
 
   # -- Extras --
   requirements_extra_deps: ["getmac>=0.9.5", "modbuslink~=1.5.0"]
@@ -49,6 +46,7 @@ vars:
 
 copy_files:
   - .gitattributes
+  - .pymarkdownlint.json
   - .github/workflows/dbautomerge.yml
   - .github/FUNDING.yml
   - LICENSE
