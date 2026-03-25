@@ -53,7 +53,7 @@ repos:
       # Type checking (devcontainer only — requires HA deps installed)
       - id: ty
         name: ty
-        entry: env -u VIRTUAL_ENV ty check --python /usr/local/bin/python custom_components/sinapsi_alfa
+        entry: ty check --python /usr/local/bin/python custom_components/sinapsi_alfa
         language: system
         pass_filenames: false
         types: [python]
