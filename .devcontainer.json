@@ -2,6 +2,7 @@
     "name": "Alfa by Sinapsi",
     "image": "mcr.microsoft.com/devcontainers/python:3.13-bullseye",
     "postCreateCommand": "sudo pip install uv && sudo uv pip install -e '.[dev]' --system && pre-commit install",
+    "postStartCommand": "if [ \"$(git config --global gpg.format 2>/dev/null)\" = 'ssh' ]; then EMAIL=$(git config --global user.email) && KEY=$(ssh-add -L 2>/dev/null | grep -i \"$EMAIL\" | head -1) && [ -z \"$KEY\" ] && KEY=$(ssh-add -L 2>/dev/null | head -1); [ -n \"$KEY\" ] && git config --global user.signingkey \"key::$KEY\"; fi",
     "forwardPorts": [8123],
     "portsAttributes": {
         "8123": {
