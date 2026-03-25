@@ -36,7 +36,7 @@
             "settings": {
                 "python.defaultInterpreterPath": "/usr/local/bin/python",
                 "python.testing.pytestEnabled": true,
-                "python.testing.pytestArgs": ["tests/"],
+                "python.testing.pytestArgs": ["tests/", "--no-cov"],
                 "editor.formatOnSave": true,
                 "editor.formatOnType": true,
                 "editor.formatOnPaste": false,
