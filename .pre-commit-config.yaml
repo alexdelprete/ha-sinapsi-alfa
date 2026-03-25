@@ -9,7 +9,7 @@ repos:
       # Ruff linting (check-only)
       - id: ruff
         name: ruff
-        entry: ruff check --no-fix --verbose
+        entry: ruff check --no-fix
         language: system
         types: [python]
         verbose: true
@@ -17,7 +17,7 @@ repos:
       # Ruff formatting (check-only)
       - id: ruff-format
         name: ruff-format
-        entry: ruff format --check --verbose
+        entry: ruff format --check
         language: system
         types: [python]
         verbose: true
@@ -53,7 +53,7 @@ repos:
       # Type checking (devcontainer only — requires HA deps installed)
       - id: ty
         name: ty
-        entry: ty check custom_components/sinapsi_alfa
+        entry: env -u VIRTUAL_ENV ty check custom_components/sinapsi_alfa
         language: system
         pass_filenames: false
         types: [python]
