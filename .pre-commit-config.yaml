@@ -49,3 +49,12 @@ repos:
         language: system
         types: [markdown]
         verbose: true
+
+      # Type checking (devcontainer only — requires HA deps installed)
+      - id: ty
+        name: ty
+        entry: ty check custom_components/sinapsi_alfa
+        language: system
+        pass_filenames: false
+        types: [python]
+        verbose: true
