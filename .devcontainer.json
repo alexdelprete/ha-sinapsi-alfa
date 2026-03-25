@@ -2,7 +2,6 @@
     "name": "Alfa by Sinapsi",
     "image": "mcr.microsoft.com/devcontainers/python:3.13-bullseye",
     "postCreateCommand": "sudo pip install uv && sudo uv pip install -e '.[dev]' --system && pre-commit install",
-    "postStartCommand": "if [ \"$(git config --global gpg.format 2>/dev/null)\" = 'ssh' ]; then EMAIL=$(git config --global user.email) && KEY=$(ssh-add -L 2>/dev/null | grep -i \"$EMAIL\" | head -1) && [ -z \"$KEY\" ] && KEY=$(ssh-add -L 2>/dev/null | head -1); [ -n \"$KEY\" ] && git config --global user.signingkey \"key::$KEY\" && mkdir -p ~/.ssh && echo \"$EMAIL $KEY\" > ~/.ssh/allowed_signers && git config --global gpg.ssh.allowedSignersFile ~/.ssh/allowed_signers; fi",
     "forwardPorts": [8123],
     "portsAttributes": {
         "8123": {
@@ -16,9 +15,12 @@
             "onAutoForward": "ignore"
         }
     },
-    "containerEnv": {
-        "GH_TOKEN": "${localEnv:GH_TOKEN}"
-    },
+    "mounts": [
+        "source=${localEnv:USERPROFILE}/.ssh,target=/home/vscode/.ssh,type=bind,consistency=cached",
+        "source=${localEnv:USERPROFILE}/.claude.json,target=/home/vscode/.claude.json,type=bind,consistency=cached",
+        "source=${localEnv:USERPROFILE}/.claude,target=/home/vscode/.claude,type=bind,consistency=cached",
+        "source=${localEnv:APPDATA}/GitHub CLI,target=/home/vscode/.config/gh,type=bind,consistency=cached"
+    ],
     "features": {
         "ghcr.io/devcontainers/features/github-cli:1": {},
         "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {}
