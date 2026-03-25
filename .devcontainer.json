@@ -1,7 +1,7 @@
 {
     "name": "Alfa by Sinapsi",
     "image": "mcr.microsoft.com/devcontainers/python:3.13-bullseye",
-    "postCreateCommand": "pip install uv && uv pip install -e '.[dev]' --system && pre-commit install",
+    "postCreateCommand": "sudo pip install uv && sudo uv pip install -e '.[dev]' --system && pre-commit install",
     "forwardPorts": [8123],
     "portsAttributes": {
         "8123": {
