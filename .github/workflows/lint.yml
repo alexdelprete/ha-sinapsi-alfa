@@ -29,6 +29,16 @@ jobs:
       - name: Validate JSON files
         run: find . -name "*.json" -not -path "./.vscode/*" | xargs uvx --from demjson3 jsonlint -S
 
+      - name: Validate YAML files
+        run: >-
+          uvx yamllint -d "{extends: default, rules: {line-length: {max: 120},
+          document-start: disable, truthy: {check-keys: false},
+          comments: {min-spaces-from-content: 1}}}"
+          $(find . -name "*.yml" -o -name "*.yaml" | grep -v node_modules)
+
+      - name: Lint Markdown files
+        run: uvx pymarkdown --config .pymarkdownlint.json scan .
+
       - name: Run Ruff format check
         run: uvx ruff format . --check
 
