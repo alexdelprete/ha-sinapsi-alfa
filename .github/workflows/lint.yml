@@ -37,7 +37,7 @@ jobs:
           $(find . -name "*.yml" -o -name "*.yaml" | grep -v node_modules)
 
       - name: Lint Markdown files
-        run: uvx pymarkdown --config .pymarkdownlint.json scan .
+        run: uvx --from pymarkdownlnt pymarkdown --config .pymarkdownlint.json scan .
 
       - name: Run Ruff format check
         run: uvx ruff format . --check
