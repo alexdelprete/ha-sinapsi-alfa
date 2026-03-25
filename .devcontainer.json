@@ -2,6 +2,7 @@
     "name": "Alfa by Sinapsi",
     "image": "mcr.microsoft.com/devcontainers/python:3.13-bullseye",
     "forwardPorts": [8123],
+    "postCreateCommand": "pip install uv && uv pip install -e '.[dev]' --system && pre-commit install",
     "customizations": {
         "vscode": {
             "extensions": [
@@ -14,6 +15,8 @@
             ],
             "settings": {
                 "python.defaultInterpreterPath": "/usr/local/bin/python",
+                "python.testing.pytestEnabled": true,
+                "python.testing.pytestArgs": ["tests/"],
                 "editor.formatOnSave": true,
                 "[python]": {
                     "editor.defaultFormatter": "charliermarsh.ruff"
