@@ -608,7 +608,7 @@ class SinapsiAlfaAPI:
 
         # Unit conversion for power/energy
         if reg_dev_class in [SensorDeviceClass.ENERGY, SensorDeviceClass.POWER]:
-            value = round(value / 1000, 2)  # W/Wh to kW/kWh
+            value = round(value / 1000, 3)  # W/Wh to kW/kWh (1 W / 1 Wh precision)
         else:
             value = int(value)
 

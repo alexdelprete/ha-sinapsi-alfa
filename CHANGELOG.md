@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.13.1] - 2026-03-01
+
+**Patch release** - Preserves 1 W / 1 Wh precision on power and energy sensors.
+
+### Fixed
+
+- **Power and energy values were truncated to 10 W / 10 Wh granularity** - The
+  API rounded converted kW/kWh values to 2 decimal places, discarding the 3rd
+  decimal that carries the 1 W / 1 Wh precision the Alfa device actually reports
+  (e.g. 332 W became 0.33 kW → 330 W). Rounding now uses 3 decimals, preserving
+  the device's native precision. Home Assistant's default display precision for
+  POWER (kW) and ENERGY (kWh) sensors is already 3 decimals, so the improvement
+  is visible immediately.
+
+Thanks to **asp Andrea** on the HA community forum for reporting the issue.
+
+**Full Release Notes:** [docs/releases/v1.13.1.md](docs/releases/v1.13.1.md)
+
+**Full Changelog:** [v1.13.0...v1.13.1](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.13.0...v1.13.1)
+
 ## [1.13.0] - 2026-02-27
 
 **Minor release** - Fixes energy over-counting caused by Alfa firmware register timing and upgrades ModbusLink.
@@ -959,3 +979,4 @@ ______________________________________________________________________
 [1.2.13-beta.6]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.13-beta.6
 [1.2.13-beta.7]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.13-beta.7
 [1.13.0]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.13.0
+[1.13.1]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.13.1
