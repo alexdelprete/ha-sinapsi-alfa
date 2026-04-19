@@ -47,7 +47,7 @@ from .repairs import (
 _LOGGER = logging.getLogger(__name__)
 
 
-class SinapsiAlfaCoordinator(DataUpdateCoordinator):
+class SinapsiAlfaCoordinator(DataUpdateCoordinator[bool]):
     """Class to manage fetching data from the API."""
 
     config_entry: ConfigEntry
@@ -100,7 +100,7 @@ class SinapsiAlfaCoordinator(DataUpdateCoordinator):
             hass,
             _LOGGER,
             name=f"{DOMAIN} ({config_entry.unique_id})",
-            update_method=self.async_update_data,  # type: ignore[arg-type]
+            update_method=self.async_update_data,
             update_interval=self.update_interval,
         )
 

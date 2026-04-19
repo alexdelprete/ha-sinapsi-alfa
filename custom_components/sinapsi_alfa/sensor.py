@@ -61,7 +61,7 @@ async def async_setup_entry(
     async_add_entities(sensors)
 
 
-class SinapsiAlfaSensor(CoordinatorEntity, SensorEntity):
+class SinapsiAlfaSensor(CoordinatorEntity[SinapsiAlfaCoordinator], SensorEntity):
     """Representation of a Sinapsi Alfa sensor."""
 
     _attr_has_entity_name = True
