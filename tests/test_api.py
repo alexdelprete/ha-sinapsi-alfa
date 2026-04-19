@@ -1362,6 +1362,24 @@ class TestProcessSensorValue:
         result = api._process_sensor_value(2500000.0, energy_sensor)
         assert result == 2500.0  # 2500000 Wh = 2500 kWh
 
+    def test_process_sensor_value_energy_preserves_watthour_precision(
+        self, mock_hass, mock_transport, mock_client
+    ):
+        """Regression: 332 Wh must be preserved as 0.332 kWh, not truncated to 0.33 kWh."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        energy_sensor = next(s for s in SENSOR_ENTITIES if s["key"] == "energia_prelevata")
+
+        result = api._process_sensor_value(332.0, energy_sensor)
+        assert result == 0.332  # 332 Wh = 0.332 kWh (1 Wh precision preserved)
+
     def test_process_sensor_value_non_energy_integer(self, mock_hass, mock_transport, mock_client):
         """Test non-energy values are converted to int."""
         api = SinapsiAlfaAPI(
