@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.13.2] - 2026-04-19
+
+**Patch release** - Completes the 1 W precision fix from v1.13.1 by making the
+extra decimal visible in the UI for power sensors.
+
+### Fixed
+
+- **Power sensors still displayed with 10 W granularity after v1.13.1** -
+  v1.13.1 preserved 1 W precision in the stored value, but HA's default display
+  precision for the POWER device class caps at 2 decimals, so the extra decimal
+  was still hidden in the UI. The integration now sets
+  `suggested_display_precision=3` on POWER sensors, which bypasses the cap
+  (e.g. `0.332 kW` instead of `0.33 kW`). ENERGY sensors keep the 2-decimal
+  default — cumulative kWh totals gain nothing visually from a third decimal,
+  and the stored value still carries 1 Wh precision for the Energy Dashboard.
+- **Correction to v1.13.1 release notes** - The v1.13.1 notes claimed HA's
+  default display precision for kW/kWh is already 3 decimals. That claim was
+  incorrect — the current HA default caps at 2 decimals.
+
+**Full Release Notes:** [docs/releases/v1.13.2.md](docs/releases/v1.13.2.md)
+
+**Full Changelog:** [v1.13.1...v1.13.2](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.13.1...v1.13.2)
+
 ## [1.13.1] - 2026-03-01
 
 **Patch release** - Preserves 1 W / 1 Wh precision on power and energy sensors.
@@ -980,3 +1003,4 @@ ______________________________________________________________________
 [1.2.13-beta.7]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.2.13-beta.7
 [1.13.0]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.13.0
 [1.13.1]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.13.1
+[1.13.2]: https://github.com/alexdelprete/ha-sinapsi-alfa/releases/tag/v1.13.2

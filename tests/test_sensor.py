@@ -7,7 +7,7 @@ import pytest
 from custom_components.sinapsi_alfa.const import CONF_NAME, DOMAIN, SENSOR_ENTITIES
 from custom_components.sinapsi_alfa.sensor import SinapsiAlfaSensor, async_setup_entry
 from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
-from homeassistant.const import UnitOfPower
+from homeassistant.const import UnitOfEnergy, UnitOfPower
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 
@@ -95,6 +95,19 @@ class TestSinapsiAlfaSensor:
         )
 
     @pytest.fixture
+    def energy_sensor(self, mock_coordinator):
+        """Create an energy sensor."""
+        return SinapsiAlfaSensor(
+            coordinator=mock_coordinator,
+            name="Energia Prelevata",
+            key="energia_prelevata",
+            icon="mdi:transmission-tower-export",
+            device_class=SensorDeviceClass.ENERGY,
+            state_class=SensorStateClass.TOTAL_INCREASING,
+            unit=UnitOfEnergy.KILO_WATT_HOUR,
+        )
+
+    @pytest.fixture
     def diagnostic_sensor(self, mock_coordinator):
         """Create a diagnostic sensor (no state_class)."""
         return SinapsiAlfaSensor(
@@ -116,6 +129,22 @@ class TestSinapsiAlfaSensor:
         assert power_sensor._unit_of_measurement == UnitOfPower.KILO_WATT
         assert power_sensor._attr_translation_key == "potenza_prelevata"
         assert power_sensor._attr_has_entity_name is True
+
+    def test_power_sensor_has_3_decimal_display_precision(self, power_sensor):
+        """Power sensors must display 3 decimals (1 W resolution in kW)."""
+        assert power_sensor._attr_suggested_display_precision == 3
+
+    def test_energy_sensor_uses_ha_default_display_precision(self, energy_sensor):
+        """Energy sensors intentionally keep HA's 2-decimal default for kWh."""
+        assert not hasattr(energy_sensor, "_attr_suggested_display_precision") or (
+            energy_sensor._attr_suggested_display_precision is None
+        )
+
+    def test_diagnostic_sensor_has_no_display_precision(self, diagnostic_sensor):
+        """Non-power/energy sensors must not set a display precision override."""
+        assert not hasattr(diagnostic_sensor, "_attr_suggested_display_precision") or (
+            diagnostic_sensor._attr_suggested_display_precision is None
+        )
 
     def test_native_unit_of_measurement(self, power_sensor):
         """Test native_unit_of_measurement property."""

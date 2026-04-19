@@ -94,6 +94,12 @@ class SinapsiAlfaSensor(CoordinatorEntity[SinapsiAlfaCoordinator], SensorEntity)
         self._attr_translation_key = key
         # F1-F6 time band sensors disabled by default (users can enable if needed)
         self._attr_entity_registry_enabled_default = not disabled_by_default
+        # Power sensors store 3-decimal kW values (1 W resolution); HA's default
+        # display precision for POWER caps at 2 decimals, so ask for 3 explicitly.
+        # Energy sensors keep HA's 2-decimal default — 1 Wh granularity would
+        # visually clutter large cumulative totals without practical benefit.
+        if device_class == SensorDeviceClass.POWER:
+            self._attr_suggested_display_precision = 3
 
     @callback
     def _handle_coordinator_update(self) -> None:
