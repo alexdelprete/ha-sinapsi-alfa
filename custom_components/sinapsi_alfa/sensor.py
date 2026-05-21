@@ -14,7 +14,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from . import SinapsiAlfaConfigEntry
-from .const import CONF_NAME, DOMAIN, RESTORABLE_ENERGY_SENSORS, SENSOR_ENTITIES
+from .const import CONF_NAME, DOMAIN, SENSOR_ENTITIES
 from .coordinator import SinapsiAlfaCoordinator
 from .helpers import log_debug
 
@@ -55,6 +55,7 @@ async def async_setup_entry(
                     sensor_def["state_class"],
                     sensor_def["unit"],
                     sensor_def.get("disabled_by_default", False),
+                    sensor_def.get("sensor_scope"),
                 )
             )
 
@@ -76,6 +77,7 @@ class SinapsiAlfaSensor(CoordinatorEntity[SinapsiAlfaCoordinator], RestoreSensor
         state_class: SensorStateClass | None,
         unit: str | None,
         disabled_by_default: bool = False,
+        sensor_scope: str | None = None,
     ) -> None:
         """Class Initializitation."""
         super().__init__(coordinator)
@@ -85,6 +87,14 @@ class SinapsiAlfaSensor(CoordinatorEntity[SinapsiAlfaCoordinator], RestoreSensor
         self._device_class = device_class
         self._state_class = state_class
         self._unit_of_measurement = unit
+        # Cold-restart / stale-value guard flags (issue #206).
+        # Accumulating = any TOTAL_INCREASING energy sensor (all 17). Lifetime = the
+        # 5 never-resetting totals (raw + calculated), tagged sensor_scope="lifetime"
+        # in const.py; daily F1-F6 sensors are "periodic" — accumulating, not lifetime.
+        self._is_accumulating_sensor = state_class == SensorStateClass.TOTAL_INCREASING
+        self._is_lifetime_sensor = sensor_scope == "lifetime"
+        # Restored baseline for the cold-restart guard; set in async_added_to_hass.
+        self._restored_native_value: float | None = None
         self._device_name = self._coordinator.api.name
         self._device_host = self._coordinator.api.host
         self._device_model = self._coordinator.api.data["model"]
@@ -102,41 +112,32 @@ class SinapsiAlfaSensor(CoordinatorEntity[SinapsiAlfaCoordinator], RestoreSensor
             self._attr_suggested_display_precision = 3
 
     async def async_added_to_hass(self) -> None:
-        """Restore the last known value for lifetime energy sensors (issue #206).
+        """Restore the last known value as a cold-restart baseline (issue #206).
 
-        After a Home Assistant restart the API data structure is reset to
-        DEFAULT_SENSOR_VALUE (0.0), so the decrease-rejection guard in api.py has no
-        real baseline. The Alfa device returns 0 on its cumulative energy registers
-        for ~100s after a reboot (warm-up), which would otherwise be published as a
-        drop to 0 and double-counted by HA's TOTAL_INCREASING statistics. Seeding the
-        restored value back into api.data here (before the first state is written)
-        gives the guard a real baseline that survives the restart.
+        After a Home Assistant restart the device returns 0 (or stale low values) on
+        its energy registers during a ~100s warm-up window. HA's TOTAL_INCREASING
+        statistics would read a published 0 as a meter reset and double-count. For
+        every accumulating (TOTAL_INCREASING) sensor, the last value persisted by
+        RestoreSensor is kept on the instance and used by the stale-value guard in
+        native_value as a baseline until the first real value is published.
         """
         await super().async_added_to_hass()
 
-        if self._key not in RESTORABLE_ENERGY_SENSORS:
+        if not self._is_accumulating_sensor:
             return
 
         last_data = await self.async_get_last_sensor_data()
         if last_data is None or not isinstance(last_data.native_value, (int, float)):
             return
 
-        restored = float(last_data.native_value)
-        current = self._coordinator.api.data.get(self._key)
-        current_val = current if isinstance(current, (int, float)) else 0.0
-
-        # Cumulative energy only increases: keep a genuine reading if the first poll
-        # already captured one (device was not in warm-up), otherwise seed the baseline.
-        if restored > current_val:
-            self._coordinator.api.data[self._key] = restored
-            log_debug(
-                _LOGGER,
-                "async_added_to_hass",
-                "Restored lifetime energy baseline",
-                sensor=self._key,
-                restored=restored,
-                poll_value=current_val,
-            )
+        self._restored_native_value = float(last_data.native_value)
+        log_debug(
+            _LOGGER,
+            "async_added_to_hass",
+            "Restored accumulating-sensor baseline",
+            sensor=self._key,
+            restored=self._restored_native_value,
+        )
 
     @callback
     def _handle_coordinator_update(self) -> None:
@@ -180,10 +181,67 @@ class SinapsiAlfaSensor(CoordinatorEntity[SinapsiAlfaCoordinator], RestoreSensor
 
     @property
     def native_value(self) -> Any:
-        """Return the state of the sensor."""
-        if self._key in self._coordinator.api.data:
-            return self._coordinator.api.data[self._key]
-        return None
+        """Return the state of the sensor, guarding accumulating sensors.
+
+        Two independent guards protect TOTAL_INCREASING energy sensors from being
+        published with a decreased value (issue #206), which HA would treat as a
+        meter reset and double-count:
+
+        - Guard 1 (lifetime sensors, normal operation): when a live HA state exists,
+          a value below it is discarded. Daily F1-F6 sensors are excluded so their
+          legitimate midnight reset is allowed through.
+        - Guard 2 (all accumulating sensors, post-cold-restart): while no live state
+          exists yet, a value below the restored baseline is discarded — covering the
+          device warm-up window after an HA restart.
+        """
+        if self._key not in self._coordinator.api.data:
+            return None
+        value = self._coordinator.api.data[self._key]
+
+        if (self._is_lifetime_sensor or self._is_accumulating_sensor) and isinstance(
+            value, (int, float)
+        ):
+            current_state = self.hass.states.get(self.entity_id)
+            has_live_state = current_state is not None and current_state.state not in (
+                "unknown",
+                "unavailable",
+                None,
+            )
+
+            # Guard 1: lifetime sensors must never decrease during normal operation.
+            if self._is_lifetime_sensor and has_live_state:
+                try:
+                    if value < float(current_state.state):
+                        log_debug(
+                            _LOGGER,
+                            "native_value",
+                            "Discarding decreased lifetime value",
+                            sensor=self._key,
+                            value=value,
+                            current=current_state.state,
+                        )
+                        return None
+                except (ValueError, TypeError):
+                    pass  # Current state not numeric — allow through.
+
+            # Guard 2: after a cold restart, block values below the restored baseline.
+            if (
+                self._is_accumulating_sensor
+                and not has_live_state
+                and self._restored_native_value is not None
+                and value < self._restored_native_value
+            ):
+                log_debug(
+                    _LOGGER,
+                    "native_value",
+                    "Discarding warm-up value below restored baseline",
+                    sensor=self._key,
+                    value=value,
+                    baseline=self._restored_native_value,
+                )
+                return None
+
+        return value
 
     @property
     def should_poll(self) -> bool:

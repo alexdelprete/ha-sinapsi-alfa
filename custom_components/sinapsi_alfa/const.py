@@ -64,16 +64,6 @@ CUMULATIVE_ENERGY_SENSORS: set[str] = {
     "energia_prodotta",
 }
 
-# Lifetime energy sensors whose value must survive a Home Assistant restart (issue #206).
-# After an HA restart the in-memory baseline is reset to DEFAULT_SENSOR_VALUE, so the
-# decrease-rejection guard has nothing to compare against and the device warm-up zero
-# gets published. These sensors restore their last value via RestoreSensor on startup.
-# Includes the raw cumulative sensors plus the 2 calculated TOTAL_INCREASING sensors.
-RESTORABLE_ENERGY_SENSORS: set[str] = CUMULATIVE_ENERGY_SENSORS | {
-    "energia_consumata",
-    "energia_auto_consumata",
-}
-
 # Time-based timeout (seconds) before calculating derived energy values when
 # only one base sensor has changed. The Alfa firmware updates energia_prodotta
 # ~55-60s before energia_immessa on a ~15-min cycle. The sync guard holds
@@ -164,6 +154,7 @@ SENSOR_ENTITIES = [
     {
         "name": "Energia Prelevata",
         "key": "energia_prelevata",
+        "sensor_scope": "lifetime",
         "icon": "mdi:transmission-tower-export",
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,
@@ -174,6 +165,7 @@ SENSOR_ENTITIES = [
     {
         "name": "Energia Immessa",
         "key": "energia_immessa",
+        "sensor_scope": "lifetime",
         "icon": "mdi:transmission-tower-import",
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,
@@ -184,6 +176,7 @@ SENSOR_ENTITIES = [
     {
         "name": "Energia Prodotta",
         "key": "energia_prodotta",
+        "sensor_scope": "lifetime",
         "icon": "mdi:solar-power-variant-outline",
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,
@@ -194,6 +187,7 @@ SENSOR_ENTITIES = [
     {
         "name": "Energia Prelevata Giornaliera F1",
         "key": "energia_prelevata_giornaliera_f1",
+        "sensor_scope": "periodic",
         "icon": "mdi:transmission-tower-export",
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,
@@ -205,6 +199,7 @@ SENSOR_ENTITIES = [
     {
         "name": "Energia Prelevata Giornaliera F2",
         "key": "energia_prelevata_giornaliera_f2",
+        "sensor_scope": "periodic",
         "icon": "mdi:transmission-tower-export",
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,
@@ -216,6 +211,7 @@ SENSOR_ENTITIES = [
     {
         "name": "Energia Prelevata Giornaliera F3",
         "key": "energia_prelevata_giornaliera_f3",
+        "sensor_scope": "periodic",
         "icon": "mdi:transmission-tower-export",
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,
@@ -227,6 +223,7 @@ SENSOR_ENTITIES = [
     {
         "name": "Energia Prelevata Giornaliera F4",
         "key": "energia_prelevata_giornaliera_f4",
+        "sensor_scope": "periodic",
         "icon": "mdi:transmission-tower-export",
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,
@@ -238,6 +235,7 @@ SENSOR_ENTITIES = [
     {
         "name": "Energia Prelevata Giornaliera F5",
         "key": "energia_prelevata_giornaliera_f5",
+        "sensor_scope": "periodic",
         "icon": "mdi:transmission-tower-export",
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,
@@ -249,6 +247,7 @@ SENSOR_ENTITIES = [
     {
         "name": "Energia Prelevata Giornaliera F6",
         "key": "energia_prelevata_giornaliera_f6",
+        "sensor_scope": "periodic",
         "icon": "mdi:transmission-tower-export",
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,
@@ -260,6 +259,7 @@ SENSOR_ENTITIES = [
     {
         "name": "Energia Immessa Giornaliera F1",
         "key": "energia_immessa_giornaliera_f1",
+        "sensor_scope": "periodic",
         "icon": "mdi:transmission-tower-import",
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,
@@ -271,6 +271,7 @@ SENSOR_ENTITIES = [
     {
         "name": "Energia Immessa Giornaliera F2",
         "key": "energia_immessa_giornaliera_f2",
+        "sensor_scope": "periodic",
         "icon": "mdi:transmission-tower-import",
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,
@@ -282,6 +283,7 @@ SENSOR_ENTITIES = [
     {
         "name": "Energia Immessa Giornaliera F3",
         "key": "energia_immessa_giornaliera_f3",
+        "sensor_scope": "periodic",
         "icon": "mdi:transmission-tower-import",
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,
@@ -293,6 +295,7 @@ SENSOR_ENTITIES = [
     {
         "name": "Energia Immessa Giornaliera F4",
         "key": "energia_immessa_giornaliera_f4",
+        "sensor_scope": "periodic",
         "icon": "mdi:transmission-tower-import",
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,
@@ -304,6 +307,7 @@ SENSOR_ENTITIES = [
     {
         "name": "Energia Immessa Giornaliera F5",
         "key": "energia_immessa_giornaliera_f5",
+        "sensor_scope": "periodic",
         "icon": "mdi:transmission-tower-import",
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,
@@ -315,6 +319,7 @@ SENSOR_ENTITIES = [
     {
         "name": "Energia Immessa Giornaliera F6",
         "key": "energia_immessa_giornaliera_f6",
+        "sensor_scope": "periodic",
         "icon": "mdi:transmission-tower-import",
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,
@@ -376,6 +381,7 @@ SENSOR_ENTITIES = [
     {
         "name": "Energia Consumata",
         "key": "energia_consumata",
+        "sensor_scope": "lifetime",
         "icon": "mdi:home-lightning-bolt-outline",
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,
@@ -386,6 +392,7 @@ SENSOR_ENTITIES = [
     {
         "name": "Energia Auto Consumata",
         "key": "energia_auto_consumata",
+        "sensor_scope": "lifetime",
         "icon": "mdi:home-lightning-bolt-outline",
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,

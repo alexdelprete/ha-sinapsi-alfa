@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.13.4] - TBD
+
+**Patch release** - Extends cold-restart energy-doubling protection to all 17 energy
+sensors.
+
+### Fixed
+
+- **Daily F1-F6 energy sensors could double-count after a Home Assistant restart** -
+  v1.13.3 protected only the 5 lifetime energy sensors. The 12 daily time-band sensors
+  (`energia_{prelevata,immessa}_giornaliera_f1..f6`) are also `TOTAL_INCREASING` and
+  were left exposed to the device warm-up `0` being read as a meter reset. All 17
+  energy sensors are now protected.
+
+### Changed
+
+- **Reworked cold-restart protection into a metadata-driven two-guard model** (ported
+  from the sibling `ha-abb-fimer-pvi-vsn-rest` integration). A `sensor_scope` tag
+  (`lifetime`/`periodic`) plus `state_class` drive two `native_value` guards: Guard 1
+  blocks decreases on lifetime sensors during normal operation (daily sensors excluded
+  so their midnight reset works); Guard 2 holds any accumulating sensor below its
+  `RestoreSensor` baseline through the post-restart warm-up. The restored baseline is
+  kept on the entity instead of written back into coordinator data.
+- `RestoreSensor` restore logic now applies only to the 17 accumulating energy sensors.
+
+**Full Release Notes:** [docs/releases/v1.13.4.md](docs/releases/v1.13.4.md)
+
+**Full Changelog:** [v1.13.3...v1.13.4](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.13.3...v1.13.4)
+
 ## [1.13.3] - 2026-05-21
 
 **Patch release** - Prevents cumulative energy sensors from dropping to 0 after a

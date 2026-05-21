@@ -244,31 +244,32 @@ class TestSinapsiAlfaSensor:
             mock_log.assert_not_called()
 
 
+def _energy_sensor(coordinator, key, sensor_scope="lifetime"):
+    """Build a TOTAL_INCREASING energy sensor with the given scope."""
+    return SinapsiAlfaSensor(
+        coordinator=coordinator,
+        name=key.replace("_", " ").title(),
+        key=key,
+        icon="mdi:flash",
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        unit=UnitOfEnergy.KILO_WATT_HOUR,
+        sensor_scope=sensor_scope,
+    )
+
+
 class TestSinapsiAlfaSensorRestore:
-    """Tests for RestoreSensor baseline recovery after an HA restart (issue #206).
+    """Tests for cold-restart baseline recovery via RestoreSensor (issue #206).
 
-    After an HA restart the API data structure is reset to 0.0 and the Alfa device
-    returns 0 on its energy registers during its ~100s warm-up. Without a restored
-    baseline, that 0 is published and HA's TOTAL_INCREASING statistics double-count it.
+    After an HA restart the device returns 0 on its energy registers during a ~100s
+    warm-up. async_added_to_hass keeps the last persisted value on the instance as a
+    baseline for the native_value stale-value guards.
     """
-
-    def _energy_sensor(self, coordinator, key):
-        """Build an energy sensor for the given key."""
-        return SinapsiAlfaSensor(
-            coordinator=coordinator,
-            name=key.replace("_", " ").title(),
-            key=key,
-            icon="mdi:flash",
-            device_class=SensorDeviceClass.ENERGY,
-            state_class=SensorStateClass.TOTAL_INCREASING,
-            unit=UnitOfEnergy.KILO_WATT_HOUR,
-        )
 
     async def _added_to_hass(self, sensor, restored_value):
         """Run async_added_to_hass with the coordinator base call stubbed.
 
-        restored_value is the native value RestoreSensor should return; pass the
-        sentinel "_NONE_" for no restore data (fresh install).
+        Pass the sentinel "_NONE_" for no restore data (fresh install).
         """
         last_data = (
             None
@@ -280,77 +281,45 @@ class TestSinapsiAlfaSensorRestore:
             await sensor.async_added_to_hass()
         return sensor.async_get_last_sensor_data
 
-    async def test_restore_seeds_energy_baseline(self, mock_coordinator):
-        """A restored value seeds api.data when the current value is lower."""
+    async def test_restore_stores_baseline_on_instance(self, mock_coordinator):
+        """A restored value is kept on the instance, not seeded into api.data."""
         mock_coordinator.api.data["energia_prelevata"] = 0.0
-        sensor = self._energy_sensor(mock_coordinator, "energia_prelevata")
+        sensor = _energy_sensor(mock_coordinator, "energia_prelevata")
 
         await self._added_to_hass(sensor, 7737.839)
 
-        assert mock_coordinator.api.data["energia_prelevata"] == 7737.839
+        assert sensor._restored_native_value == 7737.839
+        # api.data is left untouched — the guard is decoupled from the coordinator.
+        assert mock_coordinator.api.data["energia_prelevata"] == 0.0
 
-    async def test_restart_warmup_does_not_publish_zero(self, mock_coordinator):
-        """Regression #206: a warm-up 0 is replaced by the restored baseline.
-
-        The first poll after a restart stores 0.0 (device warm-up). After restore,
-        native_value must report the previous real total, never 0.0.
-        """
-        mock_coordinator.api.data["energia_prelevata"] = 0.0
-        sensor = self._energy_sensor(mock_coordinator, "energia_prelevata")
-
-        await self._added_to_hass(sensor, 7737.839)
-
-        assert sensor.native_value == 7737.839
-        assert sensor.native_value != 0.0
-
-    async def test_restore_no_data_keeps_poll_value(self, mock_coordinator):
-        """With no restore data (fresh install), the polled value is kept."""
-        mock_coordinator.api.data["energia_prelevata"] = 100.0
-        sensor = self._energy_sensor(mock_coordinator, "energia_prelevata")
+    async def test_restore_no_data_leaves_baseline_none(self, mock_coordinator):
+        """With no restore data (fresh install), the baseline stays None."""
+        sensor = _energy_sensor(mock_coordinator, "energia_prelevata")
 
         await self._added_to_hass(sensor, "_NONE_")
 
-        assert mock_coordinator.api.data["energia_prelevata"] == 100.0
-
-    async def test_restore_skips_when_device_ahead(self, mock_coordinator):
-        """A real polled value higher than the restored one is not overwritten."""
-        mock_coordinator.api.data["energia_prelevata"] = 7800.0
-        sensor = self._energy_sensor(mock_coordinator, "energia_prelevata")
-
-        await self._added_to_hass(sensor, 7737.839)
-
-        assert mock_coordinator.api.data["energia_prelevata"] == 7800.0
-
-    async def test_restore_no_pv_zero_not_seeded(self, mock_coordinator):
-        """A no-PV user restoring 0.0 keeps 0.0 (restored is not greater)."""
-        mock_coordinator.api.data["energia_immessa"] = 0.0
-        sensor = self._energy_sensor(mock_coordinator, "energia_immessa")
-
-        await self._added_to_hass(sensor, 0.0)
-
-        assert mock_coordinator.api.data["energia_immessa"] == 0.0
-
-    async def test_restore_calculated_energy_sensors(self, mock_coordinator):
-        """Calculated TOTAL_INCREASING energy sensors are restored too."""
-        mock_coordinator.api.data["energia_consumata"] = 0.0
-        sensor = self._energy_sensor(mock_coordinator, "energia_consumata")
-
-        await self._added_to_hass(sensor, 16790.0)
-
-        assert mock_coordinator.api.data["energia_consumata"] == 16790.0
+        assert sensor._restored_native_value is None
 
     async def test_restore_ignores_non_numeric_value(self, mock_coordinator):
-        """A non-numeric restored value is ignored (no seeding)."""
-        mock_coordinator.api.data["energia_prelevata"] = 0.0
-        sensor = self._energy_sensor(mock_coordinator, "energia_prelevata")
+        """A non-numeric restored value is ignored."""
+        sensor = _energy_sensor(mock_coordinator, "energia_prelevata")
 
         await self._added_to_hass(sensor, "unknown")
 
-        assert mock_coordinator.api.data["energia_prelevata"] == 0.0
+        assert sensor._restored_native_value is None
 
-    async def test_non_energy_sensor_not_seeded(self, mock_coordinator):
-        """Non-energy sensors return early without querying restore data."""
-        mock_coordinator.api.data["potenza_prelevata"] = 1.5
+    async def test_restore_covers_daily_periodic_sensor(self, mock_coordinator):
+        """Daily F1-F6 (periodic) sensors are accumulating and get a baseline."""
+        sensor = _energy_sensor(
+            mock_coordinator, "energia_prelevata_giornaliera_f1", sensor_scope="periodic"
+        )
+
+        await self._added_to_hass(sensor, 12.5)
+
+        assert sensor._restored_native_value == 12.5
+
+    async def test_non_accumulating_sensor_skips_restore(self, mock_coordinator):
+        """Non-accumulating sensors return early without querying restore data."""
         sensor = SinapsiAlfaSensor(
             coordinator=mock_coordinator,
             name="Potenza Prelevata",
@@ -364,7 +333,142 @@ class TestSinapsiAlfaSensorRestore:
         get_last = await self._added_to_hass(sensor, 999.0)
 
         get_last.assert_not_called()
-        assert mock_coordinator.api.data["potenza_prelevata"] == 1.5
+        assert sensor._restored_native_value is None
+
+
+class TestSinapsiAlfaSensorGuards:
+    """Tests for the two native_value stale-value guards (issue #206)."""
+
+    def _guard_sensor(
+        self, coordinator, key, sensor_scope, api_value, restored=None, live_state=None
+    ):
+        """Build a TOTAL_INCREASING sensor wired for native_value guard tests.
+
+        live_state=None → no live HA state (post-cold-restart). Otherwise a string
+        state value. restored sets the cold-restart baseline.
+        """
+        sensor = _energy_sensor(coordinator, key, sensor_scope)
+        sensor._restored_native_value = restored
+        sensor.entity_id = f"sensor.{key}"
+        coordinator.api.data[key] = api_value
+        hass = MagicMock()
+        if live_state is None:
+            hass.states.get.return_value = None
+        else:
+            state = MagicMock()
+            state.state = live_state
+            hass.states.get.return_value = state
+        sensor.hass = hass
+        return sensor
+
+    def test_guard1_discards_decreased_lifetime_value(self, mock_coordinator):
+        """Guard 1: a lifetime value below the live state is discarded."""
+        sensor = self._guard_sensor(
+            mock_coordinator, "energia_prelevata", "lifetime", 50.0, live_state="100.0"
+        )
+        assert sensor.native_value is None
+
+    def test_guard1_allows_equal_lifetime_value(self, mock_coordinator):
+        """Guard 1: a value equal to the live state passes."""
+        sensor = self._guard_sensor(
+            mock_coordinator, "energia_prelevata", "lifetime", 100.0, live_state="100.0"
+        )
+        assert sensor.native_value == 100.0
+
+    def test_guard1_allows_increased_lifetime_value(self, mock_coordinator):
+        """Guard 1: a value above the live state passes."""
+        sensor = self._guard_sensor(
+            mock_coordinator, "energia_prelevata", "lifetime", 150.0, live_state="100.0"
+        )
+        assert sensor.native_value == 150.0
+
+    def test_guard1_allows_when_live_state_non_numeric(self, mock_coordinator):
+        """Guard 1: a non-numeric live state is ignored, value passes through."""
+        sensor = self._guard_sensor(
+            mock_coordinator, "energia_prelevata", "lifetime", 50.0, live_state="garbage"
+        )
+        assert sensor.native_value == 50.0
+
+    def test_guard1_skipped_for_periodic_sensor(self, mock_coordinator):
+        """Guard 1 excludes daily sensors: the midnight reset to 0 passes through."""
+        sensor = self._guard_sensor(
+            mock_coordinator,
+            "energia_prelevata_giornaliera_f1",
+            "periodic",
+            0.0,
+            live_state="23.4",
+        )
+        assert sensor.native_value == 0.0
+
+    def test_guard2_blocks_warmup_zero_after_restart(self, mock_coordinator):
+        """Guard 2: a warm-up 0 below the restored baseline is discarded."""
+        sensor = self._guard_sensor(
+            mock_coordinator, "energia_prelevata", "lifetime", 0.0, restored=7737.839
+        )
+        assert sensor.native_value is None
+
+    def test_guard2_allows_value_above_baseline(self, mock_coordinator):
+        """Guard 2: a value above the restored baseline passes."""
+        sensor = self._guard_sensor(
+            mock_coordinator, "energia_prelevata", "lifetime", 7800.0, restored=7737.839
+        )
+        assert sensor.native_value == 7800.0
+
+    def test_guard2_allows_value_equal_to_baseline(self, mock_coordinator):
+        """Guard 2: a value equal to the restored baseline passes."""
+        sensor = self._guard_sensor(
+            mock_coordinator, "energia_prelevata", "lifetime", 7737.839, restored=7737.839
+        )
+        assert sensor.native_value == 7737.839
+
+    def test_guard2_protects_periodic_sensor_after_restart(self, mock_coordinator):
+        """Guard 2 covers daily sensors: a warm-up 0 after restart is discarded."""
+        sensor = self._guard_sensor(
+            mock_coordinator,
+            "energia_immessa_giornaliera_f1",
+            "periodic",
+            0.0,
+            restored=12.5,
+        )
+        assert sensor.native_value is None
+
+    def test_guard2_inert_without_restore_data(self, mock_coordinator):
+        """Guard 2: with no restored baseline (fresh install) the value passes."""
+        sensor = self._guard_sensor(
+            mock_coordinator, "energia_prelevata", "lifetime", 0.0, restored=None
+        )
+        assert sensor.native_value == 0.0
+
+    def test_live_state_takes_priority_over_restored_baseline(self, mock_coordinator):
+        """With a live state, Guard 1 runs and Guard 2 (restored baseline) is bypassed."""
+        # value 70 is above the restored baseline (50) but below the live state (100):
+        # Guard 1 wins and discards it.
+        sensor = self._guard_sensor(
+            mock_coordinator,
+            "energia_prelevata",
+            "lifetime",
+            70.0,
+            restored=50.0,
+            live_state="100.0",
+        )
+        assert sensor.native_value is None
+
+    def test_non_accumulating_sensor_skips_guards(self, mock_coordinator):
+        """A power (MEASUREMENT) sensor bypasses both guards entirely."""
+        sensor = SinapsiAlfaSensor(
+            coordinator=mock_coordinator,
+            name="Potenza Prelevata",
+            key="potenza_prelevata",
+            icon="mdi:transmission-tower-export",
+            device_class=SensorDeviceClass.POWER,
+            state_class=SensorStateClass.MEASUREMENT,
+            unit=UnitOfPower.KILO_WATT,
+        )
+        sensor.hass = MagicMock()
+        mock_coordinator.api.data["potenza_prelevata"] = 1.5
+
+        assert sensor.native_value == 1.5
+        sensor.hass.states.get.assert_not_called()
 
 
 class TestSensorEntityDefinitions:
@@ -393,3 +497,24 @@ class TestSensorEntityDefinitions:
             if sensor["key"] in calculated:
                 assert sensor["modbus_type"] == "calcolato"
                 assert sensor["modbus_addr"] is None
+
+    def test_energy_sensors_have_sensor_scope(self):
+        """All 17 TOTAL_INCREASING energy sensors are tagged lifetime or periodic."""
+        lifetime = {s["key"] for s in SENSOR_ENTITIES if s.get("sensor_scope") == "lifetime"}
+        periodic = {s["key"] for s in SENSOR_ENTITIES if s.get("sensor_scope") == "periodic"}
+        total_increasing = {
+            s["key"]
+            for s in SENSOR_ENTITIES
+            if s["state_class"] == SensorStateClass.TOTAL_INCREASING
+        }
+
+        assert lifetime == {
+            "energia_prelevata",
+            "energia_immessa",
+            "energia_prodotta",
+            "energia_consumata",
+            "energia_auto_consumata",
+        }
+        assert len(periodic) == 12
+        # Every TOTAL_INCREASING sensor is tagged, and only those.
+        assert lifetime | periodic == total_increasing
