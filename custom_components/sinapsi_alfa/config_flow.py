@@ -366,9 +366,7 @@ class SinapsiAlfaOptionsFlow(OptionsFlowWithReload):
                     # to avoid pre-filling with empty string which fails validation
                     vol.Optional(
                         CONF_RECOVERY_SCRIPT,
-                        description={
-                            "suggested_value": recovery_script if recovery_script else None
-                        },
+                        description={"suggested_value": recovery_script or None},
                     ): EntitySelector(
                         EntitySelectorConfig(domain="script"),
                     ),
