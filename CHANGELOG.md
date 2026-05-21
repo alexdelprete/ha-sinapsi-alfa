@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.13.3] - TBD
+## [1.13.3] - 2026-05-21
 
 **Patch release** - Prevents cumulative energy sensors from dropping to 0 after a
 Home Assistant restart.
