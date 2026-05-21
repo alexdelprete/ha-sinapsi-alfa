@@ -6,7 +6,7 @@ https://github.com/alexdelprete/ha-sinapsi-alfa
 import logging
 from typing import Any, cast
 
-from homeassistant.components.sensor import SensorDeviceClass, SensorEntity, SensorStateClass
+from homeassistant.components.sensor import RestoreSensor, SensorDeviceClass, SensorStateClass
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity import EntityCategory
@@ -14,7 +14,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from . import SinapsiAlfaConfigEntry
-from .const import CONF_NAME, DOMAIN, SENSOR_ENTITIES
+from .const import CONF_NAME, DOMAIN, RESTORABLE_ENERGY_SENSORS, SENSOR_ENTITIES
 from .coordinator import SinapsiAlfaCoordinator
 from .helpers import log_debug
 
@@ -61,7 +61,7 @@ async def async_setup_entry(
     async_add_entities(sensors)
 
 
-class SinapsiAlfaSensor(CoordinatorEntity[SinapsiAlfaCoordinator], SensorEntity):
+class SinapsiAlfaSensor(CoordinatorEntity[SinapsiAlfaCoordinator], RestoreSensor):
     """Representation of a Sinapsi Alfa sensor."""
 
     _attr_has_entity_name = True
@@ -100,6 +100,43 @@ class SinapsiAlfaSensor(CoordinatorEntity[SinapsiAlfaCoordinator], SensorEntity)
         # visually clutter large cumulative totals without practical benefit.
         if device_class == SensorDeviceClass.POWER:
             self._attr_suggested_display_precision = 3
+
+    async def async_added_to_hass(self) -> None:
+        """Restore the last known value for lifetime energy sensors (issue #206).
+
+        After a Home Assistant restart the API data structure is reset to
+        DEFAULT_SENSOR_VALUE (0.0), so the decrease-rejection guard in api.py has no
+        real baseline. The Alfa device returns 0 on its cumulative energy registers
+        for ~100s after a reboot (warm-up), which would otherwise be published as a
+        drop to 0 and double-counted by HA's TOTAL_INCREASING statistics. Seeding the
+        restored value back into api.data here (before the first state is written)
+        gives the guard a real baseline that survives the restart.
+        """
+        await super().async_added_to_hass()
+
+        if self._key not in RESTORABLE_ENERGY_SENSORS:
+            return
+
+        last_data = await self.async_get_last_sensor_data()
+        if last_data is None or not isinstance(last_data.native_value, (int, float)):
+            return
+
+        restored = float(last_data.native_value)
+        current = self._coordinator.api.data.get(self._key)
+        current_val = current if isinstance(current, (int, float)) else 0.0
+
+        # Cumulative energy only increases: keep a genuine reading if the first poll
+        # already captured one (device was not in warm-up), otherwise seed the baseline.
+        if restored > current_val:
+            self._coordinator.api.data[self._key] = restored
+            log_debug(
+                _LOGGER,
+                "async_added_to_hass",
+                "Restored lifetime energy baseline",
+                sensor=self._key,
+                restored=restored,
+                poll_value=current_val,
+            )
 
     @callback
     def _handle_coordinator_update(self) -> None:

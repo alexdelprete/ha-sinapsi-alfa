@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.13.3] - TBD
+
+**Patch release** - Prevents cumulative energy sensors from dropping to 0 after a
+Home Assistant restart.
+
+### Fixed
+
+- **Cumulative energy sensors dropped to 0 after a Home Assistant restart** - The
+  Alfa device returns `0` on its cumulative energy registers for ~100 seconds after
+  a reboot (device warm-up) before the real meter value reappears. The v1.2.12
+  decrease-rejection guard protected against a device reboot while HA kept running,
+  but not against an HA restart: the in-memory baseline is reset to `0` on restart,
+  so the warm-up `0` was published as the first state and HA's `TOTAL_INCREASING`
+  statistics double-counted it as a meter reset. Sensors now use `RestoreSensor` to
+  recover their last known value on startup, giving the existing guard a baseline
+  that survives the restart.
+  (Fixes [#206](https://github.com/alexdelprete/ha-sinapsi-alfa/issues/206))
+
+**Full Release Notes:** [docs/releases/v1.13.3.md](docs/releases/v1.13.3.md)
+
+**Full Changelog:** [v1.13.2...v1.13.3](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.13.2...v1.13.3)
+
 ## [1.13.2] - 2026-04-19
 
 **Patch release** - Completes the 1 W precision fix from v1.13.1 by making the

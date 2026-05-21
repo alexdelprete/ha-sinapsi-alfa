@@ -1,15 +1,20 @@
 """Tests for Sinapsi Alfa sensor platform."""
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
 from custom_components.sinapsi_alfa.const import CONF_NAME, DOMAIN, SENSOR_ENTITIES
 from custom_components.sinapsi_alfa.sensor import SinapsiAlfaSensor, async_setup_entry
-from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
+from homeassistant.components.sensor import (
+    SensorDeviceClass,
+    SensorExtraStoredData,
+    SensorStateClass,
+)
 from homeassistant.const import UnitOfEnergy, UnitOfPower
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .conftest import TEST_HOST, TEST_MAC, TEST_NAME
 
@@ -237,6 +242,129 @@ class TestSinapsiAlfaSensor:
             diagnostic_sensor._handle_coordinator_update()
             # Should not log because key is not potenza_prelevata
             mock_log.assert_not_called()
+
+
+class TestSinapsiAlfaSensorRestore:
+    """Tests for RestoreSensor baseline recovery after an HA restart (issue #206).
+
+    After an HA restart the API data structure is reset to 0.0 and the Alfa device
+    returns 0 on its energy registers during its ~100s warm-up. Without a restored
+    baseline, that 0 is published and HA's TOTAL_INCREASING statistics double-count it.
+    """
+
+    def _energy_sensor(self, coordinator, key):
+        """Build an energy sensor for the given key."""
+        return SinapsiAlfaSensor(
+            coordinator=coordinator,
+            name=key.replace("_", " ").title(),
+            key=key,
+            icon="mdi:flash",
+            device_class=SensorDeviceClass.ENERGY,
+            state_class=SensorStateClass.TOTAL_INCREASING,
+            unit=UnitOfEnergy.KILO_WATT_HOUR,
+        )
+
+    async def _added_to_hass(self, sensor, restored_value):
+        """Run async_added_to_hass with the coordinator base call stubbed.
+
+        restored_value is the native value RestoreSensor should return; pass the
+        sentinel "_NONE_" for no restore data (fresh install).
+        """
+        last_data = (
+            None
+            if restored_value == "_NONE_"
+            else SensorExtraStoredData(restored_value, UnitOfEnergy.KILO_WATT_HOUR)
+        )
+        sensor.async_get_last_sensor_data = AsyncMock(return_value=last_data)
+        with patch.object(CoordinatorEntity, "async_added_to_hass", AsyncMock()):
+            await sensor.async_added_to_hass()
+        return sensor.async_get_last_sensor_data
+
+    async def test_restore_seeds_energy_baseline(self, mock_coordinator):
+        """A restored value seeds api.data when the current value is lower."""
+        mock_coordinator.api.data["energia_prelevata"] = 0.0
+        sensor = self._energy_sensor(mock_coordinator, "energia_prelevata")
+
+        await self._added_to_hass(sensor, 7737.839)
+
+        assert mock_coordinator.api.data["energia_prelevata"] == 7737.839
+
+    async def test_restart_warmup_does_not_publish_zero(self, mock_coordinator):
+        """Regression #206: a warm-up 0 is replaced by the restored baseline.
+
+        The first poll after a restart stores 0.0 (device warm-up). After restore,
+        native_value must report the previous real total, never 0.0.
+        """
+        mock_coordinator.api.data["energia_prelevata"] = 0.0
+        sensor = self._energy_sensor(mock_coordinator, "energia_prelevata")
+
+        await self._added_to_hass(sensor, 7737.839)
+
+        assert sensor.native_value == 7737.839
+        assert sensor.native_value != 0.0
+
+    async def test_restore_no_data_keeps_poll_value(self, mock_coordinator):
+        """With no restore data (fresh install), the polled value is kept."""
+        mock_coordinator.api.data["energia_prelevata"] = 100.0
+        sensor = self._energy_sensor(mock_coordinator, "energia_prelevata")
+
+        await self._added_to_hass(sensor, "_NONE_")
+
+        assert mock_coordinator.api.data["energia_prelevata"] == 100.0
+
+    async def test_restore_skips_when_device_ahead(self, mock_coordinator):
+        """A real polled value higher than the restored one is not overwritten."""
+        mock_coordinator.api.data["energia_prelevata"] = 7800.0
+        sensor = self._energy_sensor(mock_coordinator, "energia_prelevata")
+
+        await self._added_to_hass(sensor, 7737.839)
+
+        assert mock_coordinator.api.data["energia_prelevata"] == 7800.0
+
+    async def test_restore_no_pv_zero_not_seeded(self, mock_coordinator):
+        """A no-PV user restoring 0.0 keeps 0.0 (restored is not greater)."""
+        mock_coordinator.api.data["energia_immessa"] = 0.0
+        sensor = self._energy_sensor(mock_coordinator, "energia_immessa")
+
+        await self._added_to_hass(sensor, 0.0)
+
+        assert mock_coordinator.api.data["energia_immessa"] == 0.0
+
+    async def test_restore_calculated_energy_sensors(self, mock_coordinator):
+        """Calculated TOTAL_INCREASING energy sensors are restored too."""
+        mock_coordinator.api.data["energia_consumata"] = 0.0
+        sensor = self._energy_sensor(mock_coordinator, "energia_consumata")
+
+        await self._added_to_hass(sensor, 16790.0)
+
+        assert mock_coordinator.api.data["energia_consumata"] == 16790.0
+
+    async def test_restore_ignores_non_numeric_value(self, mock_coordinator):
+        """A non-numeric restored value is ignored (no seeding)."""
+        mock_coordinator.api.data["energia_prelevata"] = 0.0
+        sensor = self._energy_sensor(mock_coordinator, "energia_prelevata")
+
+        await self._added_to_hass(sensor, "unknown")
+
+        assert mock_coordinator.api.data["energia_prelevata"] == 0.0
+
+    async def test_non_energy_sensor_not_seeded(self, mock_coordinator):
+        """Non-energy sensors return early without querying restore data."""
+        mock_coordinator.api.data["potenza_prelevata"] = 1.5
+        sensor = SinapsiAlfaSensor(
+            coordinator=mock_coordinator,
+            name="Potenza Prelevata",
+            key="potenza_prelevata",
+            icon="mdi:transmission-tower-export",
+            device_class=SensorDeviceClass.POWER,
+            state_class=SensorStateClass.MEASUREMENT,
+            unit=UnitOfPower.KILO_WATT,
+        )
+
+        get_last = await self._added_to_hass(sensor, 999.0)
+
+        get_last.assert_not_called()
+        assert mock_coordinator.api.data["potenza_prelevata"] == 1.5
 
 
 class TestSensorEntityDefinitions:

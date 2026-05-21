@@ -64,6 +64,16 @@ CUMULATIVE_ENERGY_SENSORS: set[str] = {
     "energia_prodotta",
 }
 
+# Lifetime energy sensors whose value must survive a Home Assistant restart (issue #206).
+# After an HA restart the in-memory baseline is reset to DEFAULT_SENSOR_VALUE, so the
+# decrease-rejection guard has nothing to compare against and the device warm-up zero
+# gets published. These sensors restore their last value via RestoreSensor on startup.
+# Includes the raw cumulative sensors plus the 2 calculated TOTAL_INCREASING sensors.
+RESTORABLE_ENERGY_SENSORS: set[str] = CUMULATIVE_ENERGY_SENSORS | {
+    "energia_consumata",
+    "energia_auto_consumata",
+}
+
 # Time-based timeout (seconds) before calculating derived energy values when
 # only one base sensor has changed. The Alfa firmware updates energia_prodotta
 # ~55-60s before energia_immessa on a ~15-min cycle. The sync guard holds
