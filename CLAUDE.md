@@ -294,9 +294,14 @@ CI workflows still running. Check back in 1-2 minutes.
 
 ### Issue References in Release Notes
 
-When a release fixes a specific GitHub issue:
+When a release addresses a specific GitHub issue:
 
-- Reference the issue number in release notes (e.g., "Fixes #178")
+- Reference the issue number, but **NEVER use a GitHub closing keyword** —
+  `close`/`closes`/`closed`, `fix`/`fixes`/`fixed`, `resolve`/`resolves`/`resolved`
+  followed by `#N` — anywhere in commit messages, release notes, the GitHub release
+  body, or PR descriptions. Those keywords auto-close the issue when the commit lands
+  on the default branch. Use a neutral phrase instead: "Reported in #178",
+  "Addresses #178", "Refs #178".
 - Thank the user who opened the issue by name and GitHub handle
 - **NEVER close the issue** - the user will do it manually
 
@@ -703,6 +708,12 @@ feat(api): implement new feature
 Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
+> **NEVER put a GitHub issue-closing keyword in a commit message.**
+> `close`/`closes`/`closed`, `fix`/`fixes`/`fixed`, `resolve`/`resolves`/`resolved`
+> followed by `#N` auto-close that issue the moment the commit lands on the default
+> branch. Reference issues with a neutral phrase only — "Refs #N", "Reported in #N",
+> "Addresses #N". Issues are closed manually by the user, never by automation.
+
 ### Branch Strategy
 
 - Default branch (`main` or `master`) = next release
@@ -931,9 +942,14 @@ The coverage percentage is the last column in the TOTAL line.
 
 ### Issue References in Release Notes
 
-When a release fixes a specific GitHub issue:
+When a release addresses a specific GitHub issue:
 
-- Reference the issue number in release notes (e.g., "Fixes #42")
+- Reference the issue number, but **NEVER use a GitHub closing keyword** —
+  `close`/`closes`/`closed`, `fix`/`fixes`/`fixed`, `resolve`/`resolves`/`resolved`
+  followed by `#N` — anywhere in commit messages, release notes, the GitHub release
+  body, or PR descriptions. Those keywords auto-close the issue when the commit lands
+  on the default branch. Use a neutral phrase instead: "Reported in #42",
+  "Addresses #42", "Refs #42".
 - Thank the user who opened the issue by name and GitHub handle
 - **NEVER close the issue** — the user will do it manually
 
