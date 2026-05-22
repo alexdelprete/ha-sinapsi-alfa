@@ -160,6 +160,10 @@
     "connection_failed": {
       "title": "Seadmega {device_name} ei saa uhendust",
       "description": "Integratsioon ei saa uhendust teie Sinapsi Alfa seadmega aadressil {host}:{port}.\n\n**Voimalikud pohjused:**\n- Seade on valja lulitatud voi ei ole vorku uhendatud\n- IP-aadress on muutunud\n- Tulemuur blokeerib uhendust\n- Modbus TCP port (502) ei ole ligipaasetav\n\n**Lahendamiseks:**\n1. Kontrollige, kas seade on sisse lulitatud ja teie vorku uhendatud\n2. Kontrollige IP-aadressi oma ruuteri DHCP-tabelis\n3. Proovige seadme veebiliidesele otse ligi paaseda\n4. Kui IP on muutunud, seadistage integratsioon uue aadressiga umber"
+    },
+    "device_warmup": {
+      "title": "{device_name} kaivitub",
+      "description": "Parast taaskaivitust vajab Sinapsi Alfa seade paar minutit, et oma loenduriregistrid uuesti taita. Selle soojenemisfaasi ajal ei usalda integratsioon teadlikult seadme andmeid (need tagastatakse nullina), et kaitsta energia juhtpaneeli statistikat vale loenduri lahtestamise eest.\n\nMingit tegevust pole vaja - see probleem laheb automaatselt ara, kui seade on kaivitunud ja annab taas kehtivaid andmeid."
     }
   },
   "device_automation": {

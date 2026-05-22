@@ -160,6 +160,10 @@
     "modbus_conflict": {
       "title": "Modbus-Integrationskonflikt für {device_name}",
       "description": "Die integrierte Modbus-Integration ist auch für dieses Gerät konfiguriert:\n\n- **Diese Integration:** {host}\n- **Modbus-Integration:** {modbus_host}\n\nBeide verweisen auf dasselbe Gerät, das nur **einen Modbus-TCP-Client** gleichzeitig unterstützt. Dies verursacht wahrscheinlich Ihre Verbindungsprobleme.\n\n**Zur Behebung:**\n1. Gehen Sie zu Einstellungen → Geräte & Dienste → Modbus\n2. Entfernen oder deaktivieren Sie den für {modbus_host} konfigurierten Modbus-Hub\n3. Prüfen Sie Ihre configuration.yaml auf 'modbus:'-Einträge\n4. Starten Sie Home Assistant neu\n\nDieses Problem verschwindet automatisch, wenn der Konflikt behoben ist."
+    },
+    "device_warmup": {
+      "title": "{device_name} fahrt hoch",
+      "description": "Nach einem Neustart benotigt das Sinapsi Alfa-Gerat einige Minuten, um seine Zahlerregister neu zu fullen. Wahrend dieser Aufwarmphase vertraut die Integration den Geratedaten bewusst nicht (sie werden als Null zuruckgegeben), um die Statistiken des Energie-Dashboards vor einem falschen Zahler-Reset zu schutzen.\n\nEs ist keine Aktion erforderlich - dieses Problem wird automatisch behoben, sobald das Gerat hochgefahren ist und wieder gultige Daten liefert."
     }
   },
   "device_automation": {

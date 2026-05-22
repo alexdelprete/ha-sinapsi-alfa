@@ -160,6 +160,10 @@
     "modbus_conflict": {
       "title": "Conflicto de integración Modbus para {device_name}",
       "description": "La integración Modbus nativa también está configurada para este dispositivo:\n\n- **Esta integración:** {host}\n- **Integración Modbus:** {modbus_host}\n\nAmbos apuntan al mismo dispositivo, que solo admite **un cliente Modbus TCP** a la vez. Esto probablemente está causando sus problemas de conexión.\n\n**Para solucionarlo:**\n1. Vaya a Ajustes → Dispositivos y Servicios → Modbus\n2. Elimine o deshabilite el hub Modbus configurado para {modbus_host}\n3. Revise su configuration.yaml para entradas 'modbus:'\n4. Reinicie Home Assistant\n\nEste problema desaparecerá automáticamente cuando se resuelva el conflicto."
+    },
+    "device_warmup": {
+      "title": "{device_name} se esta iniciando",
+      "description": "Despues de un reinicio, el dispositivo Sinapsi Alfa necesita un par de minutos para volver a rellenar los registros del contador. Durante esta fase de inicio, la integracion no confia deliberadamente en los datos del dispositivo (se devuelven como cero), para proteger las estadisticas del Panel de Energia de un falso reinicio del contador.\n\nNo es necesaria ninguna accion - este problema se resuelve automaticamente cuando el dispositivo termina de iniciarse y vuelve a proporcionar datos validos."
     }
   },
   "device_automation": {

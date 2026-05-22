@@ -42,6 +42,9 @@ integration for Alfa devices. :)
   repair system with configurable threshold
 - **Recovery notifications**: Detailed timing info (downtime, script execution)
   when device recovers
+- **Energy statistics protection**: Cumulative energy sensors are guarded against
+  the spurious zeros a device can return after a restart, which would otherwise be
+  double-counted on the Energy Dashboard
 - **Device triggers**: Automate based on device connection events (unreachable,
   not responding, recovered)
 - **Recovery script**: Optionally execute a script when connection failures
@@ -64,6 +67,9 @@ to communicate with the Sinapsi Alfa device:
   `SinapsiModbusError`) provide clear error context
 - **Repair Notifications**: Connection issues are surfaced in Home Assistant's
   repair system after repeated failures
+- **Energy Statistics Protection**: Cumulative energy sensors restore their last
+  value across restarts and reject implausible readings; a poll-level warm-up gate
+  rejects the entire poll while the device reports zeroed meter data
 
 ## Important: Modbus Integration Conflict
 
@@ -300,6 +306,36 @@ repair notification with detailed timing information:
 These notifications appear in **Settings > System > Repairs** and require
 user acknowledgment to dismiss.
 
+## Device Warm-Up Detection
+
+After a restart, a Sinapsi Alfa device can occasionally return `0` on all of its
+meter registers for a few minutes before its real values reappear — most likely
+when it does not yet have current data from the energy meter (for example a slow
+or unreliable Chain2 link between the Alfa and the meter). This is an edge case
+that most installations never see.
+
+If those zeroed readings were published, Home Assistant's long-term statistics
+would read the drop to `0` as a meter reset and **double-count** your cumulative
+totals on the Energy Dashboard.
+
+To prevent this, the integration:
+
+- **Detects the warm-up** from two physically-impossible readings — a lifetime
+  grid-import total of `0` and an invalid time band (`F0`) — and rejects the whole
+  poll, so no sensor publishes zeroed data.
+- **Shows a repair notification** while the device is warming up (distinct from the
+  connection-failure notification), and a recovery notification once it reports
+  valid data again.
+- **Restores cumulative values across restarts**, so a brief warm-up cannot reset
+  the Energy Dashboard.
+
+While the device is warming up immediately after a Home Assistant restart, the
+integration reports itself as *not ready* and retries automatically; the entities
+appear once the device delivers valid data.
+
+If a past warm-up already produced a spurious spike, correct it via
+**Developer Tools > Statistics**, which lets you fix or remove the bad data point.
+
 ## Use Cases
 
 The Sinapsi Alfa integration enables several energy monitoring use cases:
@@ -416,6 +452,10 @@ automation:
   device identification instead
 - **Polling-based updates**: Data is fetched at the configured interval
   (30-600 seconds); real-time updates are not available
+- **Post-restart warm-up**: If the device is slow to provide meter data after a
+  restart, the integration reports *not ready* and shows a warm-up notification
+  until valid data arrives (usually a couple of minutes) — see
+  *Device Warm-Up Detection*
 
 ## Troubleshooting
 

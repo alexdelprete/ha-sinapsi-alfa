@@ -14,7 +14,7 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
-from .api import SinapsiAlfaAPI, SinapsiConnectionError, SinapsiModbusError
+from .api import SinapsiAlfaAPI, SinapsiConnectionError, SinapsiModbusError, SinapsiWarmupError
 from .const import (
     CONF_ENABLE_REPAIR_NOTIFICATION,
     CONF_FAILURES_THRESHOLD,
@@ -40,8 +40,12 @@ from .repairs import (
     create_connection_issue,
     create_modbus_conflict_issue,
     create_recovery_notification,
+    create_warmup_issue,
+    create_warmup_recovery_notification,
     delete_connection_issue,
     delete_modbus_conflict_issue,
+    delete_warmup_issue,
+    is_warmup_issue_active,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -207,6 +211,18 @@ class SinapsiAlfaCoordinator(DataUpdateCoordinator[bool]):
                 "Update completed",
                 time=self.last_update_time,
             )
+            # Handle warm-up recovery: the device finished warming up after a
+            # restart/reboot. Detected via the issue registry (not instance state)
+            # because the coordinator is rebuilt on every config-entry setup retry.
+            if is_warmup_issue_active(self.hass, self._entry_id):
+                delete_warmup_issue(self.hass, self._entry_id)
+                create_warmup_recovery_notification(self.hass, self._entry_id, self.conf_name)
+                log_info(
+                    _LOGGER,
+                    "async_update_data",
+                    "Device finished warm-up, repair issue cleared",
+                )
+
             # Handle recovery after repair issue was created
             if self._repair_issue_created:
                 # Calculate downtime and format times using locale-aware format
@@ -277,6 +293,21 @@ class SinapsiAlfaCoordinator(DataUpdateCoordinator[bool]):
 
             # Reset failure counter on success
             self._consecutive_failures = 0
+        except SinapsiWarmupError as ex:
+            # Device warm-up after a restart/reboot: registers return 0 for a few
+            # minutes. This is an expected transient, not a fault — fail the poll so
+            # sensors stay unavailable (no zeroed data published), but do NOT touch
+            # the connection-failure counter, the connection issue, or the recovery
+            # script. A dedicated warm-up repair issue is raised instead.
+            self.last_update_status = False
+            log_info(
+                _LOGGER,
+                "async_update_data",
+                "Device in warm-up phase, skipping update",
+            )
+            if self._enable_repair_notification:
+                create_warmup_issue(self.hass, self._entry_id, self.conf_name)
+            raise UpdateFailed from ex
         except Exception as ex:
             self.last_update_status = False
             self._consecutive_failures += 1

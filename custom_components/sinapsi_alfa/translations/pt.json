@@ -160,6 +160,10 @@
     "connection_failed": {
       "title": "Nao e possivel ligar a {device_name}",
       "description": "A integracao nao consegue ligar ao seu dispositivo Sinapsi Alfa em {host}:{port}.\n\n**Possiveis causas:**\n- O dispositivo esta desligado ou nao ligado a rede\n- O endereco IP mudou\n- Uma firewall esta a bloquear a ligacao\n- A porta Modbus TCP (502) nao esta acessivel\n\n**Para resolver:**\n1. Verifique se o dispositivo esta ligado e conectado a sua rede\n2. Verifique o endereco IP na tabela DHCP do seu router\n3. Tente aceder diretamente a interface web do dispositivo\n4. Se o IP mudou, reconfigure a integracao com o novo endereco"
+    },
+    "device_warmup": {
+      "title": "{device_name} esta a inicializar",
+      "description": "Apos uma reinicializacao, o dispositivo Sinapsi Alfa precisa de alguns minutos para repopular os registos do contador. Durante esta fase de arranque, a integracao nao confia deliberadamente nos dados do dispositivo (sao devolvidos como zero), para proteger as estatisticas do Painel de Energia de uma falsa reposicao do contador.\n\nNao e necessaria qualquer acao - este problema resolve-se automaticamente assim que o dispositivo termina o arranque e volta a fornecer dados validos."
     }
   },
   "device_automation": {

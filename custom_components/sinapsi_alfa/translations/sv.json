@@ -160,6 +160,10 @@
     "connection_failed": {
       "title": "Kan inte ansluta till {device_name}",
       "description": "Integrationen kan inte ansluta till din Sinapsi Alfa-enhet pa {host}:{port}.\n\n**Mojliga orsaker:**\n- Enheten ar avstangd eller inte ansluten till natverket\n- IP-adressen har andrats\n- En brandvagg blockerar anslutningen\n- Modbus TCP-porten (502) ar inte atkomlig\n\n**For att losa:**\n1. Kontrollera att enheten ar paslagan och ansluten till ditt natverk\n2. Verifiera IP-adressen i din routers DHCP-tabell\n3. Forsok komma at enhetens webbgranssnitt direkt\n4. Om IP har andrats, konfigurera om integrationen med den nya adressen"
+    },
+    "device_warmup": {
+      "title": "{device_name} varmer upp",
+      "description": "Efter en omstart behover Sinapsi Alfa-enheten ett par minuter for att fylla matarregistren igen. Under denna uppvarmningsfas litar integrationen avsiktligt inte pa enhetens data (de returneras som noll), for att skydda energidashbordets statistik mot en falsk matarnollstallning.\n\nIngen atgard kravs - det har problemet loses automatiskt nar enheten har varmt upp och levererar giltiga data igen."
     }
   },
   "device_automation": {

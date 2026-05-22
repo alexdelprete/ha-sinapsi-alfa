@@ -160,6 +160,10 @@
     "modbus_conflict": {
       "title": "Modbus integration conflict for {device_name}",
       "description": "The built-in Modbus integration is also configured for this device:\n\n- **This integration:** {host}\n- **Modbus integration:** {modbus_host}\n\nBoth point to the same device, which only supports **one Modbus TCP client** at a time. This is likely causing your connection issues.\n\n**To fix this:**\n1. Go to Settings → Devices & Services → Modbus\n2. Remove or disable the Modbus hub configured for {modbus_host}\n3. Check your configuration.yaml for 'modbus:' entries\n4. Restart Home Assistant\n\nThis issue will automatically disappear once the conflict is resolved."
+    },
+    "device_warmup": {
+      "title": "{device_name} is warming up",
+      "description": "After a restart, the Sinapsi Alfa device needs a couple of minutes to repopulate its meter registers. During this warm-up the integration intentionally does not trust the device's readings (they come back as zero), to protect your Energy Dashboard statistics from a false meter reset.\n\nNo action is needed - this issue clears automatically once the device finishes warming up and reports valid data again."
     }
   },
   "device_automation": {

@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.13.5] - TBD
+
+**Patch release** - Adds a device warm-up gate that handles an edge-case energy
+doubling seen after an HA restart.
+
+### Fixed
+
+- **Energy doubling when the device returns zeroed meter data** - In some setups -
+  reported by one user - the Alfa can return `0` on every register for a few minutes
+  instead of its real values (observed after an HA restart). The exact cause is not
+  confirmed - it may be a slow or unreliable Chain2 link between the Alfa and the
+  energy meter, or the device still initialising. This is an edge case (most
+  installations never hit it), but when it happens HA's `TOTAL_INCREASING` statistics
+  read the `0` as a meter
+  reset and double-count the cumulative total. The v1.13.3/v1.13.4 `RestoreSensor`
+  guards could not cover the first restart after upgrading from a version that never
+  persisted restore data. A new warm-up gate now detects this state - with no
+  dependence on prior data - and rejects the affected poll.
+  (Reported in [#207](https://github.com/alexdelprete/ha-sinapsi-alfa/issues/207))
+
+### Added
+
+- **Device warm-up detection** - When the device returns the warm-up signature
+  described above, the API identifies it from two physically-impossible readings on
+  independent registers (`energia_prelevata == 0` and `fascia_oraria_attuale == "F0"`)
+  and rejects the poll so no sensor publishes zeroed data.
+- **Warm-up repair notification** - A dedicated repair notification (distinct from the
+  connection-failure one) is shown while the device warms up, with a recovery
+  notification when data resumes. Translated into all 10 supported languages.
+
+**Full Release Notes:** [docs/releases/v1.13.5.md](docs/releases/v1.13.5.md)
+
+**Full Changelog:** [v1.13.4...v1.13.5](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.13.4...v1.13.5)
+
 ## [1.13.4] - 2026-05-21
 
 **Patch release** - Extends cold-restart energy-doubling protection to all 17 energy

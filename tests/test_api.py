@@ -21,6 +21,7 @@ from custom_components.sinapsi_alfa.api import (
     SinapsiAlfaAPI,
     SinapsiConnectionError,
     SinapsiModbusError,
+    SinapsiWarmupError,
     _build_sensor_map,
 )
 from custom_components.sinapsi_alfa.const import (
@@ -2251,3 +2252,64 @@ class TestSynchronizedEnergyCalculation:
             # Scenario 4: Neither changed after sync (idle) — NO log
             api._calculate_derived_values()
             mock_log.assert_not_called()
+
+
+class TestDeviceWarmup:
+    """Tests for the post-reboot device warm-up gate (issue #207)."""
+
+    def _api(self, mock_hass):
+        """Build an API instance for warm-up checks."""
+        return SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+    def test_warmup_raises_when_both_signals_present(self, mock_hass, mock_transport, mock_client):
+        """energia_prelevata == 0 AND fascia == 'F0' is an unambiguous warm-up."""
+        api = self._api(mock_hass)
+        api.data["energia_prelevata"] = 0.0
+        api.data["fascia_oraria_attuale"] = "F0"
+
+        with pytest.raises(SinapsiWarmupError):
+            api._check_device_warmup()
+
+    def test_warmup_silent_when_prelevata_nonzero(self, mock_hass, mock_transport, mock_client):
+        """A non-zero lifetime import meter means the device is ready."""
+        api = self._api(mock_hass)
+        api.data["energia_prelevata"] = 7740.0
+        api.data["fascia_oraria_attuale"] = "F0"
+
+        api._check_device_warmup()  # must not raise
+
+    def test_warmup_silent_when_fascia_is_real_band(self, mock_hass, mock_transport, mock_client):
+        """A real tariff band means the device is ready (e.g. brand-new install)."""
+        api = self._api(mock_hass)
+        api.data["energia_prelevata"] = 0.0
+        api.data["fascia_oraria_attuale"] = "F1"
+
+        api._check_device_warmup()  # must not raise
+
+    async def test_async_get_data_raises_warmup(self, mock_hass, mock_transport, mock_client):
+        """async_get_data rejects the whole poll while the device is warming up."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+            skip_mac_detection=True,
+        )
+        api.data["energia_prelevata"] = 0.0
+        api.data["fascia_oraria_attuale"] = "F0"
+
+        with (
+            patch.object(api, "check_port", return_value=True),
+            patch.object(api, "read_modbus_alfa", return_value=True),
+            pytest.raises(SinapsiWarmupError),
+        ):
+            await api.async_get_data()

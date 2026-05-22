@@ -10,13 +10,18 @@ from unittest.mock import MagicMock, patch
 from custom_components.sinapsi_alfa.const import DOMAIN
 from custom_components.sinapsi_alfa.repairs import (
     ISSUE_CONNECTION_FAILED,
+    ISSUE_DEVICE_WARMUP,
     ISSUE_MODBUS_CONFLICT,
     NOTIFICATION_RECOVERY,
     create_connection_issue,
     create_modbus_conflict_issue,
     create_recovery_notification,
+    create_warmup_issue,
+    create_warmup_recovery_notification,
     delete_connection_issue,
     delete_modbus_conflict_issue,
+    delete_warmup_issue,
+    is_warmup_issue_active,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import issue_registry as ir
@@ -404,3 +409,72 @@ class TestCreateRecoveryNotification:
         notification_id = call_args.kwargs["service_data"]["notification_id"]
         assert entry_id in notification_id
         assert notification_id == f"{DOMAIN}_{NOTIFICATION_RECOVERY}_{entry_id}"
+
+
+class TestWarmupIssue:
+    """Tests for the device warm-up repair issue (issue #207)."""
+
+    def test_create_warmup_issue(self, hass: HomeAssistant) -> None:
+        """Test creating a warm-up issue uses the expected id and attributes."""
+        entry_id = "warmup_entry_123"
+
+        with patch.object(ir, "async_create_issue") as mock_create:
+            create_warmup_issue(hass, entry_id, TEST_NAME)
+
+            mock_create.assert_called_once()
+            args = mock_create.call_args
+            assert args[0][0] == hass
+            assert args[0][1] == DOMAIN
+            assert args[0][2] == f"{ISSUE_DEVICE_WARMUP}_{entry_id}"
+            kwargs = args[1]
+            assert kwargs["is_fixable"] is False
+            # Transient — must not survive an HA restart.
+            assert kwargs["is_persistent"] is False
+            # Expected condition, not an error.
+            assert kwargs["severity"] == ir.IssueSeverity.WARNING
+            assert kwargs["translation_key"] == ISSUE_DEVICE_WARMUP
+            assert kwargs["translation_placeholders"] == {"device_name": TEST_NAME}
+
+    def test_delete_warmup_issue(self, hass: HomeAssistant) -> None:
+        """Test deleting a warm-up issue uses the matching id."""
+        entry_id = "warmup_entry_456"
+
+        with patch.object(ir, "async_delete_issue") as mock_delete:
+            delete_warmup_issue(hass, entry_id)
+
+            mock_delete.assert_called_once_with(hass, DOMAIN, f"{ISSUE_DEVICE_WARMUP}_{entry_id}")
+
+    def test_is_warmup_issue_active(self, hass: HomeAssistant) -> None:
+        """Test warm-up issue presence is reported from the issue registry."""
+        entry_id = "warmup_active_entry"
+
+        assert is_warmup_issue_active(hass, entry_id) is False
+
+        create_warmup_issue(hass, entry_id, TEST_NAME)
+        assert is_warmup_issue_active(hass, entry_id) is True
+
+        delete_warmup_issue(hass, entry_id)
+        assert is_warmup_issue_active(hass, entry_id) is False
+
+    def test_warmup_issue_id_format(self) -> None:
+        """Test the warm-up issue constant value."""
+        assert ISSUE_DEVICE_WARMUP == "device_warmup"
+
+    def test_create_warmup_recovery_notification(self, mock_hass: MagicMock) -> None:
+        """Test the warm-up recovery notification is dispatched."""
+        create_warmup_recovery_notification(mock_hass, "warmup_entry", TEST_NAME)
+
+        mock_hass.async_create_task.assert_called_once()
+
+    def test_create_warmup_recovery_notification_content(self, mock_hass: MagicMock) -> None:
+        """Test the warm-up recovery notification id and payload."""
+        # Make async_create_task run the coroutine immediately.
+        mock_hass.async_create_task = lambda coro: coro
+
+        create_warmup_recovery_notification(mock_hass, "warmup_entry", TEST_NAME)
+
+        mock_hass.services.async_call.assert_called_once()
+        call_args = mock_hass.services.async_call.call_args
+        service_data = call_args[1]["service_data"]
+        assert service_data["notification_id"] == f"{DOMAIN}_warmup_recovered_warmup_entry"
+        assert TEST_NAME in service_data["message"]

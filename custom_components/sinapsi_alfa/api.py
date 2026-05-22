@@ -129,6 +129,18 @@ class SinapsiModbusError(Exception):
         super().__init__(message)
 
 
+class SinapsiWarmupError(Exception):
+    """Raised when the device is still in a post-restart warm-up phase.
+
+    In some setups (an edge case) the Alfa can return 0 on every register for a few
+    minutes instead of its real values — most likely when it does not yet have current
+    data from the energy meter (e.g. a poor Chain2 link). Publishing those zeroed
+    readings would corrupt HA's TOTAL_INCREASING statistics, so the whole poll is
+    rejected. This is not a fault — it is a transient state, handled separately from
+    SinapsiConnectionError / SinapsiModbusError.
+    """
+
+
 class SinapsiAlfaAPI:
     """Thread safe wrapper class for ModbusLink."""
 
@@ -790,6 +802,10 @@ class SinapsiAlfaAPI:
                 result = await self.read_modbus_alfa()
 
                 if result:
+                    # Reject the poll if the device is still warming up (registers
+                    # not yet populated). Raised as SinapsiWarmupError so the
+                    # coordinator handles it separately from connection failures.
+                    self._check_device_warmup()
                     log_debug(_LOGGER, "async_get_data", "Data collection completed")
                     self._connection_healthy = True
                     self._last_successful_read = time.time()
@@ -896,3 +912,31 @@ class SinapsiAlfaAPI:
             raise SinapsiModbusError(f"Failed to read modbus data: {error}") from error
         else:
             return True
+
+    def _check_device_warmup(self) -> None:
+        """Raise SinapsiWarmupError while the device is still warming up.
+
+        In some setups the Alfa can return 0 on every register for a few minutes after
+        an HA restart before the meter values reappear (an edge case). Two
+        physically-impossible readings on independent registers identify it
+        unambiguously:
+
+        - energia_prelevata == 0: a lifetime grid-import meter is never 0 on a real
+          installation.
+        - fascia_oraria_attuale == "F0": register 203 reads 0; there is no tariff
+          band 0 — a running device always reports F1-F6.
+
+        When both hold, the whole poll's data is untrustworthy and is rejected.
+        """
+        if (
+            self.data.get("energia_prelevata") == 0
+            and self.data.get("fascia_oraria_attuale") == "F0"
+        ):
+            log_warning(
+                _LOGGER,
+                "_check_device_warmup",
+                "Device in warm-up phase, rejecting poll",
+                energia_prelevata=self.data.get("energia_prelevata"),
+                fascia_oraria_attuale=self.data.get("fascia_oraria_attuale"),
+            )
+            raise SinapsiWarmupError("Device in warm-up: registers not yet populated")

@@ -160,6 +160,10 @@
     "connection_failed": {
       "title": "Yhteyden muodostaminen laitteeseen {device_name} ei onnistu",
       "description": "Integraatio ei voi muodostaa yhteytta Sinapsi Alfa -laitteeseesi osoitteessa {host}:{port}.\n\n**Mahdolliset syyt:**\n- Laite on pois paalta tai ei ole yhdistetty verkkoon\n- IP-osoite on muuttunut\n- Palomuuri estaa yhteyden\n- Modbus TCP -portti (502) ei ole kaytettavissa\n\n**Ratkaisemiseksi:**\n1. Tarkista, etta laite on paalla ja yhdistetty verkkoon\n2. Tarkista IP-osoite reitittimesi DHCP-taulukosta\n3. Yrita paasta suoraan laitteen verkkokayttoliittymaan\n4. Jos IP on muuttunut, maarita integraatio uudelleen uudella osoitteella"
+    },
+    "device_warmup": {
+      "title": "{device_name} kaynnistyy",
+      "description": "Uudelleenkaynnistyksen jalkeen Sinapsi Alfa -laite tarvitsee pari minuuttia mittarirekistereidensa tayttamiseen uudelleen. Taman lammittelyvaiheen aikana integraatio ei tarkoituksella luota laitteen tietoihin (ne palautuvat nollana), jotta energianseurannan tilastot suojataan vaaralta mittarin nollaukselta.\n\nMitaan toimenpiteita ei tarvita - tama ongelma poistuu automaattisesti, kun laite on kaynnistynyt ja antaa jalleen kelvollisia tietoja."
     }
   },
   "device_automation": {

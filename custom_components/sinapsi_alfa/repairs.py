@@ -20,9 +20,11 @@ _LOGGER = logging.getLogger(__name__)
 # Issue IDs
 ISSUE_CONNECTION_FAILED = "connection_failed"
 ISSUE_MODBUS_CONFLICT = "modbus_conflict"
+ISSUE_DEVICE_WARMUP = "device_warmup"
 
 # Notification IDs
 NOTIFICATION_RECOVERY = "recovery"
+NOTIFICATION_WARMUP_RECOVERED = "warmup_recovered"
 
 
 def create_connection_issue(
@@ -124,6 +126,93 @@ def delete_modbus_conflict_issue(hass: HomeAssistant, entry_id: str) -> None:
     """
     ir.async_delete_issue(hass, DOMAIN, f"{ISSUE_MODBUS_CONFLICT}_{entry_id}")
     _LOGGER.debug("Deleted Modbus conflict repair issue for entry: %s", entry_id)
+
+
+def create_warmup_issue(hass: HomeAssistant, entry_id: str, device_name: str) -> None:
+    """Create a repair issue for the device warm-up phase.
+
+    Raised when the device returns zeroed registers after a restart/reboot. Unlike
+    the connection issue this is an expected transient (severity WARNING) and is not
+    persisted across HA restarts. Idempotent — safe to call on every warm-up poll.
+
+    Args:
+        hass: HomeAssistant instance
+        entry_id: Config entry ID
+        device_name: Name of the device
+
+    """
+    ir.async_create_issue(
+        hass,
+        DOMAIN,
+        f"{ISSUE_DEVICE_WARMUP}_{entry_id}",
+        is_fixable=False,
+        is_persistent=False,
+        severity=ir.IssueSeverity.WARNING,
+        translation_key=ISSUE_DEVICE_WARMUP,
+        translation_placeholders={"device_name": device_name},
+    )
+    _LOGGER.debug("Created repair issue for device warm-up: %s", device_name)
+
+
+def delete_warmup_issue(hass: HomeAssistant, entry_id: str) -> None:
+    """Delete the device warm-up repair issue.
+
+    Args:
+        hass: HomeAssistant instance
+        entry_id: Config entry ID
+
+    """
+    ir.async_delete_issue(hass, DOMAIN, f"{ISSUE_DEVICE_WARMUP}_{entry_id}")
+    _LOGGER.debug("Deleted device warm-up repair issue for entry: %s", entry_id)
+
+
+def is_warmup_issue_active(hass: HomeAssistant, entry_id: str) -> bool:
+    """Return True if the device warm-up repair issue currently exists.
+
+    The issue registry is the source of truth for warm-up state: the coordinator is
+    rebuilt on every config-entry setup retry, so instance attributes cannot track it.
+
+    Args:
+        hass: HomeAssistant instance
+        entry_id: Config entry ID
+
+    """
+    return (
+        ir.async_get(hass).async_get_issue(DOMAIN, f"{ISSUE_DEVICE_WARMUP}_{entry_id}") is not None
+    )
+
+
+def create_warmup_recovery_notification(
+    hass: HomeAssistant, entry_id: str, device_name: str
+) -> None:
+    """Create a persistent notification when the device finishes warming up.
+
+    Args:
+        hass: HomeAssistant instance
+        entry_id: Config entry ID
+        device_name: Name of the device
+
+    """
+    message = (
+        f"**{device_name}** has finished warming up after a restart. "
+        "Its meter registers are populated again and the integration has resumed "
+        "publishing data."
+    )
+    title = f"{device_name} finished warming up"
+    notification_id = f"{DOMAIN}_{NOTIFICATION_WARMUP_RECOVERED}_{entry_id}"
+
+    hass.async_create_task(
+        hass.services.async_call(
+            domain="persistent_notification",
+            service="create",
+            service_data={
+                "title": title,
+                "message": message,
+                "notification_id": notification_id,
+            },
+        )
+    )
+    _LOGGER.debug("Created warm-up recovery notification for %s", device_name)
 
 
 def create_recovery_notification(

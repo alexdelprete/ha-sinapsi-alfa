@@ -5,7 +5,11 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from custom_components.sinapsi_alfa.api import SinapsiConnectionError, SinapsiModbusError
+from custom_components.sinapsi_alfa.api import (
+    SinapsiConnectionError,
+    SinapsiModbusError,
+    SinapsiWarmupError,
+)
 from custom_components.sinapsi_alfa.const import (
     CONF_ENABLE_REPAIR_NOTIFICATION,
     CONF_FAILURES_THRESHOLD,
@@ -930,3 +934,112 @@ async def test_coordinator_modbus_no_conflict_no_action(
         assert coordinator._modbus_conflict_detected is False
         mock_create_issue.assert_not_called()
         mock_delete_issue.assert_not_called()
+
+
+async def test_coordinator_warmup_raises_update_failed(hass: HomeAssistant) -> None:
+    """Device warm-up fails the poll and raises a dedicated warm-up issue."""
+    entry = create_mock_config_entry()
+
+    with (
+        patch("custom_components.sinapsi_alfa.coordinator.SinapsiAlfaAPI") as mock_api_class,
+        patch(
+            "custom_components.sinapsi_alfa.coordinator.create_warmup_issue",
+        ) as mock_create_warmup,
+        patch(
+            "custom_components.sinapsi_alfa.coordinator.create_connection_issue",
+        ) as mock_create_conn,
+    ):
+        mock_api = mock_api_class.return_value
+        mock_api.async_get_data = AsyncMock(side_effect=SinapsiWarmupError("warm-up"))
+
+        coordinator = SinapsiAlfaCoordinator(hass, entry)
+
+        with pytest.raises(UpdateFailed):
+            await coordinator.async_update_data()
+
+        # Warm-up issue raised; connection-failure machinery untouched.
+        mock_create_warmup.assert_called_once_with(hass, entry.entry_id, TEST_NAME)
+        mock_create_conn.assert_not_called()
+        assert coordinator._consecutive_failures == 0
+        assert coordinator._repair_issue_created is False
+
+
+async def test_coordinator_warmup_no_issue_when_notifications_disabled(
+    hass: HomeAssistant,
+) -> None:
+    """No warm-up issue is created when repair notifications are disabled."""
+    entry = create_mock_config_entry(enable_repair_notification=False)
+
+    with (
+        patch("custom_components.sinapsi_alfa.coordinator.SinapsiAlfaAPI") as mock_api_class,
+        patch(
+            "custom_components.sinapsi_alfa.coordinator.create_warmup_issue",
+        ) as mock_create_warmup,
+    ):
+        mock_api = mock_api_class.return_value
+        mock_api.async_get_data = AsyncMock(side_effect=SinapsiWarmupError("warm-up"))
+
+        coordinator = SinapsiAlfaCoordinator(hass, entry)
+
+        with pytest.raises(UpdateFailed):
+            await coordinator.async_update_data()
+
+        mock_create_warmup.assert_not_called()
+
+
+async def test_coordinator_warmup_recovery_on_success(
+    hass: HomeAssistant, mock_api_data: dict
+) -> None:
+    """A successful poll while a warm-up issue is active clears it and notifies."""
+    entry = create_mock_config_entry()
+
+    with (
+        patch("custom_components.sinapsi_alfa.coordinator.SinapsiAlfaAPI") as mock_api_class,
+        patch(
+            "custom_components.sinapsi_alfa.coordinator.is_warmup_issue_active",
+            return_value=True,
+        ),
+        patch(
+            "custom_components.sinapsi_alfa.coordinator.delete_warmup_issue",
+        ) as mock_delete_warmup,
+        patch(
+            "custom_components.sinapsi_alfa.coordinator.create_warmup_recovery_notification",
+        ) as mock_warmup_notify,
+    ):
+        mock_api = mock_api_class.return_value
+        mock_api.async_get_data = AsyncMock(return_value=mock_api_data)
+
+        coordinator = SinapsiAlfaCoordinator(hass, entry)
+        await coordinator.async_update_data()
+
+        mock_delete_warmup.assert_called_once_with(hass, entry.entry_id)
+        mock_warmup_notify.assert_called_once_with(hass, entry.entry_id, TEST_NAME)
+
+
+async def test_coordinator_no_warmup_recovery_when_inactive(
+    hass: HomeAssistant, mock_api_data: dict
+) -> None:
+    """A successful poll with no active warm-up issue does not notify."""
+    entry = create_mock_config_entry()
+
+    with (
+        patch("custom_components.sinapsi_alfa.coordinator.SinapsiAlfaAPI") as mock_api_class,
+        patch(
+            "custom_components.sinapsi_alfa.coordinator.is_warmup_issue_active",
+            return_value=False,
+        ),
+        patch(
+            "custom_components.sinapsi_alfa.coordinator.delete_warmup_issue",
+        ) as mock_delete_warmup,
+        patch(
+            "custom_components.sinapsi_alfa.coordinator.create_warmup_recovery_notification",
+        ) as mock_warmup_notify,
+    ):
+        mock_api = mock_api_class.return_value
+        mock_api.async_get_data = AsyncMock(return_value=mock_api_data)
+
+        coordinator = SinapsiAlfaCoordinator(hass, entry)
+        await coordinator.async_update_data()
+
+        mock_delete_warmup.assert_not_called()
+        mock_warmup_notify.assert_not_called()
