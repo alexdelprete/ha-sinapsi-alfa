@@ -621,6 +621,10 @@ class TestAsyncGetData:
         # Return sample register data for all batch reads
         mock_client.read_holding_registers = AsyncMock(return_value=[0] * 40)
 
+        # read_modbus_alfa is mocked, so seed ready values to pass the warm-up gate
+        api.data["energia_prelevata"] = 7000.0
+        api.data["fascia_oraria_attuale"] = "F1"
+
         with (
             patch.object(api, "check_port", return_value=True),
             patch.object(api, "read_modbus_alfa", return_value=True),
@@ -643,6 +647,10 @@ class TestAsyncGetData:
             DEFAULT_TIMEOUT,
             skip_mac_detection=False,
         )
+
+        # read_modbus_alfa is mocked, so seed ready values to pass the warm-up gate
+        api.data["energia_prelevata"] = 7000.0
+        api.data["fascia_oraria_attuale"] = "F1"
 
         with (
             patch.object(api, "check_port", return_value=True),
@@ -2268,8 +2276,8 @@ class TestDeviceWarmup:
             DEFAULT_TIMEOUT,
         )
 
-    def test_warmup_raises_when_both_signals_present(self, mock_hass, mock_transport, mock_client):
-        """energia_prelevata == 0 AND fascia == 'F0' is an unambiguous warm-up."""
+    def test_warmup_raises_when_both_registers_zero(self, mock_hass, mock_transport, mock_client):
+        """Both registers in their warm-up value: the poll is rejected."""
         api = self._api(mock_hass)
         api.data["energia_prelevata"] = 0.0
         api.data["fascia_oraria_attuale"] = "F0"
@@ -2277,18 +2285,36 @@ class TestDeviceWarmup:
         with pytest.raises(SinapsiWarmupError):
             api._check_device_warmup()
 
-    def test_warmup_silent_when_prelevata_nonzero(self, mock_hass, mock_transport, mock_client):
-        """A non-zero lifetime import meter means the device is ready."""
+    def test_warmup_raises_when_only_prelevata_recovered(
+        self, mock_hass, mock_transport, mock_client
+    ):
+        """Only one register recovered: still warm-up, the poll is rejected.
+
+        The device is trusted only when BOTH registers are valid; a recovered
+        energia_prelevata while fascia is still "F0" is not enough.
+        """
         api = self._api(mock_hass)
         api.data["energia_prelevata"] = 7740.0
         api.data["fascia_oraria_attuale"] = "F0"
 
-        api._check_device_warmup()  # must not raise
+        with pytest.raises(SinapsiWarmupError):
+            api._check_device_warmup()
 
-    def test_warmup_silent_when_fascia_is_real_band(self, mock_hass, mock_transport, mock_client):
-        """A real tariff band means the device is ready (e.g. brand-new install)."""
+    def test_warmup_raises_when_only_fascia_recovered(self, mock_hass, mock_transport, mock_client):
+        """Only the fascia recovered while energia_prelevata is still 0: rejected."""
         api = self._api(mock_hass)
         api.data["energia_prelevata"] = 0.0
+        api.data["fascia_oraria_attuale"] = "F1"
+
+        with pytest.raises(SinapsiWarmupError):
+            api._check_device_warmup()
+
+    def test_warmup_silent_when_both_registers_recovered(
+        self, mock_hass, mock_transport, mock_client
+    ):
+        """The poll resumes only when BOTH registers hold valid values."""
+        api = self._api(mock_hass)
+        api.data["energia_prelevata"] = 7740.0
         api.data["fascia_oraria_attuale"] = "F1"
 
         api._check_device_warmup()  # must not raise

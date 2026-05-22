@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.13.6] - TBD
+
+**Patch release** - Tightens the device warm-up gate to resume only when the device
+is fully ready.
+
+### Changed
+
+- **Warm-up gate now requires both signals valid before trusting a poll** - v1.13.5
+  rejected a poll only while `energia_prelevata` and `fascia_oraria_attuale` were
+  *both* at their warm-up value (`0` / `F0`). The gate now treats the device as ready
+  - and resumes publishing data - only when **both** registers are valid at the same
+  time: `energia_prelevata > 0` AND a real tariff band (`fascia_oraria_attuale` other
+  than `F0`). If the two registers recover on different polls, the poll stays
+  rejected until the slower one catches up, so a partially-populated poll can never
+  be published. Refines the warm-up gate from v1.13.5
+  (reported in [#207](https://github.com/alexdelprete/ha-sinapsi-alfa/issues/207)).
+
+**Full Release Notes:** [docs/releases/v1.13.6.md](docs/releases/v1.13.6.md)
+
+**Full Changelog:** [v1.13.5...v1.13.6](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.13.5...v1.13.6)
+
 ## [1.13.5] - 2026-05-22
 
 **Patch release** - Adds a device warm-up gate that handles an edge-case energy

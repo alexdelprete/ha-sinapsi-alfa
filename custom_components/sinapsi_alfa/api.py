@@ -914,29 +914,34 @@ class SinapsiAlfaAPI:
             return True
 
     def _check_device_warmup(self) -> None:
-        """Raise SinapsiWarmupError while the device is still warming up.
+        """Raise SinapsiWarmupError unless the device is fully out of warm-up.
 
-        In some setups the Alfa can return 0 on every register for a few minutes after
-        an HA restart before the meter values reappear (an edge case). Two
-        physically-impossible readings on independent registers identify it
-        unambiguously:
+        In some setups the Alfa can return 0 on its registers for a few minutes after
+        a restart before the real meter values reappear (an edge case). The device is
+        considered ready, and the poll trusted, only when BOTH of two independent
+        registers hold a valid value:
 
-        - energia_prelevata == 0: a lifetime grid-import meter is never 0 on a real
+        - energia_prelevata > 0: a lifetime grid-import meter is never 0 on a real
           installation.
-        - fascia_oraria_attuale == "F0": register 203 reads 0; there is no tariff
-          band 0 — a running device always reports F1-F6.
+        - fascia_oraria_attuale != "F0": register 203 reads 0 ("F0") during warm-up;
+          a running device always reports a real band F1-F6.
 
-        When both hold, the whole poll's data is untrustworthy and is rejected.
+        While either register is still in its warm-up value, the whole poll's data is
+        untrustworthy and is rejected.
         """
-        if (
-            self.data.get("energia_prelevata") == 0
-            and self.data.get("fascia_oraria_attuale") == "F0"
-        ):
+        energia_prelevata = self.data.get("energia_prelevata")
+        fascia_oraria_attuale = self.data.get("fascia_oraria_attuale")
+        device_ready = (
+            isinstance(energia_prelevata, (int, float))
+            and energia_prelevata > 0
+            and fascia_oraria_attuale != "F0"
+        )
+        if not device_ready:
             log_warning(
                 _LOGGER,
                 "_check_device_warmup",
                 "Device in warm-up phase, rejecting poll",
-                energia_prelevata=self.data.get("energia_prelevata"),
-                fascia_oraria_attuale=self.data.get("fascia_oraria_attuale"),
+                energia_prelevata=energia_prelevata,
+                fascia_oraria_attuale=fascia_oraria_attuale,
             )
             raise SinapsiWarmupError("Device in warm-up: registers not yet populated")
