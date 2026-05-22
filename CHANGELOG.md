@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.13.5] - TBD
+## [1.13.5] - 2026-05-22
 
 **Patch release** - Adds a device warm-up gate that handles an edge-case energy
 doubling seen after an HA restart.
