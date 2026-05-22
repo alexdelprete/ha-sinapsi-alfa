@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.13.6] - TBD
+## [1.13.6] - 2026-05-22
 
 **Patch release** - Tightens the device warm-up gate to resume only when the device
 is fully ready.
