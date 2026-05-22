@@ -44,6 +44,7 @@ from .const import (
     REGISTER_BATCHES,
     SENSOR_ENTITIES,
     SYNC_TIMEOUT_SECONDS,
+    WARMUP_FASCIA_VALUE,
 )
 from .helpers import log_debug, log_error, log_warning, unix_timestamp_to_iso8601_local_tz
 
@@ -638,6 +639,9 @@ class SinapsiAlfaAPI:
             return unix_timestamp_to_iso8601_local_tz(value + self.data["tempo_residuo_distacco"])
 
         if reg_key == "fascia_oraria_attuale":
+            # Format tariff band 0-6 as "F0"-"F6". EXPLICIT COUPLING: register 0
+            # must become exactly WARMUP_FASCIA_VALUE ("F0") — _check_device_warmup
+            # relies on it. If this formatting changes, update WARMUP_FASCIA_VALUE.
             return f"F{value}"
 
         return value
@@ -934,7 +938,7 @@ class SinapsiAlfaAPI:
         device_ready = (
             isinstance(energia_prelevata, (int, float))
             and energia_prelevata > 0
-            and fascia_oraria_attuale != "F0"
+            and fascia_oraria_attuale != WARMUP_FASCIA_VALUE
         )
         if not device_ready:
             log_warning(

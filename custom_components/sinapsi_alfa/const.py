@@ -56,6 +56,16 @@ MAX_RETRY_ATTEMPTS = 5
 INVALID_DISTACCO_VALUE = 65535
 MAX_EVENT_VALUE = 4294967294
 
+# Warm-up sentinel for the fascia_oraria_attuale sensor (current tariff band).
+# The Alfa exposes the band as register 203 with values 0-6, and api.py's
+# _process_sensor_value formats it as f"F{value}" — so register 0 becomes "F0".
+# "F0" is not a real Italian tariff band (valid bands are F1-F6); it only appears
+# while the device is still warming up after a restart. _check_device_warmup uses
+# this constant to detect that state. EXPLICIT COUPLING: this value must stay in
+# sync with the f"F{value}" formatting in api.py _process_sensor_value — if that
+# formatting changes, update this constant too.
+WARMUP_FASCIA_VALUE = "F0"
+
 # Cumulative energy sensors (lifetime meter totals that should never decrease)
 # Used to validate readings during device reboots that return zeroed registers
 CUMULATIVE_ENERGY_SENSORS: set[str] = {
