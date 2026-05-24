@@ -408,7 +408,11 @@ class SinapsiAlfaAPI:
 
             # Clean up the connection
             writer.close()
-            await writer.wait_closed()
+            #await writer.wait_closed()
+            try:
+                await asyncio.wait_for(writer.wait_closed(), timeout=2.0)
+            except (asyncio.TimeoutError, OSError):
+                pass
         except (TimeoutError, ConnectionRefusedError, OSError) as e:
             log_debug(
                 _LOGGER,
