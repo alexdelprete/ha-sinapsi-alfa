@@ -71,6 +71,7 @@ class SinapsiAlfaCoordinator(DataUpdateCoordinator[bool]):
         # Migration ensures these exist in options for existing installs
         self.scan_interval = int(config_entry.options[CONF_SCAN_INTERVAL])
         self.timeout = int(config_entry.options[CONF_TIMEOUT])
+        self.last_warmup: bool = False
 
         # enforce scan_interval bounds
         if self.scan_interval < MIN_SCAN_INTERVAL:
@@ -293,6 +294,7 @@ class SinapsiAlfaCoordinator(DataUpdateCoordinator[bool]):
 
             # Reset failure counter on success
             self._consecutive_failures = 0
+            self.last_warmup = False
         except SinapsiWarmupError as ex:
             # Device warm-up after a restart/reboot: registers return 0 for a few
             # minutes. This is an expected transient, not a fault — fail the poll so
@@ -300,6 +302,8 @@ class SinapsiAlfaCoordinator(DataUpdateCoordinator[bool]):
             # the connection-failure counter, the connection issue, or the recovery
             # script. A dedicated warm-up repair issue is raised instead.
             self.last_update_status = False
+            self.last_warmup = True
+            self.async_update_listeners()
             log_info(
                 _LOGGER,
                 "async_update_data",
@@ -310,6 +314,7 @@ class SinapsiAlfaCoordinator(DataUpdateCoordinator[bool]):
             raise UpdateFailed from ex
         except Exception as ex:
             self.last_update_status = False
+            self.last_warmup = False
             self._consecutive_failures += 1
 
             # Determine error type for device trigger

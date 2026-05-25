@@ -251,7 +251,9 @@ class SinapsiAlfaSensor(CoordinatorEntity[SinapsiAlfaCoordinator], RestoreSensor
     @property
     def available(self) -> bool:
         """Return if entity is available."""
-        return self.coordinator.last_update_success
+        if self._is_accumulating_sensor:
+            return self.coordinator.last_update_success
+        return self.coordinator.last_update_success or self._coordinator.last_warmup
 
     @property
     def unique_id(self) -> str:

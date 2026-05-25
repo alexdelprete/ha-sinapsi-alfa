@@ -58,11 +58,18 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: SinapsiAlfaConfig
     # If the refresh fails, async_config_entry_first_refresh() will
     # raise ConfigEntryNotReady and setup will try again later
     # ref.: https://developers.home-assistant.io/docs/integration_setup_failures
-    await coordinator.async_config_entry_first_refresh()
+    # Durante warm-up il dispositivo è raggiungibile ma non ancora pronto:
+    # si procede col setup così le entità vengono registrate subito.
+    # Si solleva ConfigEntryNotReady solo per veri errori di connessione.
+    await coordinator.async_refresh()
+    if not coordinator.last_update_success and not coordinator.last_warmup:
+        raise ConfigEntryNotReady(
+            translation_domain=DOMAIN,
+            translation_key="connection_timeout",
+            translation_placeholders={"device_name": str(config_entry.data.get(CONF_NAME, ""))},
+        )
 
-    # Test to see if api initialised correctly, else raise ConfigNotReady to make HA retry setup
-    # Change this to match how your api will know if connected or successful update
-    if not coordinator.api.data["sn"]:
+    if coordinator.last_update_success and not coordinator.api.data.get("sn"):
         raise ConfigEntryNotReady(
             translation_domain=DOMAIN,
             translation_key="connection_timeout",
