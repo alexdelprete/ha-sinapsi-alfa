@@ -32,6 +32,11 @@ DEFAULT_TIMEOUT = 10
 MIN_TIMEOUT = 5
 MAX_TIMEOUT = 60
 DEFAULT_CONNECTION_TIMEOUT = 5  # TCP connection establishment (seconds)
+# Timeout (seconds) for writer.wait_closed() in check_port(). After we call
+# writer.close() the peer should send FIN; if the device hard-resets without
+# sending it, wait_closed() would block until the kernel TCP timeout (~10 min).
+# Normal closures complete in milliseconds; only stuck sockets hit this limit.
+CHECK_PORT_CLOSE_TIMEOUT = 2.0
 DEFAULT_SKIP_MAC_DETECTION = False
 MANUFACTURER = "Sinapsi"
 MODEL = "Alfa"

@@ -29,6 +29,7 @@ from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.core import HomeAssistant
 
 from .const import (
+    CHECK_PORT_CLOSE_TIMEOUT,
     CUMULATIVE_ENERGY_SENSORS,
     DEFAULT_CONNECTION_TIMEOUT,
     DEFAULT_DEVICE_ID,
@@ -408,11 +409,26 @@ class SinapsiAlfaAPI:
 
             # Clean up the connection
             writer.close()
-            #await writer.wait_closed()
             try:
-                await asyncio.wait_for(writer.wait_closed(), timeout=2.0)
-            except (asyncio.TimeoutError, OSError):
-                pass
+                await asyncio.wait_for(writer.wait_closed(), timeout=CHECK_PORT_CLOSE_TIMEOUT)
+            except TimeoutError:
+                log_debug(
+                    _LOGGER,
+                    "check_port",
+                    "wait_closed timed out — peer did not send FIN, socket abandoned",
+                    host=self._host,
+                    port=self._port,
+                    timeout=CHECK_PORT_CLOSE_TIMEOUT,
+                )
+            except OSError as e:
+                log_debug(
+                    _LOGGER,
+                    "check_port",
+                    "wait_closed raised OSError, ignoring",
+                    host=self._host,
+                    port=self._port,
+                    error=e,
+                )
         except (TimeoutError, ConnectionRefusedError, OSError) as e:
             log_debug(
                 _LOGGER,
