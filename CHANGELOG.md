@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.13.7] - 2026-05-27
+
+**Patch release** - Fixes a hang in the TCP port reachability check that could keep
+the integration stuck for ~10 minutes after a device hard reset.
+
+### Fixed
+
+- **`check_port()` no longer hangs after a device hard reset** - When the Alfa device
+  reset abruptly without sending a TCP FIN (e.g. on a watchdog reboot), the cleanup
+  call to `writer.wait_closed()` had no timeout and could block until the kernel's
+  TCP timeout (~10 minutes). While blocked, the coordinator could not start new polls
+  and every sensor stayed unavailable. The call is now wrapped in `asyncio.wait_for()`
+  with a 2-second timeout (`CHECK_PORT_CLOSE_TIMEOUT`); normal closures still complete
+  in milliseconds and only stuck sockets ever hit the limit. Hard-reset recovery time
+  drops from 10+ minutes to 2-3 minutes (limited only by the warm-up gate).
+  Contributed by [@M4v3r1cK87](https://github.com/M4v3r1cK87) in
+  [#208](https://github.com/alexdelprete/ha-sinapsi-alfa/pull/208).
+  Refs [#207](https://github.com/alexdelprete/ha-sinapsi-alfa/issues/207).
+
+**Full Release Notes:** [docs/releases/v1.13.7.md](docs/releases/v1.13.7.md)
+
+**Full Changelog:** [v1.13.6...v1.13.7](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.13.6...v1.13.7)
+
 ## [1.13.6] - 2026-05-22
 
 **Patch release** - Tightens the device warm-up gate to resume only when the device
