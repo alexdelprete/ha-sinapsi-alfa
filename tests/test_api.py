@@ -590,8 +590,12 @@ class TestPortCheck:
     ):
         """check_port() must not hang if wait_closed() never returns (issue: hard reset)."""
         api = SinapsiAlfaAPI(
-            mock_hass, TEST_NAME, TEST_HOST, TEST_PORT,
-            DEFAULT_SCAN_INTERVAL, DEFAULT_TIMEOUT,
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
         )
 
         # Simulate open_connection succeeding then wait_closed() hanging forever.
@@ -602,15 +606,19 @@ class TestPortCheck:
         mock_writer.close = MagicMock()
         mock_writer.wait_closed = AsyncMock(side_effect=hang_forever)
 
-        with patch(
-            "custom_components.sinapsi_alfa.api.asyncio.open_connection",
-            AsyncMock(return_value=(MagicMock(), mock_writer)),
+        with (
+            patch("custom_components.sinapsi_alfa.api.CHECK_PORT_CLOSE_TIMEOUT", 0.1),
+            patch(
+                "custom_components.sinapsi_alfa.api.asyncio.open_connection",
+                AsyncMock(return_value=(MagicMock(), mock_writer)),
+            ),
         ):
             result = await api.check_port()
 
         # Must return True (port was reachable) and must not have hung.
         assert result is True
         mock_writer.close.assert_called_once()
+
 
 class TestAsyncGetData:
     """Tests for async_get_data method."""
