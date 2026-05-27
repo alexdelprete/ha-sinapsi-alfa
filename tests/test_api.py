@@ -619,6 +619,33 @@ class TestPortCheck:
         assert result is True
         mock_writer.close.assert_called_once()
 
+    async def test_check_port_returns_when_wait_closed_raises_oserror(
+        self, mock_hass, mock_transport, mock_client
+    ):
+        """check_port() must swallow OSError from wait_closed() and still return True."""
+        api = SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+        mock_writer = MagicMock()
+        mock_writer.close = MagicMock()
+        mock_writer.wait_closed = AsyncMock(side_effect=OSError("socket closed unexpectedly"))
+
+        with patch(
+            "custom_components.sinapsi_alfa.api.asyncio.open_connection",
+            AsyncMock(return_value=(MagicMock(), mock_writer)),
+        ):
+            result = await api.check_port()
+
+        # Port was reachable; OSError on cleanup must not propagate.
+        assert result is True
+        mock_writer.close.assert_called_once()
+
 
 class TestAsyncGetData:
     """Tests for async_get_data method."""
