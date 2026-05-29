@@ -521,7 +521,7 @@ In addition to the shared Do's and Don'ts:
 - Mix sync/async code improperly
 
 <!-- BEGIN SHARED:repo-sync -->
-<!-- Synced by repo-sync on 2026-03-18 -->
+<!-- Synced by repo-sync on 2026-05-29 -->
 
 ## Context7 for Documentation
 
@@ -708,12 +708,6 @@ feat(api): implement new feature
 Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
-> **NEVER put a GitHub issue-closing keyword in a commit message.**
-> `close`/`closes`/`closed`, `fix`/`fixes`/`fixed`, `resolve`/`resolves`/`resolved`
-> followed by `#N` auto-close that issue the moment the commit lands on the default
-> branch. Reference issues with a neutral phrase only — "Refs #N", "Reported in #N",
-> "Addresses #N". Issues are closed manually by the user, never by automation.
-
 ### Branch Strategy
 
 - Default branch (`main` or `master`) = next release
@@ -800,7 +794,15 @@ This integration tracks [Home Assistant Quality Scale][qs] rules in `quality_sca
 > **STOP: NEVER create git tags or GitHub releases without explicit user command.**
 > This is a hard rule. Always stop after commit/push and wait for user instruction.
 
-**Published releases are FROZEN** - Never modify documentation for released versions.
+**Published releases are FROZEN** - Never modify the git tag, the ZIP asset, or the
+`docs/releases/vX.Y.Z.md` file in a way that changes the meaning of what shipped.
+
+The GitHub *release body* (what shows on the release page) may be edited via
+`gh release edit vX.Y.Z --notes-file docs/releases/vX.Y.Z.md` to fix typos, add
+cross-references to companion files that landed on `main` shortly after the release,
+or clarify scope — as long as the edit doesn't misrepresent what's actually in the
+released ZIP. When you do this, also update the matching `docs/releases/vX.Y.Z.md` so
+the file and the live release body stay in sync.
 
 **Master branch = Next Release** - All commits target the next version with version bumped
 in manifest.json and const.py.
@@ -942,14 +944,9 @@ The coverage percentage is the last column in the TOTAL line.
 
 ### Issue References in Release Notes
 
-When a release addresses a specific GitHub issue:
+When a release fixes a specific GitHub issue:
 
-- Reference the issue number, but **NEVER use a GitHub closing keyword** —
-  `close`/`closes`/`closed`, `fix`/`fixes`/`fixed`, `resolve`/`resolves`/`resolved`
-  followed by `#N` — anywhere in commit messages, release notes, the GitHub release
-  body, or PR descriptions. Those keywords auto-close the issue when the commit lands
-  on the default branch. Use a neutral phrase instead: "Reported in #42",
-  "Addresses #42", "Refs #42".
+- Reference the issue number in release notes (e.g., "Fixes #42")
 - Thank the user who opened the issue by name and GitHub handle
 - **NEVER close the issue** — the user will do it manually
 
