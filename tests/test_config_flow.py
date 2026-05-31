@@ -11,6 +11,8 @@ from custom_components.sinapsi_alfa.config_flow import (
     get_host_from_config,
 )
 from custom_components.sinapsi_alfa.const import (
+    CONF_ENABLE_REPAIR_NOTIFICATION,
+    CONF_FAILURES_THRESHOLD,
     CONF_HOST,
     CONF_NAME,
     CONF_PORT,
@@ -907,6 +909,47 @@ class TestOptionsFlowDirect:
             CONF_SCAN_INTERVAL: new_scan_interval,
             CONF_TIMEOUT: new_timeout,
         }
+
+    async def test_options_flow_schema_allows_clearing_recovery_script(self) -> None:
+        """Clearing the recovery script in the form must not resurrect the saved value.
+
+        Regression: a previous implementation used
+        ``vol.Optional(CONF_RECOVERY_SCRIPT, default=recovery_script)``, which made
+        voluptuous fill the missing key with the currently-saved value whenever the
+        user cleared the EntitySelector. The fix uses
+        ``description={"suggested_value": ...}``, which only pre-fills the form for
+        display without resurrecting the value on submit.
+
+        The bug lives in the schema itself, so this test exercises the voluptuous
+        schema directly — calling ``async_step_init(user_input)`` with a hand-crafted
+        dict would bypass the form validation where the bug fires.
+        """
+        mock_entry = self._create_mock_config_entry()
+        # Simulate a config entry that already has a recovery script set.
+        mock_entry.options = {
+            **mock_entry.options,
+            CONF_RECOVERY_SCRIPT: "script.restart_wifi",
+        }
+
+        flow = SinapsiAlfaOptionsFlow()
+        with patch.object(
+            type(flow), "config_entry", new_callable=PropertyMock, return_value=mock_entry
+        ):
+            form = await flow.async_step_init(None)
+
+        schema = form["data_schema"]
+        # Simulate what HA sends when the user CLEARS the EntitySelector: the
+        # CONF_RECOVERY_SCRIPT key is absent from the form data.
+        form_data = {
+            CONF_ENABLE_REPAIR_NOTIFICATION: True,
+            CONF_FAILURES_THRESHOLD: 3,
+            CONF_SCAN_INTERVAL: DEFAULT_SCAN_INTERVAL,
+            CONF_TIMEOUT: DEFAULT_TIMEOUT,
+        }
+        validated = schema(form_data)
+        # With the buggy code, validated[CONF_RECOVERY_SCRIPT] would be
+        # "script.restart_wifi" — the saved value resurrected by default=.
+        assert validated.get(CONF_RECOVERY_SCRIPT, "") in ("", None)
 
 
 class TestConfigFlowAttributes:
