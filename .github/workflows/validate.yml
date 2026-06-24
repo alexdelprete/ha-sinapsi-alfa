@@ -13,7 +13,7 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - name: "Checkout the repository"
-        uses: "actions/checkout@v6"
+        uses: "actions/checkout@v7"
         with:
           token: ${{ secrets.WORKFLOW_PAT || github.token }}
       - name: "Run hassfest validation"
@@ -24,7 +24,7 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - name: "Checkout the repository"
-        uses: "actions/checkout@v6"
+        uses: "actions/checkout@v7"
         with:
           token: ${{ secrets.WORKFLOW_PAT || github.token }}
       - name: "Run HACS validation"
