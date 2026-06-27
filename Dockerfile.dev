@@ -1,0 +1,38 @@
+# syntax=docker/dockerfile:1
+#
+# Devcontainer image for Home Assistant custom integration development.
+# Mirrors the pattern used by home-assistant/core:
+#   - mcr.microsoft.com/vscode/devcontainers/base:debian (currently trixie)
+#   - uv installs the exact Python version pinned in .python-version
+#   - uv creates a named venv at /home/vscode/.local/ha-venv
+#   - PATH is set so subsequent layers and postCreate run inside the venv
+#
+# If your integration needs system libraries (libudev-dev for bluetooth,
+# ffmpeg, libpcap-dev, etc.), add them to the apt-get install line below.
+# Start lean and add only what your integration actually needs.
+
+FROM mcr.microsoft.com/vscode/devcontainers/base:debian
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        git \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install uv from upstream — faster and version-controlled vs pip-installing it
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+USER vscode
+
+# Install the exact Python version pinned in .python-version, then create
+# a named venv. PATH is exported so all subsequent commands (postCreate
+# included) install into the venv without needing explicit activation.
+ENV VIRTUAL_ENV="/home/vscode/.local/ha-venv"
+RUN --mount=type=bind,source=.python-version,target=.python-version \
+    uv python install \
+    && uv venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+ENV SHELL=/bin/bash

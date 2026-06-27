@@ -1,7 +1,19 @@
 {
     "name": "Alfa by Sinapsi",
-    "image": "mcr.microsoft.com/devcontainers/python:3.13-bullseye",
-    "postCreateCommand": "sudo pip install --upgrade pip uv && sudo uv pip install -e '.[dev]' --system && pre-commit install",
+    "build": {
+        "dockerfile": "Dockerfile.dev",
+        "context": "."
+    },
+    "containerEnv": {
+        "PYTHONASYNCIODEBUG": "1"
+    },
+    "runArgs": [
+        "-e",
+        "GIT_EDITOR=code --wait",
+        "--security-opt",
+        "label=disable"
+    ],
+    "postCreateCommand": "git config --global --add safe.directory ${containerWorkspaceFolder} && uv pip install -e '.[dev]' && pre-commit install",
     "forwardPorts": [8123],
     "portsAttributes": {
         "8123": {
@@ -39,7 +51,11 @@
                 "GitHub.copilot"
             ],
             "settings": {
-                "python.defaultInterpreterPath": "/usr/local/bin/python",
+                "python.experiments.optOutFrom": ["pythonTestAdapter"],
+                "python.defaultInterpreterPath": "/home/vscode/.local/ha-venv/bin/python",
+                "python.pythonPath": "/home/vscode/.local/ha-venv/bin/python",
+                "python.terminal.activateEnvInCurrentTerminal": true,
+                "ruff.path": ["/home/vscode/.local/ha-venv/bin/ruff"],
                 "python.testing.pytestEnabled": true,
                 "python.testing.pytestArgs": ["tests/", "--no-cov"],
                 "editor.formatOnSave": true,
@@ -53,6 +69,9 @@
                     "editor.defaultFormatter": "charliermarsh.ruff"
                 },
                 "[json]": {
+                    "editor.defaultFormatter": "esbenp.prettier-vscode"
+                },
+                "[jsonc]": {
                     "editor.defaultFormatter": "esbenp.prettier-vscode"
                 },
                 "[yaml]": {

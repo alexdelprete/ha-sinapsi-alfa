@@ -67,7 +67,7 @@ dev = [
 ]
 
 # <!-- BEGIN SHARED:repo-sync -->
-# Synced by repo-sync on 2026-03-25
+# Synced by repo-sync on 2026-06-27
 
 
 [tool.codespell]
@@ -93,7 +93,7 @@ show_missing = true
 
 # ty type checker configuration (Rust-based, faster than mypy)
 [tool.ty.environment]
-python-version = "3.13"
+python-version = "3.14"
 python-platform = "linux"
 
 [tool.ty.rules]
@@ -105,8 +105,8 @@ redundant-cast = "error"
 line-length = 100
 indent-width = 4
 fix = true
-target-version = "py313"
-required-version = ">=0.8.0"
+target-version = "py314"
+required-version = ">=0.15.17"
 
 # Exclude non-code directories from formatting and linting
 extend-exclude = [
