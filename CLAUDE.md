@@ -24,14 +24,21 @@
 
 ## ⚠️ Editing rules for this file
 
-This CLAUDE.md has two zones:
+This CLAUDE.md has two zones, bounded by HTML comment markers containing the
+strings `BEGIN SHARED:repo-sync` and `END SHARED:repo-sync` (grep the file to
+find their exact positions):
 
-- **Outside** the `<!-- BEGIN SHARED:repo-sync -->` / `<!-- END SHARED:repo-sync -->`
-  markers: integration-specific. Edit freely.
-- **Inside** the SHARED markers: auto-generated from `ha-integration-template`
-  via `repo-sync.py`. Edits there get overwritten on the next sync. To change
+- **Outside the markers**: integration-specific. Edit freely.
+- **Between the markers**: auto-generated from `ha-integration-template` via
+  `repo-sync.py`. Edits there get overwritten on the next sync. To change
   shared guidance, edit `templates/markers/CLAUDE_SHARED.md.j2` upstream and
   re-sync downstream.
+
+> **Note**: The marker names above are deliberately not written with the full
+> `<!-- … -->` HTML syntax. `repo-sync.py` matches that literal pattern when
+> deciding where to inject SHARED content, so quoting it here would cause the
+> injector to confuse this prose for an actual marker and break the file. See
+> the marker injection code in `repo-sync.py::inject_markers` for the regex.
 
 **Before adding generic workflow guidance to this file** (lint commands, release
 process, pre-commit invocations, anything that would apply to every integration):
