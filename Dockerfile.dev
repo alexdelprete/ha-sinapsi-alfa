@@ -74,6 +74,20 @@ RUN --mount=type=bind,source=.python-version,target=.python-version \
     && uv venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
+# Pre-install the dev tooling that VS Code extensions look for at
+# activation time. Without these in the venv at container start, the
+# extensions race against postCreate's full `uv pip install -e '.[dev]'`
+# (10–30s) and don't find their binaries at the configured paths during
+# the gap — at which point they fall back to Python-environment
+# discovery, can latch onto any stray Windows `.venv` in the bind-
+# mounted workspace, and throw a WSL socket error popup before recovering
+# to bundled binaries. Pre-installing here means ruff.path and the ty
+# extension's discovery resolve immediately.
+#
+# postCreate's `-e '.[dev]'` step re-installs the same versions from
+# pyproject pins — no conflict, just a fast no-op for these packages.
+RUN uv pip install "ruff>=0.15.17" "ty"
+
 # Claude Code via the upstream installer.
 # Why not the ghcr.io/anthropics/devcontainer-features/claude-code:1.0 feature:
 # that feature is currently broken on debian trixie (anthropics/devcontainer-
