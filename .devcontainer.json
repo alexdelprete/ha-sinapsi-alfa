@@ -43,11 +43,13 @@
                 "ms-python.python",
                 "ms-python.vscode-pylance",
                 "charliermarsh.ruff",
+                "astral-sh.ty",
                 "redhat.vscode-yaml",
                 "esbenp.prettier-vscode",
                 "GitHub.vscode-pull-request-github",
                 "ryanluker.vscode-coverage-gutters",
-                "GitHub.copilot"
+                "GitHub.copilot-chat",
+                "anthropic.claude-code"
             ],
             "settings": {
                 "python.experiments.optOutFrom": ["pythonTestAdapter"],
