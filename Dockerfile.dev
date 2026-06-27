@@ -7,9 +7,18 @@
 #   - uv creates a named venv at /home/vscode/.local/ha-venv
 #   - PATH is set so subsequent layers and postCreate run inside the venv
 #
-# If your integration needs system libraries (libudev-dev for bluetooth,
-# ffmpeg, libpcap-dev, etc.), add them to the apt-get install line below.
-# Start lean and add only what your integration actually needs.
+# The apt install list below mirrors home-assistant/core's Dockerfile.dev
+# plus a few common-case build prerequisites (build-essential, libffi-dev,
+# libssl-dev, pkg-config). HA's set covers the system libs the HA dep tree
+# may need to compile or link against; matching it means any wheel issue
+# HA already exercises in its CI is already exercised here too, so HA-side
+# fixes flow straight through.
+#
+# Trimming is fine for a specific integration that's known to be lean
+# (e.g. pure-Python MQTT, REST, Modbus repos won't need ffmpeg or
+# libav*-dev). Edit this file per-consumer after sync if you want to
+# slim it down — repo-sync will preserve the trim only until the next
+# template change to Dockerfile.dev forces a re-sync.
 
 FROM mcr.microsoft.com/vscode/devcontainers/base:debian
 
@@ -17,7 +26,37 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        # Build toolchain — needed for any Python C extension that lacks a
+        # prebuilt 3.14 wheel and falls back to source build.
+        build-essential \
         git \
+        cmake \
+        autoconf \
+        pkg-config \
+        # Common C extension prerequisites (cryptography, urllib3, etc.).
+        libffi-dev \
+        libssl-dev \
+        # YAML / XML (PyYAML C accelerator, lxml, etc.).
+        libyaml-dev \
+        libxml2 \
+        # Image processing for camera-class integrations.
+        libturbojpeg0 \
+        # FFmpeg + dev headers — required by media/camera integrations
+        # (PyAV and friends pull in libav*-dev at build time).
+        ffmpeg \
+        libavformat-dev \
+        libavcodec-dev \
+        libavdevice-dev \
+        libavutil-dev \
+        libswscale-dev \
+        libswresample-dev \
+        libavfilter-dev \
+        # Network packet capture (some discovery / sniffer integrations).
+        libpcap-dev \
+        # Bluetooth + USB / hardware enumeration (Zigbee, Z-Wave, BT-LE,
+        # serial-USB devices).
+        bluez \
+        libudev-dev \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
