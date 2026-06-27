@@ -22,6 +22,30 @@
 - Error handling (custom exceptions)
 - Code quality checks (ruff, ty)
 
+## ⚠️ Editing rules for this file
+
+This CLAUDE.md has two zones:
+
+- **Outside** the `<!-- BEGIN SHARED:repo-sync -->` / `<!-- END SHARED:repo-sync -->`
+  markers: integration-specific. Edit freely.
+- **Inside** the SHARED markers: auto-generated from `ha-integration-template`
+  via `repo-sync.py`. Edits there get overwritten on the next sync. To change
+  shared guidance, edit `templates/markers/CLAUDE_SHARED.md.j2` upstream and
+  re-sync downstream.
+
+**Before adding generic workflow guidance to this file** (lint commands, release
+process, pre-commit invocations, anything that would apply to every integration):
+
+1. Check the SHARED block first.
+1. If similar guidance already lives there, do not duplicate it here — refer to
+   the SHARED block instead.
+1. If it doesn't yet, promote it to `CLAUDE_SHARED.md.j2` in the template repo
+   and re-sync. Do not write it as a one-off in this file.
+
+This rule prevents drift between integration-specific copies and the template
+source of truth (the kind of drift that, for example, caused `uvx pre-commit`
+mentions to survive a template-side change to plain `pre-commit`).
+
 ### CI Workflow Status and Logs (Use `gh` CLI)
 
 > **IMPORTANT**: Always use `gh` CLI for CI workflow status and logs - it's more efficient than GitHub MCP.
@@ -522,6 +546,24 @@ In addition to the shared Do's and Don'ts:
 
 <!-- BEGIN SHARED:repo-sync -->
 <!-- Synced by repo-sync on 2026-06-27 -->
+
+<!--
+==============================================================================
+⚠️  TEMPLATE-MANAGED ZONE — DO NOT EDIT BETWEEN BEGIN SHARED AND END SHARED.
+
+This entire region is auto-generated from
+ha-integration-template/templates/markers/CLAUDE_SHARED.md.j2 via
+`repo-sync.py`. Edits between the marker lines are silently overwritten
+on the next sync.
+
+To change shared guidance:
+  1. Edit CLAUDE_SHARED.md.j2 in ha-integration-template
+  2. Sync downstream: `python repo-sync.py sync <consumer>`
+
+Integration-specific guidance belongs OUTSIDE the markers (above
+BEGIN SHARED or below END SHARED).
+==============================================================================
+-->
 
 ## Context7 for Documentation
 
@@ -1043,6 +1085,16 @@ When a release addresses a specific GitHub issue:
 - Close GitHub issues without explicit user instruction
 - Log manually what HA logs automatically (coordinator errors, ConfigEntryNotReady)
 - Create documentation files without user request
+
+<!--
+==============================================================================
+⚠️  END OF TEMPLATE-MANAGED ZONE.
+
+The END SHARED marker line appears below this comment. Anything you add
+BELOW the END SHARED marker is integration-specific and safe to edit —
+it will not be touched by `repo-sync.py`.
+==============================================================================
+-->
 
 <!-- END SHARED:repo-sync -->
 
