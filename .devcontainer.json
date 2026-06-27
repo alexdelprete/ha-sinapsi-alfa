@@ -13,7 +13,7 @@
         "--security-opt",
         "label=disable"
     ],
-    "postCreateCommand": "git config --global --add safe.directory ${containerWorkspaceFolder} && uv pip install -e '.[dev]' && pre-commit install",
+    "postCreateCommand": "git config --global --add safe.directory ${containerWorkspaceFolder} && rm -rf ./*.egg-info && uv pip install -e '.[dev]' && pre-commit install",
     "forwardPorts": [8123],
     "portsAttributes": {
         "8123": {
