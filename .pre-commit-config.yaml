@@ -50,10 +50,13 @@ repos:
         types: [markdown]
         verbose: true
 
-      # Type checking (devcontainer only — requires HA deps installed)
+      # Type checking (devcontainer only — requires HA deps installed).
+      # `--python "$(which python)"` resolves the interpreter at runtime
+      # so the hook works whether Python lives at the venv path or system path.
       - id: ty
         name: ty
-        entry: ty check --python /usr/local/bin/python custom_components/sinapsi_alfa
+        entry: >-
+          bash -c 'ty check --python "$(which python)" custom_components/sinapsi_alfa'
         language: system
         pass_filenames: false
         types: [python]
