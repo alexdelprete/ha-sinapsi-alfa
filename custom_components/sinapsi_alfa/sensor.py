@@ -221,7 +221,7 @@ class SinapsiAlfaSensor(CoordinatorEntity[SinapsiAlfaCoordinator], RestoreSensor
                             current=current_state.state,
                         )
                         return None
-                except (ValueError, TypeError):
+                except ValueError, TypeError:
                     pass  # Current state not numeric — allow through.
 
             # Guard 2: after a cold restart, block values below the restored baseline.

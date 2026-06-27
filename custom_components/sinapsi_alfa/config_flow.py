@@ -76,7 +76,7 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg
 
     @staticmethod
     @callback
-    def async_get_options_flow(config_entry: ConfigEntry) -> "SinapsiAlfaOptionsFlow":
+    def async_get_options_flow(config_entry: ConfigEntry) -> SinapsiAlfaOptionsFlow:
         """Initiate Options Flow Instance."""
         return SinapsiAlfaOptionsFlow()
 
