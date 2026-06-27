@@ -35,4 +35,11 @@ RUN --mount=type=bind,source=.python-version,target=.python-version \
     && uv venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
+# Claude Code via the upstream installer.
+# Why not the ghcr.io/anthropics/devcontainer-features/claude-code:1.0 feature:
+# that feature is currently broken on debian trixie (anthropics/devcontainer-
+# features#28, opened by HA's project lead). HA core's own Dockerfile.dev
+# uses this same curl install for the same reason.
+RUN curl -fsSL https://claude.ai/install.sh | bash
+
 ENV SHELL=/bin/bash

@@ -34,8 +34,7 @@
         "source=${localEnv:APPDATA}/GitHub CLI,target=/home/vscode/.config/gh,type=bind,consistency=cached"
     ],
     "features": {
-        "ghcr.io/devcontainers/features/github-cli:1": {},
-        "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {}
+        "ghcr.io/devcontainers/features/github-cli:1": {}
     },
     "remoteUser": "vscode",
     "customizations": {
