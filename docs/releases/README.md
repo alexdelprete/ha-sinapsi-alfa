@@ -14,7 +14,7 @@ Versions must be synchronized in:
 
 1. Update `CHANGELOG.md` with version summary
 2. Ensure versions are correct in `manifest.json` and `const.py`
-3. Run linting: `uvx pre-commit run --all-files`
+3. Run linting: `pre-commit run --all-files`
 4. Commit and push
 5. Verify CI passes (lint, test, validate)
 6. Create git tag: `git tag -a vX.Y.Z -m "Release vX.Y.Z"`

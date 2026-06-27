@@ -759,8 +759,17 @@ All hooks use `language: system` (local tools) with `verbose: true` for visibili
 > This is a hard rule - no exceptions. Never commit without passing all checks.
 
 ```bash
-uvx pre-commit run --all-files
+pre-commit run --all-files
 ```
+
+> Use `pre-commit` directly, **not** `uvx pre-commit`. The `ty` hook
+> resolves the interpreter at runtime via `$(which python)` to match the
+> devcontainer venv. `uvx` would provision its own ephemeral Python 3.14
+> first on PATH, and that env doesn't have Home Assistant installed —
+> `ty` would false-fail with unresolved-import errors even though the
+> code is fine. The git commit hook and CI's lint workflow already use
+> the venv-installed `pre-commit`, so plain `pre-commit run` matches
+> their behavior exactly.
 
 Or run individual tools:
 
@@ -857,7 +866,7 @@ in manifest.json and const.py.
 | 1    | Edit           | Update `CHANGELOG.md` with version summary                              |
 | 2    | Write          | Create `docs/releases/vX.Y.Z.md` release notes (see format below)      |
 | 3    | Edit           | Ensure `manifest.json` and `const.py` have correct version              |
-| 4    | Bash           | Run linting: `uvx pre-commit run --all-files`                           |
+| 4    | Bash           | Run linting: `pre-commit run --all-files`                               |
 | 5    | Bash           | `git add . && git commit -m "..."`                                      |
 | 6    | Bash           | `git push`                                                              |
 | 7    | **STOP**       | Wait for user "tag and release" command                                 |
@@ -1010,7 +1019,7 @@ When a release addresses a specific GitHub issue:
 
 **DO:**
 
-- Run `uvx pre-commit run --all-files` before EVERY commit
+- Run `pre-commit run --all-files` before EVERY commit (NOT `uvx pre-commit` — see Pre-Commit Checks section for why)
 - Read CLAUDE.md at session start
 - Use `runtime_data` for data storage (not `hass.data[DOMAIN]`)
 - Use `@callback` decorator for message handlers
