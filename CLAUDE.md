@@ -521,7 +521,7 @@ In addition to the shared Do's and Don'ts:
 - Mix sync/async code improperly
 
 <!-- BEGIN SHARED:repo-sync -->
-<!-- Synced by repo-sync on 2026-05-29 -->
+<!-- Synced by repo-sync on 2026-06-27 -->
 
 ## Context7 for Documentation
 
@@ -680,6 +680,25 @@ Runtime tuning parameters: scan_interval, timeout, etc. Use OptionsFlowWithReloa
 - Sensor unique_id pattern: `{device_unique_id}_{sensor_key}`
 - Use stable identifiers (MAC address, serial number) — not connection parameters (IP, hostname)
 - Config entry type alias: `type MyConfigEntry = ConfigEntry[RuntimeData]`
+
+## Python Version & HA Baseline
+
+These repos are standardized on the **Python 3.14+** toolchain:
+
+- `pyproject.toml`: `requires-python = ">=3.14.2"` (matches Home Assistant
+  core's own floor)
+- `[tool.ruff]`: `target-version = "py314"`
+- Minimum supported Home Assistant core: **2026.3.0** — the
+  first HA release requiring Python 3.14.2. `hacs.json` is rendered from
+  the same value, so HACS users on older HA don't see updates.
+
+**Implication for source code**: code in these repos may use 3.14-only
+syntax (e.g. PEP 758's parenthesis-free `except A, B:`) and is **not**
+backwards-compatible with Python 3.13. Ruff with `target-version = "py314"`
+will actively *rewrite* `except (A, B):` into the parenthesis-free form —
+which is a SyntaxError on Python 3.13. If a contributor's toolchain
+regresses to 3.13, expect lint-fixes from these repos to fail to parse
+locally until the toolchain is re-aligned.
 
 ## Dependencies Best Practices
 
