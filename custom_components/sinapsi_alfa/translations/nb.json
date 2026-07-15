@@ -33,7 +33,10 @@
     "error": {
       "already_configured": "Enheten er allerede konfigurert",
       "invalid_host": "Ugyldig vertsadresse",
-      "cannot_connect": "Kan ikke koble til enheten"
+      "cannot_connect": "Kan ikke koble til enheten. Kontroller IP/vertsnavn og TCP-port, og sorg for at enheten er tilkoblet.",
+      "modbus_error": "Koblet til enheten, men Modbus-kommunikasjonen mislyktes. Kontroller TCP-porten og sorg for at ingen annen Modbus-klient er koblet til enheten.",
+      "device_warmup": "Enheten er tilgjengelig, men rapporterer enna ikke gyldige malerdata (oppvarmingsfase etter en omstart). Vent et par minutter og prov igjen. Hvis dette fortsetter, mottar enheten kanskje ikke data fra maleren - kontroller avlesningene i Sinapsi-appen.",
+      "unknown": "Uventet feil. Sjekk Home Assistant-loggene for detaljer."
     },
     "abort": {
       "already_configured": "Enheten er allerede konfigurert",

@@ -4,7 +4,11 @@ from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
 
 import pytest
 
-from custom_components.sinapsi_alfa.api import SinapsiConnectionError, SinapsiModbusError
+from custom_components.sinapsi_alfa.api import (
+    SinapsiConnectionError,
+    SinapsiModbusError,
+    SinapsiWarmupError,
+)
 from custom_components.sinapsi_alfa.config_flow import (
     SinapsiAlfaConfigFlow,
     SinapsiAlfaOptionsFlow,
@@ -135,7 +139,7 @@ async def test_user_flow_cannot_connect(
         )
 
         assert result["type"] == FlowResultType.FORM
-        assert result["errors"] == {CONF_HOST: "cannot_connect"}
+        assert result["errors"] == {"base": "cannot_connect"}
 
 
 async def test_user_flow_modbus_error(
@@ -166,7 +170,71 @@ async def test_user_flow_modbus_error(
         )
 
         assert result["type"] == FlowResultType.FORM
-        assert result["errors"] == {CONF_HOST: "cannot_connect"}
+        assert result["errors"] == {"base": "modbus_error"}
+
+
+async def test_user_flow_device_warmup(
+    hass: HomeAssistant,
+) -> None:
+    """Test user flow when the device is reachable but still warming up."""
+    with patch(
+        "custom_components.sinapsi_alfa.config_flow.SinapsiAlfaAPI",
+        autospec=True,
+    ) as mock_api_class:
+        mock_api = mock_api_class.return_value
+        mock_api.async_get_data = AsyncMock(
+            side_effect=SinapsiWarmupError("Device in warm-up: registers not yet populated")
+        )
+
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN, context={"source": config_entries.SOURCE_USER}
+        )
+
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_NAME: TEST_NAME,
+                CONF_HOST: TEST_HOST,
+                CONF_PORT: DEFAULT_PORT,
+                CONF_SCAN_INTERVAL: DEFAULT_SCAN_INTERVAL,
+                CONF_TIMEOUT: DEFAULT_TIMEOUT,
+                CONF_SKIP_MAC_DETECTION: False,
+            },
+        )
+
+        assert result["type"] == FlowResultType.FORM
+        assert result["errors"] == {"base": "device_warmup"}
+
+
+async def test_user_flow_unexpected_error(
+    hass: HomeAssistant,
+) -> None:
+    """Test user flow when an unexpected exception occurs."""
+    with patch(
+        "custom_components.sinapsi_alfa.config_flow.SinapsiAlfaAPI",
+        autospec=True,
+    ) as mock_api_class:
+        mock_api = mock_api_class.return_value
+        mock_api.async_get_data = AsyncMock(side_effect=RuntimeError("Boom"))
+
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN, context={"source": config_entries.SOURCE_USER}
+        )
+
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_NAME: TEST_NAME,
+                CONF_HOST: TEST_HOST,
+                CONF_PORT: DEFAULT_PORT,
+                CONF_SCAN_INTERVAL: DEFAULT_SCAN_INTERVAL,
+                CONF_TIMEOUT: DEFAULT_TIMEOUT,
+                CONF_SKIP_MAC_DETECTION: False,
+            },
+        )
+
+        assert result["type"] == FlowResultType.FORM
+        assert result["errors"] == {"base": "unknown"}
 
 
 async def test_reconfigure_flow_success(
@@ -337,7 +405,73 @@ async def test_reconfigure_flow_cannot_connect(
         )
 
         assert result["type"] == FlowResultType.FORM
-        assert result["errors"] == {CONF_HOST: "cannot_connect"}
+        assert result["errors"] == {"base": "cannot_connect"}
+
+
+async def test_reconfigure_flow_device_warmup(
+    hass: HomeAssistant,
+) -> None:
+    """Test reconfigure flow when the device is reachable but still warming up."""
+    # Create initial entry with mock
+    with patch(
+        "custom_components.sinapsi_alfa.config_flow.SinapsiAlfaAPI",
+        autospec=True,
+    ) as mock_api_class:
+        mock_api = mock_api_class.return_value
+        mock_api.data = {"sn": TEST_MAC}
+        mock_api.async_get_data = AsyncMock(return_value={"sn": TEST_MAC})
+
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN, context={"source": config_entries.SOURCE_USER}
+        )
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_NAME: TEST_NAME,
+                CONF_HOST: TEST_HOST,
+                CONF_PORT: DEFAULT_PORT,
+                CONF_SCAN_INTERVAL: DEFAULT_SCAN_INTERVAL,
+                CONF_TIMEOUT: DEFAULT_TIMEOUT,
+                CONF_SKIP_MAC_DETECTION: False,
+            },
+        )
+        await hass.async_block_till_done()
+        assert result["type"] == FlowResultType.CREATE_ENTRY
+
+    # Get the config entry
+    entries = hass.config_entries.async_entries(DOMAIN)
+    entry = entries[0]
+
+    # Now mock warm-up state for reconfigure
+    with patch(
+        "custom_components.sinapsi_alfa.config_flow.SinapsiAlfaAPI",
+        autospec=True,
+    ) as mock_api_class:
+        mock_api = mock_api_class.return_value
+        mock_api.async_get_data = AsyncMock(
+            side_effect=SinapsiWarmupError("Device in warm-up: registers not yet populated")
+        )
+
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN,
+            context={
+                "source": config_entries.SOURCE_RECONFIGURE,
+                "entry_id": entry.entry_id,
+            },
+        )
+
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_NAME: TEST_NAME,
+                CONF_HOST: "192.168.1.200",
+                CONF_PORT: DEFAULT_PORT,
+                CONF_SKIP_MAC_DETECTION: False,
+            },
+        )
+
+        assert result["type"] == FlowResultType.FORM
+        assert result["errors"] == {"base": "device_warmup"}
 
 
 async def test_config_flow_version() -> None:
@@ -429,7 +563,7 @@ class TestTestConnection:
     """Tests for _test_connection method."""
 
     async def test_connection_success(self, mock_hass: MagicMock, mock_api_data: dict) -> None:
-        """Test successful connection returns serial number."""
+        """Test successful connection returns (serial number, None)."""
         flow = SinapsiAlfaConfigFlow()
         flow.hass = mock_hass
 
@@ -445,7 +579,7 @@ class TestTestConnection:
                 TEST_NAME, TEST_HOST, DEFAULT_PORT, DEFAULT_SCAN_INTERVAL, DEFAULT_TIMEOUT, False
             )
 
-            assert result == TEST_MAC
+            assert result == (TEST_MAC, None)
             mock_api_class.assert_called_once_with(
                 mock_hass,
                 TEST_NAME,
@@ -458,7 +592,7 @@ class TestTestConnection:
             mock_api.async_get_data.assert_awaited_once()
 
     async def test_connection_error(self, mock_hass: MagicMock) -> None:
-        """Test SinapsiConnectionError returns None."""
+        """Test SinapsiConnectionError maps to cannot_connect."""
         flow = SinapsiAlfaConfigFlow()
         flow.hass = mock_hass
 
@@ -475,10 +609,10 @@ class TestTestConnection:
                 TEST_NAME, TEST_HOST, DEFAULT_PORT, DEFAULT_SCAN_INTERVAL, DEFAULT_TIMEOUT, False
             )
 
-            assert result is None
+            assert result == (None, "cannot_connect")
 
     async def test_modbus_error(self, mock_hass: MagicMock) -> None:
-        """Test SinapsiModbusError returns None."""
+        """Test SinapsiModbusError maps to modbus_error."""
         flow = SinapsiAlfaConfigFlow()
         flow.hass = mock_hass
 
@@ -495,7 +629,45 @@ class TestTestConnection:
                 TEST_NAME, TEST_HOST, DEFAULT_PORT, DEFAULT_SCAN_INTERVAL, DEFAULT_TIMEOUT, False
             )
 
-            assert result is None
+            assert result == (None, "modbus_error")
+
+    async def test_warmup_error(self, mock_hass: MagicMock) -> None:
+        """Test SinapsiWarmupError maps to device_warmup."""
+        flow = SinapsiAlfaConfigFlow()
+        flow.hass = mock_hass
+
+        with patch(
+            "custom_components.sinapsi_alfa.config_flow.SinapsiAlfaAPI",
+            autospec=True,
+        ) as mock_api_class:
+            mock_api = mock_api_class.return_value
+            mock_api.async_get_data = AsyncMock(
+                side_effect=SinapsiWarmupError("Device in warm-up: registers not yet populated")
+            )
+
+            result = await flow._test_connection(
+                TEST_NAME, TEST_HOST, DEFAULT_PORT, DEFAULT_SCAN_INTERVAL, DEFAULT_TIMEOUT, False
+            )
+
+            assert result == (None, "device_warmup")
+
+    async def test_unexpected_error(self, mock_hass: MagicMock) -> None:
+        """Test unexpected exceptions map to unknown."""
+        flow = SinapsiAlfaConfigFlow()
+        flow.hass = mock_hass
+
+        with patch(
+            "custom_components.sinapsi_alfa.config_flow.SinapsiAlfaAPI",
+            autospec=True,
+        ) as mock_api_class:
+            mock_api = mock_api_class.return_value
+            mock_api.async_get_data = AsyncMock(side_effect=RuntimeError("Boom"))
+
+            result = await flow._test_connection(
+                TEST_NAME, TEST_HOST, DEFAULT_PORT, DEFAULT_SCAN_INTERVAL, DEFAULT_TIMEOUT, False
+            )
+
+            assert result == (None, "unknown")
 
 
 class TestAsyncStepUserDirect:
@@ -595,7 +767,7 @@ class TestAsyncStepUserDirect:
             )
 
         assert result["type"] == FlowResultType.FORM
-        assert result["errors"] == {CONF_HOST: "cannot_connect"}
+        assert result["errors"] == {"base": "cannot_connect"}
 
     async def test_async_step_user_modbus_conflict(self, mock_hass: MagicMock) -> None:
         """Test abort when Modbus conflict detected."""
@@ -764,7 +936,7 @@ class TestAsyncStepReconfigureDirect:
             )
 
         assert result["type"] == FlowResultType.FORM
-        assert result["errors"] == {CONF_HOST: "cannot_connect"}
+        assert result["errors"] == {"base": "cannot_connect"}
 
     async def test_async_step_reconfigure_modbus_conflict(self, mock_hass: MagicMock) -> None:
         """Test abort when Modbus conflict detected during reconfigure."""
@@ -1049,7 +1221,7 @@ class TestEdgeCases:
             )
 
         assert result["type"] == FlowResultType.FORM
-        assert result["errors"] == {CONF_HOST: "cannot_connect"}
+        assert result["errors"] == {"base": "cannot_connect"}
 
     async def test_test_connection_returns_string_serial(self, mock_hass: MagicMock) -> None:
         """Test _test_connection converts serial number to string."""
@@ -1065,10 +1237,11 @@ class TestEdgeCases:
             mock_api.data = {"sn": 123456789}
             mock_api.async_get_data = AsyncMock(return_value=True)
 
-            result = await flow._test_connection(
+            uid, error_key = await flow._test_connection(
                 TEST_NAME, TEST_HOST, DEFAULT_PORT, DEFAULT_SCAN_INTERVAL, DEFAULT_TIMEOUT, False
             )
 
             # Should be converted to string
-            assert result == "123456789"
-            assert isinstance(result, str)
+            assert uid == "123456789"
+            assert isinstance(uid, str)
+            assert error_key is None

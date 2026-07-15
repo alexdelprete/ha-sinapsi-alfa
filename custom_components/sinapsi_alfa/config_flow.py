@@ -25,7 +25,7 @@ from homeassistant.helpers.selector import (
     NumberSelectorMode,
 )
 
-from .api import SinapsiAlfaAPI, SinapsiConnectionError, SinapsiModbusError
+from .api import SinapsiAlfaAPI, SinapsiConnectionError, SinapsiModbusError, SinapsiWarmupError
 from .const import (
     CONF_ENABLE_REPAIR_NOTIFICATION,
     CONF_FAILURES_THRESHOLD,
@@ -92,8 +92,13 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg
         scan_interval: int,
         timeout: int,
         skip_mac_detection: bool,
-    ) -> str | None:
-        """Test connection and return serial number or None on failure."""
+    ) -> tuple[str | None, str | None]:
+        """Test connection and return (serial number, error key).
+
+        Returns (uid, None) on success, or (None, error_key) on failure, where
+        error_key matches an entry in translations config.error so each failure
+        mode gives the user distinct feedback.
+        """
         log_debug(_LOGGER, "_test_connection", "Test connection", host=host, port=port)
         try:
             log_debug(_LOGGER, "_test_connection", "Creating API Client")
@@ -104,11 +109,8 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg
             await api.async_get_data()
             log_debug(_LOGGER, "_test_connection", "API Client: get data")
             log_debug(_LOGGER, "_test_connection", "API Client Data", data=api.data)
-            return str(api.data["sn"])
-        except (
-            SinapsiConnectionError,
-            SinapsiModbusError,
-        ) as connerr:
+            return str(api.data["sn"]), None
+        except SinapsiConnectionError as connerr:
             log_error(
                 _LOGGER,
                 "_test_connection",
@@ -117,7 +119,37 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg
                 port=port,
                 error=connerr,
             )
-            return None
+            return None, "cannot_connect"
+        except SinapsiModbusError as modbuserr:
+            log_error(
+                _LOGGER,
+                "_test_connection",
+                "Modbus communication failed",
+                host=host,
+                port=port,
+                error=modbuserr,
+            )
+            return None, "modbus_error"
+        except SinapsiWarmupError as warmuperr:
+            log_error(
+                _LOGGER,
+                "_test_connection",
+                "Device reachable but still warming up",
+                host=host,
+                port=port,
+                error=warmuperr,
+            )
+            return None, "device_warmup"
+        except Exception as unexpected:  # noqa: BLE001 - map any failure to user feedback
+            log_error(
+                _LOGGER,
+                "_test_connection",
+                "Unexpected error during connection test",
+                host=host,
+                port=port,
+                error=unexpected,
+            )
+            return None, "unknown"
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Handle the initial step."""
@@ -154,7 +186,7 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg
                         },
                     )
 
-                uid = await self._test_connection(
+                uid, error_key = await self._test_connection(
                     name, host, port, scan_interval, timeout, skip_mac_detection
                 )
                 if uid is not None:
@@ -177,7 +209,7 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg
                         },
                     )
 
-                errors[CONF_HOST] = "cannot_connect"
+                errors["base"] = error_key or "unknown"
 
         return self.async_show_form(
             step_id="user",
@@ -268,7 +300,7 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg
                 )
                 timeout = reconfigure_entry.options.get(CONF_TIMEOUT, DEFAULT_TIMEOUT)
 
-                uid = await self._test_connection(
+                uid, error_key = await self._test_connection(
                     name, host, port, scan_interval, timeout, skip_mac_detection
                 )
                 if uid is not None:
@@ -294,7 +326,7 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg
                     )
 
                 log_debug(_LOGGER, "async_step_reconfigure", "Connection test failed")
-                errors[CONF_HOST] = "cannot_connect"
+                errors["base"] = error_key or "unknown"
 
         return self.async_show_form(
             step_id="reconfigure",

@@ -33,7 +33,10 @@
     "error": {
       "already_configured": "Laite on jo maaritetty",
       "invalid_host": "Virheellinen isantaosoite",
-      "cannot_connect": "Laitteeseen ei saada yhteytta"
+      "cannot_connect": "Laitteeseen ei saada yhteytta. Tarkista IP-osoite/isantanimi ja TCP-portti ja varmista, etta laite on verkossa.",
+      "modbus_error": "Yhteys laitteeseen onnistui, mutta Modbus-tiedonsiirto epaonnistui. Tarkista TCP-portti ja varmista, ettei mikaan muu Modbus-asiakas ole yhteydessa laitteeseen.",
+      "device_warmup": "Laite on tavoitettavissa, mutta se ei viela raportoi kelvollisia mittaritietoja (lammittelyvaihe uudelleenkaynnistyksen jalkeen). Odota pari minuuttia ja yrita uudelleen. Jos tama jatkuu, laite ei ehka saa tietoja mittarilta - tarkista lukemat Sinapsin sovelluksesta.",
+      "unknown": "Odottamaton virhe. Katso lisatiedot Home Assistantin lokeista."
     },
     "abort": {
       "already_configured": "Laite on jo maaritetty",

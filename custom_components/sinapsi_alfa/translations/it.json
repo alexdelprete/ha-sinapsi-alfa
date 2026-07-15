@@ -33,7 +33,10 @@
     "error": {
       "already_configured": "Il dispositivo è gia configurato",
       "invalid_host": "Indirizzo host non valido",
-      "cannot_connect": "Impossibile connettersi al dispositivo"
+      "cannot_connect": "Impossibile connettersi al dispositivo. Verifica IP/nome host e porta TCP e assicurati che il dispositivo sia online.",
+      "modbus_error": "Connesso al dispositivo, ma la comunicazione Modbus non è riuscita. Verifica la porta TCP e assicurati che nessun altro client Modbus sia connesso al dispositivo.",
+      "device_warmup": "Il dispositivo è raggiungibile, ma non riporta ancora dati validi del contatore (fase di avvio dopo un riavvio). Attendi un paio di minuti e riprova. Se il problema persiste, il dispositivo potrebbe non ricevere dati dal contatore - verifica le letture nell'app di Sinapsi.",
+      "unknown": "Errore imprevisto. Controlla i log di Home Assistant per i dettagli."
     },
     "abort": {
       "already_configured": "Il dispositivo è gia configurato",

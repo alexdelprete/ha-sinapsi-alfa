@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Config flow now gives distinct feedback for each connection-test outcome** - The
+  setup and reconfigure flows previously reported every failure as a generic
+  "Cannot connect to device". Each failure mode now maps to its own message:
+  device unreachable (`cannot_connect`), reachable but Modbus communication failed
+  (`modbus_error`), reachable but not reporting valid meter data yet
+  (`device_warmup`), and unexpected error with details in the logs (`unknown`).
+  Translated into all 10 supported languages. Refs
+  [#215](https://github.com/alexdelprete/ha-sinapsi-alfa/issues/215).
+
+### Fixed
+
+- **Device warm-up during setup no longer surfaces as "Unknown error"** - When the
+  connection test hit the warm-up gate (device reachable but meter registers not
+  yet populated), the resulting `SinapsiWarmupError` was not caught by the config
+  flow and HA displayed a generic "Unknown error". The flow now catches it and
+  shows the dedicated `device_warmup` message explaining the state and what to
+  check if it persists. Reported by [@Bobby406562](https://github.com/Bobby406562)
+  in [#215](https://github.com/alexdelprete/ha-sinapsi-alfa/issues/215).
+
 ## [1.13.7] - 2026-05-27
 
 **Patch release** - Fixes a hang in the TCP port reachability check that could keep

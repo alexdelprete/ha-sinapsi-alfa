@@ -33,7 +33,10 @@
     "error": {
       "already_configured": "Gerat ist bereits konfiguriert",
       "invalid_host": "Ungultige Hostadresse",
-      "cannot_connect": "Verbindung zum Gerat nicht moglich"
+      "cannot_connect": "Verbindung zum Gerat nicht moglich. Prufen Sie IP/Hostname und TCP-Port und stellen Sie sicher, dass das Gerat online ist.",
+      "modbus_error": "Mit dem Gerat verbunden, aber die Modbus-Kommunikation ist fehlgeschlagen. Prufen Sie den TCP-Port und stellen Sie sicher, dass kein anderer Modbus-Client mit dem Gerat verbunden ist.",
+      "device_warmup": "Das Gerat ist erreichbar, meldet aber noch keine gultigen Zahlerdaten (Aufwarmphase nach einem Neustart). Warten Sie ein paar Minuten und versuchen Sie es erneut. Wenn das Problem weiterhin besteht, empfangt das Gerat moglicherweise keine Daten vom Zahler - prufen Sie die Werte in der Sinapsi-App.",
+      "unknown": "Unerwarteter Fehler. Prufen Sie die Home Assistant-Protokolle fur Details."
     },
     "abort": {
       "already_configured": "Gerat ist bereits konfiguriert",

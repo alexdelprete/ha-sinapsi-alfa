@@ -33,7 +33,10 @@
     "error": {
       "already_configured": "Device is already configured",
       "invalid_host": "Invalid host address",
-      "cannot_connect": "Cannot connect to device"
+      "cannot_connect": "Cannot connect to the device. Check the IP/hostname and TCP port, and make sure the device is online.",
+      "modbus_error": "Connected to the device, but Modbus communication failed. Verify the TCP port and make sure no other Modbus client is connected to the device.",
+      "device_warmup": "The device is reachable, but it is not reporting valid meter data yet (warm-up after a restart). Wait a couple of minutes and try again. If this keeps happening, the device may not be receiving data from the meter - verify the readings in Sinapsi's app.",
+      "unknown": "Unexpected error. Check the Home Assistant logs for details."
     },
     "abort": {
       "already_configured": "Device is already configured",

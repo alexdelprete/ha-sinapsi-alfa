@@ -33,7 +33,10 @@
     "error": {
       "already_configured": "O dispositivo ja esta configurado",
       "invalid_host": "Endereco do anfitriao invalido",
-      "cannot_connect": "Nao e possivel ligar ao dispositivo"
+      "cannot_connect": "Nao e possivel ligar ao dispositivo. Verifique o IP/nome do anfitriao e a porta TCP e certifique-se de que o dispositivo esta online.",
+      "modbus_error": "Ligado ao dispositivo, mas a comunicacao Modbus falhou. Verifique a porta TCP e certifique-se de que nenhum outro cliente Modbus esta ligado ao dispositivo.",
+      "device_warmup": "O dispositivo esta acessivel, mas ainda nao reporta dados validos do contador (fase de aquecimento apos um reinicio). Aguarde alguns minutos e tente novamente. Se isto persistir, o dispositivo pode nao estar a receber dados do contador - verifique as leituras na aplicacao da Sinapsi.",
+      "unknown": "Erro inesperado. Consulte os registos do Home Assistant para mais detalhes."
     },
     "abort": {
       "already_configured": "O dispositivo ja esta configurado",

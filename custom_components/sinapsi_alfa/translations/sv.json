@@ -33,7 +33,10 @@
     "error": {
       "already_configured": "Enheten ar redan konfigurerad",
       "invalid_host": "Ogiltig vardadress",
-      "cannot_connect": "Kan inte ansluta till enheten"
+      "cannot_connect": "Kan inte ansluta till enheten. Kontrollera IP/vardnamn och TCP-port och se till att enheten ar online.",
+      "modbus_error": "Ansluten till enheten, men Modbus-kommunikationen misslyckades. Kontrollera TCP-porten och se till att ingen annan Modbus-klient ar ansluten till enheten.",
+      "device_warmup": "Enheten ar nabar, men rapporterar annu inga giltiga matardata (uppvarmningsfas efter en omstart). Vanta ett par minuter och forsok igen. Om detta fortsatter kanske enheten inte tar emot data fran mataren - kontrollera avlasningarna i Sinapsi-appen.",
+      "unknown": "Ovantat fel. Kontrollera Home Assistants loggar for detaljer."
     },
     "abort": {
       "already_configured": "Enheten ar redan konfigurerad",

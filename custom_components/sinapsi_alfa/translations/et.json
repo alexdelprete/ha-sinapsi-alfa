@@ -33,7 +33,10 @@
     "error": {
       "already_configured": "Seade on juba seadistatud",
       "invalid_host": "Kehtetu hosti aadress",
-      "cannot_connect": "Seadmega ei saa uhendust"
+      "cannot_connect": "Seadmega ei saa uhendust. Kontrollige IP-aadressi/hostinime ja TCP-porti ning veenduge, et seade on vorgus.",
+      "modbus_error": "Seadmega uhendus onnestus, kuid Modbus-side ebaonnestus. Kontrollige TCP-porti ja veenduge, et ukski teine Modbus-klient pole seadmega uhendatud.",
+      "device_warmup": "Seade on kattesaadav, kuid ei edasta veel kehtivaid arvesti andmeid (soojenemisfaas parast taaskaivitust). Oodake paar minutit ja proovige uuesti. Kui see kordub, ei pruugi seade arvestilt andmeid saada - kontrollige naitusid Sinapsi rakenduses.",
+      "unknown": "Ootamatu viga. Vaadake uksikasju Home Assistanti logidest."
     },
     "abort": {
       "already_configured": "Seade on juba seadistatud",

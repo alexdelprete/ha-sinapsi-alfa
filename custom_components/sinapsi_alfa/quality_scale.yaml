@@ -24,7 +24,7 @@ rules:
   common-modules: done # coordinator.py, entity.py, helpers.py, api.py
 
   # Rule: Integration needs to be able to be set up via the UI
-  config-flow: done # UI setup via config_flow.py with VERSION = 2
+  config-flow: done # UI setup via config_flow.py with VERSION = 3
 
   # Rule: Full test coverage for the config flow
   config-flow-test-coverage: done # tests/test_config_flow.py covers all flows

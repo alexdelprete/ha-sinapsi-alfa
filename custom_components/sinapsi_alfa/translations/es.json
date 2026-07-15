@@ -33,7 +33,10 @@
     "error": {
       "already_configured": "El dispositivo ya esta configurado",
       "invalid_host": "Direccion de host invalida",
-      "cannot_connect": "No se puede conectar al dispositivo"
+      "cannot_connect": "No se puede conectar al dispositivo. Compruebe la IP/nombre de host y el puerto TCP, y asegurese de que el dispositivo esta en linea.",
+      "modbus_error": "Conectado al dispositivo, pero la comunicacion Modbus ha fallado. Verifique el puerto TCP y asegurese de que ningun otro cliente Modbus este conectado al dispositivo.",
+      "device_warmup": "El dispositivo es accesible, pero todavia no informa datos validos del contador (fase de arranque tras un reinicio). Espere un par de minutos y vuelva a intentarlo. Si esto persiste, es posible que el dispositivo no este recibiendo datos del contador - verifique las lecturas en la aplicacion de Sinapsi.",
+      "unknown": "Error inesperado. Consulte los registros de Home Assistant para mas detalles."
     },
     "abort": {
       "already_configured": "El dispositivo ya esta configurado",
