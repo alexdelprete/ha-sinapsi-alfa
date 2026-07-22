@@ -361,12 +361,32 @@ class TestSinapsiAlfaSensorGuards:
         sensor.hass = hass
         return sensor
 
-    def test_guard1_discards_decreased_lifetime_value(self, mock_coordinator):
-        """Guard 1: a lifetime value below the live state is discarded."""
+    def test_guard1_holds_last_value_over_decreased_lifetime_value(self, mock_coordinator):
+        """Guard 1: a lifetime value below the live state is replaced by the live state.
+
+        Returning the live state (instead of None) keeps the entity numeric: an
+        "unknown" gap would disable Guard 1 on the next poll and let RestoreSensor
+        snapshot a non-numeric baseline (2026-07-22 incident).
+        """
         sensor = self._guard_sensor(
             mock_coordinator, "energia_prelevata", "lifetime", 50.0, live_state="100.0"
         )
-        assert sensor.native_value is None
+        assert sensor.native_value == 100.0
+
+    def test_guard1_holds_over_float_artifact_decrease(self, mock_coordinator):
+        """Guard 1: a float-artifact hair below the stored state is held, not published.
+
+        The recorder treats ANY decrease of a TOTAL_INCREASING state as a meter
+        reset, so even a 4e-12 artifact must never reach the state machine.
+        """
+        sensor = self._guard_sensor(
+            mock_coordinator,
+            "energia_prelevata",
+            "lifetime",
+            38479.123999999996,
+            live_state="38479.124",
+        )
+        assert sensor.native_value == 38479.124
 
     def test_guard1_allows_equal_lifetime_value(self, mock_coordinator):
         """Guard 1: a value equal to the live state passes."""
@@ -442,7 +462,7 @@ class TestSinapsiAlfaSensorGuards:
     def test_live_state_takes_priority_over_restored_baseline(self, mock_coordinator):
         """With a live state, Guard 1 runs and Guard 2 (restored baseline) is bypassed."""
         # value 70 is above the restored baseline (50) but below the live state (100):
-        # Guard 1 wins and discards it.
+        # Guard 1 wins and holds the live state value.
         sensor = self._guard_sensor(
             mock_coordinator,
             "energia_prelevata",
@@ -451,7 +471,7 @@ class TestSinapsiAlfaSensorGuards:
             restored=50.0,
             live_state="100.0",
         )
-        assert sensor.native_value is None
+        assert sensor.native_value == 100.0
 
     def test_non_accumulating_sensor_skips_guards(self, mock_coordinator):
         """A power (MEASUREMENT) sensor bypasses both guards entirely."""

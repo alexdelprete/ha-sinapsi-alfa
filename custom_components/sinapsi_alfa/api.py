@@ -47,7 +47,7 @@ from .const import (
     SYNC_TIMEOUT_SECONDS,
     WARMUP_FASCIA_VALUE,
 )
-from .helpers import log_debug, log_error, log_warning, unix_timestamp_to_iso8601_local_tz
+from .helpers import log_debug, log_error, log_info, log_warning, unix_timestamp_to_iso8601_local_tz
 
 # Configure ModbusLink to use English for logs AND errors
 set_language(Language.EN)
@@ -202,6 +202,10 @@ class SinapsiAlfaAPI:
         self._last_calc_prodotta: float | None = None
         self._last_calc_immessa: float | None = None
         self._first_unsync_time: float | None = None
+        # True while the production register is provably invalid (see the
+        # validity gate in _calculate_derived_values); used to log the
+        # warning once per outage instead of every poll.
+        self._production_data_invalid = False
         # Initialize ModBus data structure before first read
         self._initialize_data_structure()
 
@@ -683,24 +687,73 @@ class SinapsiAlfaAPI:
         with a time-based timeout fallback for periods when only one sensor
         is changing (e.g., no-export periods where immessa stays constant).
 
-        energia_consumata (auto_consumata + prelevata) is always recalculated
-        because it depends on energia_prelevata (import from grid) which changes
-        independently every poll. Without this, the sensor freezes when production
-        stops and prodotta/immessa stop changing, even though prelevata keeps growing.
-        This is safe for TOTAL_INCREASING: both addends are monotonically
-        non-decreasing, so their sum can never dip.
+        energia_consumata (auto_consumata + prelevata) is recalculated on every
+        poll that has a valid auto_consumata, because it depends on
+        energia_prelevata (import from grid) which changes independently.
+        Without this, the sensor freezes when production stops and
+        prodotta/immessa stop changing, even though prelevata keeps growing.
+        This is safe for TOTAL_INCREASING as long as the production data is
+        valid: prelevata is monotonically non-decreasing and auto_consumata
+        only changes on synchronized (or gated) recalculations.
+
+        Validity gate (Refs #217, 2026-07-22 restart incident): lifetime export
+        can never exceed lifetime production, so energia_prodotta < energia_immessa
+        proves the production register is invalid — 0/stale during the device's
+        post-restart warm-up, or permanently 0 on an Alfa that receives no
+        production data via Chain2. Recalculating in that state produces a
+        negative auto_consumata and a dip in consumata that TOTAL_INCREASING
+        consumers (statistics, utility meters) count as a meter reset, causing
+        massive over-counting. While the gate is active the last valid
+        auto_consumata is held (consumata keeps growing with prelevata); if no
+        valid calculation exists yet, the calculated keys stay unset and the
+        sensors read unknown.
+
+        All derived values are rounded to 3 decimals (1 W / 1 Wh resolution,
+        matching the register reads) so the published state never carries
+        float artifacts that could register as a spurious decrease.
         """
         # Power sensors: always calculate (instantaneous, no accumulation issue)
-        self.data["potenza_auto_consumata"] = (
-            self.data["potenza_prodotta"] - self.data["potenza_immessa"]
+        self.data["potenza_auto_consumata"] = round(
+            self.data["potenza_prodotta"] - self.data["potenza_immessa"], 3
         )
-        self.data["potenza_consumata"] = (
-            self.data["potenza_auto_consumata"] + self.data["potenza_prelevata"]
+        self.data["potenza_consumata"] = round(
+            self.data["potenza_auto_consumata"] + self.data["potenza_prelevata"], 3
         )
 
         # Energy sensors: wait for both base sensors to update before recalculating
         curr_prodotta = self.data["energia_prodotta"]
         curr_immessa = self.data["energia_immessa"]
+
+        # Validity gate: production register invalid — hold instead of calculating
+        if curr_prodotta < curr_immessa:
+            if not self._production_data_invalid:
+                self._production_data_invalid = True
+                log_warning(
+                    _LOGGER,
+                    "_calculate_derived_values",
+                    "Production register invalid (prodotta < immessa) — "
+                    "holding calculated energy sensors",
+                    energia_prodotta=curr_prodotta,
+                    energia_immessa=curr_immessa,
+                )
+            self._first_unsync_time = None
+            if "energia_auto_consumata" in self.data:
+                # Held auto_consumata is valid; consumata may keep growing
+                # with prelevata (monotonic, no dip risk).
+                self.data["energia_consumata"] = round(
+                    self.data["energia_auto_consumata"] + self.data["energia_prelevata"], 3
+                )
+            return
+
+        if self._production_data_invalid:
+            self._production_data_invalid = False
+            log_info(
+                _LOGGER,
+                "_calculate_derived_values",
+                "Production register valid again — resuming calculated energy sensors",
+                energia_prodotta=curr_prodotta,
+                energia_immessa=curr_immessa,
+            )
 
         prodotta_fresh = curr_prodotta != self._last_calc_prodotta
         immessa_fresh = curr_immessa != self._last_calc_immessa
@@ -734,7 +787,7 @@ class SinapsiAlfaAPI:
             # During quiescent periods (neither sensor changing), there is
             # zero oscillation risk, so it is safe to force-align the
             # calculated value with the current base sensor values.
-            true_auto = curr_prodotta - curr_immessa
+            true_auto = round(curr_prodotta - curr_immessa, 3)
             if abs(self.data["energia_auto_consumata"] - true_auto) > 0.001:
                 log_debug(
                     _LOGGER,
@@ -747,7 +800,7 @@ class SinapsiAlfaAPI:
                 self._last_calc_immessa = curr_immessa
 
         if should_calculate:
-            self.data["energia_auto_consumata"] = curr_prodotta - curr_immessa
+            self.data["energia_auto_consumata"] = round(curr_prodotta - curr_immessa, 3)
             self._last_calc_prodotta = curr_prodotta
             self._last_calc_immessa = curr_immessa
         elif prodotta_fresh or immessa_fresh:
@@ -769,8 +822,8 @@ class SinapsiAlfaAPI:
         # which changes independently of the prodotta/immessa sync mechanism.
         # Without this, energia_consumata freezes when production stops and
         # prodotta/immessa stop changing, even though prelevata keeps growing.
-        self.data["energia_consumata"] = (
-            self.data["energia_auto_consumata"] + self.data["energia_prelevata"]
+        self.data["energia_consumata"] = round(
+            self.data["energia_auto_consumata"] + self.data["energia_prelevata"], 3
         )
 
     async def async_get_data(self) -> bool:

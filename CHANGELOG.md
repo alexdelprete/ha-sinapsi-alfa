@@ -28,6 +28,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   check if it persists. Reported by [@Bobby406562](https://github.com/Bobby406562)
   in [#215](https://github.com/alexdelprete/ha-sinapsi-alfa/issues/215).
 
+- **Calculated energy sensors no longer dip when the production register is
+  invalid** - When `energia_prodotta < energia_immessa` (physically impossible,
+  proving the production register is 0/stale — post-restart warm-up or an Alfa
+  with no production data), a validity gate now holds the last valid calculated
+  values instead of publishing negatives/dips that `TOTAL_INCREASING` consumers
+  count as meter resets. Thanks to [@thomas166](https://github.com/thomas166)
+  for the report in [#217](https://github.com/alexdelprete/ha-sinapsi-alfa/issues/217).
+
+- **Lifetime sensors no longer flip between value and "unknown"** - The
+  stale-value guard now holds the last published value instead of publishing an
+  unknown state, which used to disable the guard on the next poll and could
+  lose the RestoreSensor baseline across restarts. Refs
+  [#217](https://github.com/alexdelprete/ha-sinapsi-alfa/issues/217).
+
+- **Calculated sensor values are now rounded to 3 decimals** - Unrounded float
+  sums could register as spurious decreases (e.g. `38479.123999999996` vs
+  `38479.124`), triggering the stale-value guard every poll.
+
 ## [1.13.7] - 2026-05-27
 
 **Patch release** - Fixes a hang in the TCP port reachability check that could keep

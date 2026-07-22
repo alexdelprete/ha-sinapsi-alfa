@@ -2401,3 +2401,167 @@ class TestDeviceWarmup:
             pytest.raises(SinapsiWarmupError),
         ):
             await api.async_get_data()
+
+
+class TestProductionValidityGate:
+    """Tests for the production-register validity gate (Refs #217).
+
+    Lifetime export can never exceed lifetime production, so
+    energia_prodotta < energia_immessa proves the production register is
+    invalid (0/stale during device warm-up after a restart, or permanently 0
+    on an Alfa that receives no production data via Chain2). Calculating in
+    that state produces a negative auto_consumata and a dip in consumata that
+    TOTAL_INCREASING consumers count as a meter reset.
+    """
+
+    def _create_api(self, mock_hass):
+        """Create a test API instance."""
+        return SinapsiAlfaAPI(
+            mock_hass,
+            TEST_NAME,
+            TEST_HOST,
+            TEST_PORT,
+            DEFAULT_SCAN_INTERVAL,
+            DEFAULT_TIMEOUT,
+        )
+
+    def _set_base_values(self, api, prelevata, immessa, prodotta):
+        """Set base sensor values (power values fixed, irrelevant to the gate)."""
+        api.data["potenza_prelevata"] = 1.0
+        api.data["potenza_immessa"] = 0.5
+        api.data["potenza_prodotta"] = 2.0
+        api.data["energia_prelevata"] = prelevata
+        api.data["energia_immessa"] = immessa
+        api.data["energia_prodotta"] = prodotta
+
+    def test_invalid_production_on_first_poll_publishes_nothing(
+        self, mock_hass, mock_transport, mock_client
+    ):
+        """Warm-up scenario: prodotta=0 on the first poll → no calculated keys.
+
+        This is the 2026-07-22 incident: after an HA restart the device returned
+        0 on the production register while immessa was valid; the calculated
+        sensors must stay unknown instead of publishing a dip.
+        """
+        api = self._create_api(mock_hass)
+        self._set_base_values(api, prelevata=9843.156, immessa=2407.018, prodotta=0.0)
+
+        api._calculate_derived_values()
+
+        assert "energia_auto_consumata" not in api.data
+        assert "energia_consumata" not in api.data
+        assert api._production_data_invalid is True
+        # Tracking must not record the invalid reading
+        assert api._last_calc_prodotta is None
+        # Power sensors are unaffected by the gate
+        assert api.data["potenza_auto_consumata"] == 1.5
+        assert api.data["potenza_consumata"] == 2.5
+
+    def test_invalid_production_holds_previous_values(self, mock_hass, mock_transport, mock_client):
+        """After a valid calculation, an invalid poll holds auto_consumata."""
+        api = self._create_api(mock_hass)
+        self._set_base_values(api, prelevata=1000.0, immessa=200.0, prodotta=500.0)
+        api._calculate_derived_values()
+        assert api.data["energia_auto_consumata"] == 300.0
+
+        # Production register goes stale/0 mid-session
+        api.data["energia_prodotta"] = 0.0
+        api._calculate_derived_values()
+
+        assert api.data["energia_auto_consumata"] == 300.0  # Held
+        assert api.data["energia_consumata"] == 1300.0
+        assert api._production_data_invalid is True
+        assert api._last_calc_prodotta == 500.0  # Tracking untouched
+
+    def test_consumata_keeps_growing_while_gated(self, mock_hass, mock_transport, mock_client):
+        """While gated, consumata still follows prelevata (monotonic, no dip risk)."""
+        api = self._create_api(mock_hass)
+        self._set_base_values(api, prelevata=1000.0, immessa=200.0, prodotta=500.0)
+        api._calculate_derived_values()
+
+        api.data["energia_prodotta"] = 0.0
+        api.data["energia_prelevata"] = 1010.0
+        api._calculate_derived_values()
+
+        assert api.data["energia_auto_consumata"] == 300.0  # Held
+        assert api.data["energia_consumata"] == 1310.0  # Grows with prelevata
+
+    def test_recovery_after_first_poll_gate_calculates(
+        self, mock_hass, mock_transport, mock_client
+    ):
+        """Restart scenario: gate on first polls, then valid data → calculate."""
+        api = self._create_api(mock_hass)
+        self._set_base_values(api, prelevata=9843.156, immessa=2407.018, prodotta=0.0)
+        api._calculate_derived_values()
+        assert "energia_auto_consumata" not in api.data
+
+        # Device finishes warm-up, production register valid again
+        api.data["energia_prodotta"] = 31029.921
+        api._calculate_derived_values()
+
+        assert api._production_data_invalid is False
+        assert api.data["energia_auto_consumata"] == 28622.903
+        assert api.data["energia_consumata"] == 38466.059
+
+    def test_recovery_after_mid_session_gate_recalculates(
+        self, mock_hass, mock_transport, mock_client
+    ):
+        """Mid-session outage: valid → invalid → valid recalculates immediately."""
+        api = self._create_api(mock_hass)
+        self._set_base_values(api, prelevata=1000.0, immessa=200.0, prodotta=500.0)
+        api._calculate_derived_values()
+
+        api.data["energia_prodotta"] = 0.0
+        api._calculate_derived_values()
+
+        # Recovery with both registers moved on: both fresh → immediate recalc
+        api.data["energia_prodotta"] = 510.0
+        api.data["energia_immessa"] = 205.0
+        api._calculate_derived_values()
+
+        assert api._production_data_invalid is False
+        assert api.data["energia_auto_consumata"] == 305.0
+        assert api.data["energia_consumata"] == 1305.0
+
+    def test_gate_resets_unsync_timer(self, mock_hass, mock_transport, mock_client):
+        """An invalid poll clears a pending sync-timeout timer."""
+        api = self._create_api(mock_hass)
+        self._set_base_values(api, prelevata=1000.0, immessa=200.0, prodotta=500.0)
+        api._calculate_derived_values()
+
+        # Start the unsync timer with a prodotta-only change
+        api.data["energia_prodotta"] = 510.0
+        api._calculate_derived_values()
+        assert api._first_unsync_time is not None
+
+        api.data["energia_prodotta"] = 0.0
+        api._calculate_derived_values()
+        assert api._first_unsync_time is None
+
+    def test_zero_production_zero_export_is_valid(self, mock_hass, mock_transport, mock_client):
+        """A site with no production yet (0/0) must not trigger the gate."""
+        api = self._create_api(mock_hass)
+        self._set_base_values(api, prelevata=1000.0, immessa=0.0, prodotta=0.0)
+
+        api._calculate_derived_values()
+
+        assert api._production_data_invalid is False
+        assert api.data["energia_auto_consumata"] == 0.0
+        assert api.data["energia_consumata"] == 1000.0
+
+    def test_derived_values_are_rounded(self, mock_hass, mock_transport, mock_client):
+        """Float artifacts in derived sums are rounded away (3 decimals).
+
+        Unrounded sums (e.g. 38479.123999999996 vs a stored "38479.124") read
+        as a decrease to the recorder and to Guard 1, causing value/unknown
+        flip-flopping and spurious meter resets.
+        """
+        api = self._create_api(mock_hass)
+        self._set_base_values(api, prelevata=1000.1, immessa=200.1, prodotta=500.3)
+
+        api._calculate_derived_values()
+
+        # 500.3 - 200.1 = 300.20000000000005 unrounded
+        assert api.data["energia_auto_consumata"] == 300.2
+        # 300.2 + 1000.1 = 1300.3000000000002 unrounded
+        assert api.data["energia_consumata"] == 1300.3
