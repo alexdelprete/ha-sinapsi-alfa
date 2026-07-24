@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Sensor platform no longer crashes when production data is invalid at
+  startup** - The v1.13.8 production validity gate withholds the calculated
+  energy sensors from the data set until the device reports valid production
+  data, but the sensor platform setup still accessed those keys directly: the
+  resulting `KeyError` aborted the creation of **all** entities, leaving the
+  integration with no sensors at all on an Alfa with no production data (or one
+  still warming up at Home Assistant startup). The setup now tolerates absent
+  keys and skips the affected calculated sensors until valid data arrives.
+  Debug log provided by [@thomas166](https://github.com/thomas166) in
+  [#217](https://github.com/alexdelprete/ha-sinapsi-alfa/issues/217).
+
 ## [1.13.8] - 2026-07-23
 
 ### Changed

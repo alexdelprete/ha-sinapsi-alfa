@@ -82,6 +82,34 @@ class TestAsyncSetupEntry:
         # potenza_prelevata should not be in the list
         assert "potenza_prelevata" not in sensor_keys
 
+    async def test_setup_entry_skips_missing_keys(
+        self,
+        hass: HomeAssistant,
+        mock_config_entry_with_runtime,
+        mock_coordinator,
+    ):
+        """Test setup skips sensors whose key is absent from api.data.
+
+        Regression: the production validity gate withholds the calculated energy
+        sensors from api.data until the device reports valid production data.
+        Direct dict subscripting raised KeyError and crashed the whole sensor
+        platform setup (issue #217, v1.13.8).
+        """
+        del mock_coordinator.api.data["energia_consumata"]
+        del mock_coordinator.api.data["energia_auto_consumata"]
+        mock_config_entry_with_runtime.runtime_data = MagicMock()
+        mock_config_entry_with_runtime.runtime_data.coordinator = mock_coordinator
+        async_add_entities = MagicMock()
+
+        await async_setup_entry(hass, mock_config_entry_with_runtime, async_add_entities)
+
+        sensors = async_add_entities.call_args[0][0]
+        sensor_keys = [s._key for s in sensors]
+        assert "energia_consumata" not in sensor_keys
+        assert "energia_auto_consumata" not in sensor_keys
+        # The rest of the platform must still be created
+        assert len(sensors) > 0
+
 
 class TestSinapsiAlfaSensor:
     """Tests for SinapsiAlfaSensor class."""

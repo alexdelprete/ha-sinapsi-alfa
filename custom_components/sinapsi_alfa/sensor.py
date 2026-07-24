@@ -44,7 +44,11 @@ async def async_setup_entry(
     sensors = []
     for sensor in SENSOR_ENTITIES:
         sensor_def = cast(dict[str, Any], sensor)
-        if coordinator.api.data[sensor_def["key"]] is not None:
+        # .get(): a key can be legitimately absent from api.data — the production
+        # validity gate withholds the calculated energy sensors until the device
+        # reports valid production data (energia_prodotta >= energia_immessa).
+        # Direct subscripting crashed the whole platform setup in that state.
+        if coordinator.api.data.get(sensor_def["key"]) is not None:
             sensors.append(
                 SinapsiAlfaSensor(
                     coordinator,
