@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.13.9] - 2026-07-24
+
+**Patch release** - Fixes a v1.13.8 regression that prevented all sensors from
+being created when the device reports invalid production data at startup.
+
 ### Fixed
 
 - **Sensor platform no longer crashes when production data is invalid at
@@ -19,6 +24,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   keys and skips the affected calculated sensors until valid data arrives.
   Debug log provided by [@thomas166](https://github.com/thomas166) in
   [#217](https://github.com/alexdelprete/ha-sinapsi-alfa/issues/217).
+
+**Full Release Notes:** [docs/releases/v1.13.9.md](docs/releases/v1.13.9.md)
+
+**Full Changelog:** [v1.13.8...v1.13.9](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.13.8...v1.13.9)
 
 ## [1.13.8] - 2026-07-23
 
