@@ -38,11 +38,16 @@ jobs:
       - name: Lint Markdown files
         run: uvx --from pymarkdownlnt pymarkdown --config .pymarkdownlint.json scan .
 
+      # Pinned to the devcontainer's ruff version: an unpinned uvx floats to the
+      # latest release, which can change formatting rules and break CI on code
+      # that passes pre-commit locally (ruff 0.16.0 started formatting Python
+      # code blocks inside Markdown files). Bump deliberately, together with the
+      # local toolchain.
       - name: Run Ruff format check
-        run: uvx ruff format . --check
+        run: uvx ruff@0.15.20 format . --check
 
       - name: Run Ruff check
-        run: uvx ruff check .
+        run: uvx ruff@0.15.20 check .
 
       # ty needs dependencies installed to resolve imports (homeassistant, mqtt, etc.)
       - name: Install dependencies for ty
