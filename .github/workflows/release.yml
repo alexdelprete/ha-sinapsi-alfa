@@ -33,6 +33,18 @@ jobs:
             "${{ github.workspace }}/custom_components/sinapsi_alfa/const.py" \
             | sed 's/VERSION = "\(.*\)"/\1/')
 
+          # Fail early if extraction produced nothing (e.g. const.py declaration
+          # style drifted from the configured grep pattern)
+          if [[ -z "$CONST_VERSION" ]]; then
+            echo "::error::Could not extract VERSION from const.py"
+            echo ""
+            echo "ERROR: could not extract VERSION from const.py."
+            echo "The pattern 'VERSION = ' matched no line —"
+            echo "check that version_grep_pattern in .repo-sync.yaml matches the"
+            echo "exact VERSION declaration form used in const.py."
+            exit 1
+          fi
+
           echo "Tag version:      $TAG_VERSION"
           echo "manifest.json:    $MANIFEST_VERSION"
           echo "const.py:         $CONST_VERSION"
