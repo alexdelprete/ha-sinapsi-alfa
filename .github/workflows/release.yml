@@ -33,15 +33,14 @@ jobs:
             "${{ github.workspace }}/custom_components/sinapsi_alfa/const.py" \
             | sed 's/VERSION = "\(.*\)"/\1/')
 
-          # Fail early if extraction produced nothing (e.g. const.py declaration
-          # style drifted from the configured grep pattern)
+          # Fail early if extraction produced nothing (drifted declaration style)
           if [[ -z "$CONST_VERSION" ]]; then
             echo "::error::Could not extract VERSION from const.py"
             echo ""
             echo "ERROR: could not extract VERSION from const.py."
-            echo "The pattern 'VERSION = ' matched no line —"
-            echo "check that version_grep_pattern in .repo-sync.yaml matches the"
-            echo "exact VERSION declaration form used in const.py."
+            echo "const.py must declare the version as exactly:"
+            echo "  VERSION = \"X.Y.Z\""
+            echo "(plain assignment — no Final annotation; repo-sync enforces this form)."
             exit 1
           fi
 
