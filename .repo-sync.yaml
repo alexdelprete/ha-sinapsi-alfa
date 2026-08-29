@@ -12,6 +12,7 @@ vars:
   component_dir: sinapsi_alfa
   domain: sinapsi_alfa
   default_branch: main
+  dev_alias: sinapsi                      # devbox: <alias>.code / <alias>.hass hostnames
 
   # -- 4noks workaround --
   needs_symlink: false
