@@ -14,6 +14,7 @@
         "label=disable",
         "--label", "proxy.aliases=sinapsi.code,sinapsi.hadev",
         "--label", "proxy.#1.port=8443",
+        "--label", "proxy.#1.scheme=http",
         "--label", "proxy.#2.port=8123"
     ],
     "postCreateCommand": "git config --global --add safe.directory ${containerWorkspaceFolder} && sudo rm -rf ./*.egg-info && uv pip install -e '.[dev]' --config-settings editable_mode=compat && pre-commit install",
