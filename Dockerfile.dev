@@ -53,6 +53,9 @@ RUN apt-get update \
         libavfilter-dev \
         # Network packet capture (some discovery / sniffer integrations).
         libpcap-dev \
+        # Nicer git diffs. The gitconfig copied in from the host selects
+        # delta only when it is on PATH, so this simply enables it here too.
+        git-delta \
         # Bluetooth + USB / hardware enumeration (Zigbee, Z-Wave, BT-LE,
         # serial-USB devices).
         bluez \
