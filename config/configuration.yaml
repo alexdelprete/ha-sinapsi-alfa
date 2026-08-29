@@ -1,10 +1,28 @@
-# https://www.home-assistant.io/integrations/default_config/
-default_config:
+# Shared dev-instance configuration (see scripts/develop).
+# Runtime state (.storage, db, logs) is gitignored; only this file is versioned.
+# Explicit component list instead of default_config: go2rtc (bundled there)
+# needs a binary absent from the devcontainer and fails the whole meta-setup.
+frontend:
+config:
+api:
+history:
+logbook:
+energy:
+system_health:
 
-# https://www.home-assistant.io/integrations/logger/
 logger:
   default: info
   logs:
     custom_components.sinapsi_alfa: debug
-# If you need to debug uncommment the line below (doc: https://www.home-assistant.io/integrations/debugpy/)
+    # Reverse-proxy healthcheck probes may carry an empty X-Forwarded-For;
+    # silence the per-probe ERROR
+    homeassistant.components.http.forwarded: fatal
+
 debugpy:
+
+http:
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 10.0.0.0/8
+    - 172.16.0.0/12
+    - 192.168.0.0/16

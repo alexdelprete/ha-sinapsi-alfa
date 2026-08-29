@@ -24,7 +24,11 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv pip install pytest-homeassistant-custom-component --system
+          # phcc 0.13.357+ targets HA 2026.9 beta (calls runner.configure_event_loop,
+          # absent in stable 2026.8.x, which requirements-dev.txt resolves to) —
+          # every test errors at setup. Keep pinned to the last stable-HA release
+          # until HA 2026.9 is stable, then bump both together (template + pyproject).
+          uv pip install pytest-homeassistant-custom-component==0.13.356 --system
           uv pip install -r requirements-dev.txt --system
       - name: Run tests with coverage
         run: |

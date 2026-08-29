@@ -13,7 +13,8 @@
         "--security-opt",
         "label=disable"
     ],
-    "postCreateCommand": "git config --global --add safe.directory ${containerWorkspaceFolder} && sudo rm -rf ./*.egg-info && uv pip install -e '.[dev]' && pre-commit install",
+    "postCreateCommand": "git config --global --add safe.directory ${containerWorkspaceFolder} && sudo rm -rf ./*.egg-info && uv pip install -e '.[dev]' --config-settings editable_mode=compat && pre-commit install",
+    "postStartCommand": "uv pip install -q -e '.[dev]' --config-settings editable_mode=compat",
     "forwardPorts": [8123],
     "portsAttributes": {
         "8123": {
@@ -28,14 +29,21 @@
         }
     },
     "mounts": [
-        "source=${localEnv:USERPROFILE}/.ssh,target=/home/vscode/.ssh,type=bind,consistency=cached",
-        "source=${localEnv:USERPROFILE}/.claude.json,target=/home/vscode/.claude.json,type=bind,consistency=cached",
-        "source=${localEnv:USERPROFILE}/.claude,target=/home/vscode/.claude,type=bind,consistency=cached",
-        "source=${localEnv:APPDATA}/GitHub CLI,target=/home/vscode/.config/gh,type=bind,consistency=cached"
+        "source=${localEnv:USERPROFILE:/home/alexdelprete}/.ssh,target=/home/vscode/.ssh,type=bind,consistency=cached",
+        "source=${localEnv:USERPROFILE:/home/alexdelprete}/.claude.json,target=/home/vscode/.claude.json,type=bind,consistency=cached",
+        "source=${localEnv:USERPROFILE:/home/alexdelprete}/.claude,target=/home/vscode/.claude,type=bind,consistency=cached",
+        "source=${localEnv:APPDATA:/home/alexdelprete/.config}/GitHub CLI,target=/home/vscode/.config/gh,type=bind,consistency=cached"
     ],
     "features": {
-        "ghcr.io/devcontainers/features/github-cli:1": {}
+        "ghcr.io/devcontainers/features/github-cli:1": {},
+        "ghcr.io/coder/devcontainer-features/code-server:1": {
+            "port": 8443,
+            "host": "0.0.0.0",
+            "auth": "none",
+            "workspace": "/workspaces/ha-sinapsi-alfa"
+        }
     },
+    "appPort": ["8443:8443", "8123:8123"],
     "remoteUser": "vscode",
     "customizations": {
         "vscode": {
@@ -56,6 +64,7 @@
                 "python.defaultInterpreterPath": "/home/vscode/.local/ha-venv/bin/python",
                 "python.pythonPath": "/home/vscode/.local/ha-venv/bin/python",
                 "python.terminal.activateEnvInCurrentTerminal": true,
+                "python.analysis.typeCheckingMode": "off",
                 "ruff.path": ["/home/vscode/.local/ha-venv/bin/ruff"],
                 "python.testing.pytestEnabled": true,
                 "python.testing.pytestArgs": ["tests/", "--no-cov"],
@@ -93,6 +102,10 @@
                     }
                 ],
                 "files.eol": "\n",
+                "terminal.integrated.profiles.linux": {
+                    "zsh": { "path": "/usr/bin/zsh" }
+                },
+                "terminal.integrated.defaultProfile.linux": "zsh",
                 "files.trimTrailingWhitespace": true,
                 "editor.tabSize": 4,
                 "editor.insertSpaces": true

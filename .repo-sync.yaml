@@ -51,6 +51,8 @@ copy_files:
   - .github/workflows/dbautomerge.yml
   - .github/FUNDING.yml
   - LICENSE
+  - .vscode/launch.json
+  - .vscode/tasks.json
 
 template_files:
   - .github/workflows/lint.yml
@@ -67,6 +69,8 @@ template_files:
   - requirements-dev.txt
   - .devcontainer.json
   - docs/releases/README.md
+  - scripts/develop
+  - config/configuration.yaml
 
 marker_files:
   CLAUDE.md:
