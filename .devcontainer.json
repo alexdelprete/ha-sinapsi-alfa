@@ -10,8 +10,7 @@
     "runArgs": [
         "-e",
         "GIT_EDITOR=code --wait",
-        "--security-opt",
-        "label=disable",
+        "--security-opt=label=disable",
         "--label", "proxy.aliases=sinapsi.code,sinapsi.hadev",
         "--label", "proxy.#1.port=8443",
         "--label", "proxy.#1.scheme=http",
