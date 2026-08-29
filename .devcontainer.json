@@ -12,7 +12,7 @@
         "GIT_EDITOR=code --wait",
         "--security-opt",
         "label=disable",
-        "--label", "proxy.aliases=sinapsi.code,sinapsi.hass",
+        "--label", "proxy.aliases=sinapsi.code,sinapsi.hadev",
         "--label", "proxy.#1.port=8443",
         "--label", "proxy.#2.port=8123"
     ],
