@@ -11,3 +11,8 @@ updates:
       interval: "weekly"
     ignore:
       - dependency-name: "homeassistant"
+      # phacc pins the HA version transitively: releases >0.13.356 require the
+      # 2026.9 pre-release, which makes `uv pip install -e .[dev]` unsatisfiable
+      # and breaks the devcontainer. Bump deliberately (with the CI pin in
+      # test.yml) once HA 2026.9 is stable, then drop this ignore.
+      - dependency-name: "pytest-homeassistant-custom-component"
