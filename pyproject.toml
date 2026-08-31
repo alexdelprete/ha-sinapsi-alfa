@@ -17,9 +17,6 @@ classifiers = [
 "Homepage" = "https://github.com/alexdelprete/ha-sinapsi-alfa"
 "Bug Tracker" = "https://github.com/alexdelprete/ha-sinapsi-alfa/issues"
 
-[tool.setuptools.packages.find]
-include = ["custom_components*"]
-
 [project.optional-dependencies]
 dev = [
     "colorlog>=6.10.0",
@@ -67,8 +64,14 @@ dev = [
 ]
 
 # <!-- BEGIN SHARED:repo-sync -->
-# Synced by repo-sync on 2026-06-27
+# Synced by repo-sync on 2026-08-31
 
+
+# Explicit package discovery: scripts/develop creates a config/ directory at the
+# repo root for the live HA dev instance, which makes setuptools' flat-layout
+# auto-discovery ambiguous (config/ vs custom_components/) and abort the build.
+[tool.setuptools.packages.find]
+include = ["custom_components*"]
 
 [tool.codespell]
 skip = "*.json"
