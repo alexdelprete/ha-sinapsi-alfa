@@ -28,9 +28,8 @@ jobs:
           # devcontainer's postCreate does. CI previously installed a separate
           # pinned phacc plus requirements-dev.txt (which excludes phacc), so
           # pyproject's dev deps were never exercised here and drift in them
-          # passed CI only to break container builds later. pyproject is now the
-          # single source of truth for the phacc pin; dependabot ignores that
-          # package, so bump it deliberately once HA 2026.9 is stable.
+          # passed CI only to break container builds later. pyproject is the
+          # single source of truth for the phacc pin.
           uv pip install -e '.[dev]' --system --config-settings editable_mode=compat
       - name: Run tests with coverage
         run: |
