@@ -25,11 +25,9 @@ jobs:
       - name: Install dependencies
         run: |
           # Install the dev extra straight from pyproject, exactly as the
-          # devcontainer's postCreate does. CI previously installed a separate
-          # pinned phacc plus requirements-dev.txt (which excludes phacc), so
-          # pyproject's dev deps were never exercised here and drift in them
-          # passed CI only to break container builds later. pyproject is the
-          # single source of truth for the phacc pin.
+          # devcontainer's postCreate does, so drift in pyproject's dev deps
+          # fails CI instead of breaking container builds later. pyproject is
+          # the single source of truth for dev dependencies and the phacc pin.
           uv pip install -e '.[dev]' --system --config-settings editable_mode=compat
       - name: Run tests with coverage
         run: |

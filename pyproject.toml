@@ -21,7 +21,7 @@ classifiers = [
 dev = [
     "colorlog>=6.10.0",
     "getmac>=0.9.5",
-    "homeassistant>=2026.3.0",
+    "homeassistant>=2026.8.0",
     "homeassistant-stubs",
     "mdformat",
     "mdformat-gfm",
@@ -57,7 +57,7 @@ pytest = [
 dev = [
     "colorlog>=6.10.0",
     "getmac>=0.9.5",
-    "homeassistant>=2026.3.0",
+    "homeassistant>=2026.8.0",
     "modbuslink~=1.5.0",
     { include-group = "lint" },
     { include-group = "pytest" },

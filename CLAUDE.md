@@ -552,7 +552,7 @@ In addition to the shared Do's and Don'ts:
 - Mix sync/async code improperly
 
 <!-- BEGIN SHARED:repo-sync -->
-<!-- Synced by repo-sync on 2026-08-20 -->
+<!-- Synced by repo-sync on 2026-09-04 -->
 
 <!--
 ==============================================================================
@@ -737,9 +737,11 @@ These repos are standardized on the **Python 3.14+** toolchain:
 - `pyproject.toml`: `requires-python = ">=3.14.2"` (matches Home Assistant
   core's own floor)
 - `[tool.ruff]`: `target-version = "py314"`
-- Minimum supported Home Assistant core: **2026.3.0** — the
-  first HA release requiring Python 3.14.2. `hacs.json` is rendered from
-  the same value, so HACS users on older HA don't see updates.
+- Minimum supported Home Assistant core: **2026.8.0** — the
+  first HA release with `DeviceRegistry.async_get_device_by_identifier`,
+  which replaces the `async_get_device` lookup deprecated in 2026.9.
+  `hacs.json` is rendered from the same value, so HACS users on older HA
+  don't see updates.
 
 **Implication for source code**: code in these repos may use 3.14-only
 syntax (e.g. PEP 758's parenthesis-free `except A, B:`) and is **not**

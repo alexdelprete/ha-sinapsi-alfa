@@ -1,7 +1,7 @@
 # HA Custom Integration: Alfa by Sinapsi energy monitoring device
 
 <!-- BEGIN SHARED:repo-sync:badges -->
-<!-- Synced by repo-sync on 2026-06-27 -->
+<!-- Synced by repo-sync on 2026-09-04 -->
 
 [![GitHub Release](https://img.shields.io/github/v/release/alexdelprete/ha-sinapsi-alfa?style=for-the-badge)](https://github.com/alexdelprete/ha-sinapsi-alfa/releases)
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-donate-yellow?style=for-the-badge&logo=buy-me-a-coffee)](https://www.buymeacoffee.com/alexdelprete)
@@ -92,7 +92,7 @@ The integration will detect this conflict and show a clear error message if
 the built-in Modbus integration is still configured for the same device.
 
 <!-- BEGIN SHARED:repo-sync:installation -->
-<!-- Synced by repo-sync on 2026-06-27 -->
+<!-- Synced by repo-sync on 2026-09-04 -->
 
 ## Installation
 
@@ -562,7 +562,7 @@ ruff check . --fix
 - **Release**: Automatically creates ZIP on GitHub release publish
 
 <!-- BEGIN SHARED:repo-sync:contributing -->
-<!-- Synced by repo-sync on 2026-06-27 -->
+<!-- Synced by repo-sync on 2026-09-04 -->
 
 ## Contributing
 
@@ -578,6 +578,9 @@ Contributions are welcome! Please follow these steps:
 
 Please ensure all CI checks pass before requesting a review.
 
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the development environment (devcontainer, tests, live
+Home Assistant instance) and the Windows caveats.
+
 <!-- END SHARED:repo-sync:contributing -->
 
 ## Coffee
@@ -588,7 +591,7 @@ but please don't feel obliged._ :)
 [![BuyMeCoffee][buymecoffee-button]][buymecoffee]
 
 <!-- BEGIN SHARED:repo-sync:license -->
-<!-- Synced by repo-sync on 2026-06-27 -->
+<!-- Synced by repo-sync on 2026-09-04 -->
 
 ## License
 

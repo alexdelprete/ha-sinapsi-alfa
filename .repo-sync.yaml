@@ -19,7 +19,7 @@ vars:
   python_import_name: ""
 
   # -- HA/HACS --
-  ha_min_version: "2026.3.0"
+  ha_min_version: "2026.8.0"
   hide_default_branch: false
   ignore_brands: false
 
@@ -39,7 +39,6 @@ vars:
   ruff_tests_extra_ignores: ["INP001"]
 
   # -- Extras --
-  requirements_extra_deps: ["getmac>=0.9.5", "modbuslink~=1.5.0"]
   gitignore_extra: []
   bug_extra_fields: []
   config_extra_links: []
@@ -67,9 +66,9 @@ template_files:
   - .pre-commit-config.yaml
   - hacs.json
   - .gitignore
-  - requirements-dev.txt
   - .devcontainer.json
   - docs/releases/README.md
+  - CONTRIBUTING.md
   - scripts/develop
   - config/configuration.yaml
 
