@@ -3,6 +3,7 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.sinapsi_alfa import (
     RuntimeData,
@@ -31,6 +32,7 @@ from custom_components.sinapsi_alfa.const import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.helpers import device_registry as dr
 
 from .conftest import TEST_HOST, TEST_MAC, TEST_NAME, TEST_PORT
 
@@ -332,74 +334,82 @@ class TestMigrateV2ToV3:
 
 
 class TestAsyncUpdateDeviceRegistry:
-    """Tests for async_update_device_registry function."""
+    """Tests for async_update_device_registry function.
+
+    These tests exercise the real device registry (dr.async_get) so the
+    lookup path is validated against actual HA behavior, not mocks.
+    """
+
+    @pytest.fixture
+    def registered_config_entry(
+        self,
+        hass: HomeAssistant,
+        mock_config_entry_data: dict,
+        mock_config_entry_options: dict,
+        mock_coordinator,
+    ) -> MockConfigEntry:
+        """Create a real config entry registered with hass."""
+        entry = MockConfigEntry(
+            domain=DOMAIN,
+            data=mock_config_entry_data,
+            options=mock_config_entry_options,
+            unique_id=TEST_MAC,
+            title=TEST_NAME,
+            version=3,
+        )
+        entry.add_to_hass(hass)
+        entry.runtime_data = RuntimeData(coordinator=mock_coordinator)
+        return entry
 
     async def test_update_device_registry_creates_device(
         self,
         hass: HomeAssistant,
-        mock_config_entry,
+        registered_config_entry,
         mock_coordinator,
+        caplog: pytest.LogCaptureFixture,
     ):
-        """Test device is created in registry."""
-        mock_config_entry.runtime_data = RuntimeData(coordinator=mock_coordinator)
+        """Test device is created in the real registry without deprecated lookups."""
+        async_update_device_registry(hass, registered_config_entry)
 
-        mock_device = MagicMock()
-        mock_device.id = "device_123"
-
-        with patch("custom_components.sinapsi_alfa.dr.async_get") as mock_get_registry:
-            mock_registry = MagicMock()
-            mock_registry.async_get_or_create.return_value = mock_device
-            mock_registry.async_get_device.return_value = mock_device
-            mock_get_registry.return_value = mock_registry
-
-            async_update_device_registry(hass, mock_config_entry)
-
-            mock_registry.async_get_or_create.assert_called_once()
-            call_kwargs = mock_registry.async_get_or_create.call_args[1]
-            assert call_kwargs["config_entry_id"] == mock_config_entry.entry_id
-            assert call_kwargs["manufacturer"] == "Sinapsi"
-            assert call_kwargs["model"] == "Alfa"
+        device_registry = dr.async_get(hass)
+        device = device_registry.async_get_device_by_identifier(
+            (DOMAIN, TEST_MAC), registered_config_entry.entry_id
+        )
+        assert device is not None
+        assert device.manufacturer == "Sinapsi"
+        assert device.model == "Alfa"
+        assert device.name == TEST_NAME
+        # Deprecated in HA 2026.9, removed in HA 2027.8 - must not be used
+        assert "device_registry.async_get_device" not in caplog.text
 
     async def test_update_device_registry_stores_device_id(
         self,
         hass: HomeAssistant,
-        mock_config_entry,
+        registered_config_entry,
         mock_coordinator,
     ):
         """Test device_id is stored in coordinator for triggers."""
-        mock_config_entry.runtime_data = RuntimeData(coordinator=mock_coordinator)
+        async_update_device_registry(hass, registered_config_entry)
 
-        mock_device = MagicMock()
-        mock_device.id = "stored_device_id"
+        device = dr.async_get(hass).async_get_device_by_identifier(
+            (DOMAIN, TEST_MAC), registered_config_entry.entry_id
+        )
+        assert device is not None
+        assert mock_coordinator.device_id == device.id
 
-        with patch("custom_components.sinapsi_alfa.dr.async_get") as mock_get_registry:
-            mock_registry = MagicMock()
-            mock_registry.async_get_or_create.return_value = mock_device
-            mock_registry.async_get_device.return_value = mock_device
-            mock_get_registry.return_value = mock_registry
-
-            async_update_device_registry(hass, mock_config_entry)
-
-            # Device ID should be stored in coordinator
-            assert mock_coordinator.device_id == "stored_device_id"
-
-    async def test_update_device_registry_no_device_found(
+    async def test_update_device_registry_idempotent(
         self,
         hass: HomeAssistant,
-        mock_config_entry,
+        registered_config_entry,
         mock_coordinator,
     ):
-        """Test handles case when device not found after creation."""
-        mock_config_entry.runtime_data = RuntimeData(coordinator=mock_coordinator)
+        """Test calling twice updates the same device instead of duplicating."""
+        async_update_device_registry(hass, registered_config_entry)
+        async_update_device_registry(hass, registered_config_entry)
 
-        with patch("custom_components.sinapsi_alfa.dr.async_get") as mock_get_registry:
-            mock_registry = MagicMock()
-            mock_registry.async_get_or_create.return_value = MagicMock()
-            mock_registry.async_get_device.return_value = None  # Device not found
-            mock_get_registry.return_value = mock_registry
-
-            # Should not raise, just not set device_id
-            async_update_device_registry(hass, mock_config_entry)
-
-            # device_id should not be set (keeping original value)
-            mock_coordinator.device_id = None  # Would remain None
+        device_registry = dr.async_get(hass)
+        devices = dr.async_entries_for_config_entry(
+            device_registry, registered_config_entry.entry_id
+        )
+        assert len(devices) == 1
+        assert mock_coordinator.device_id == devices[0].id

@@ -89,7 +89,7 @@ def async_update_device_registry(hass: HomeAssistant, config_entry: SinapsiAlfaC
     """Manual device registration."""
     coordinator = config_entry.runtime_data.coordinator
     device_registry = dr.async_get(hass)
-    device_registry.async_get_or_create(
+    device = device_registry.async_get_or_create(
         config_entry_id=config_entry.entry_id,
         hw_version=None,
         configuration_url=f"http://{config_entry.data.get(CONF_HOST)}",
@@ -103,16 +103,13 @@ def async_update_device_registry(hass: HomeAssistant, config_entry: SinapsiAlfaC
     )
 
     # Store device_id in coordinator for device triggers
-    serial_number = str(coordinator.api.data.get("sn", ""))
-    device = device_registry.async_get_device(identifiers={(DOMAIN, serial_number)})
-    if device:
-        coordinator.device_id = device.id
-        log_debug(
-            _LOGGER,
-            "async_update_device_registry",
-            "Device ID stored in coordinator",
-            device_id=device.id,
-        )
+    coordinator.device_id = device.id
+    log_debug(
+        _LOGGER,
+        "async_update_device_registry",
+        "Device ID stored in coordinator",
+        device_id=device.id,
+    )
 
 
 async def async_remove_config_entry_device(
