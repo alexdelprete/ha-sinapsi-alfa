@@ -20,9 +20,8 @@ logger:
 
 debugpy:
 
-http:
-  use_x_forwarded_for: true
-  trusted_proxies:
-    - 10.0.0.0/8
-    - 172.16.0.0/12
-    - 192.168.0.0/16
+# No http: section. Since Home Assistant 2026.9 the HTTP settings live in .storage: a YAML block
+# is imported once as a *pending* trial that reverts unless promoted in the UI, so reverse-proxy
+# trust from YAML never sticks, and the block only raises a repair on every later boot.
+# Reach the dev instance through VS Code's forwarded port 8123, or set dev_host_port in
+# .repo-sync.yaml to publish it on the host.

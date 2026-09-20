@@ -36,7 +36,11 @@ jobs:
           $(find . -name "*.yml" -o -name "*.yaml" | grep -v node_modules)
 
       - name: Lint Markdown files
-        run: uvx --from pymarkdownlnt pymarkdown --config .pymarkdownlint.json scan .
+        # Pinned: 0.9.40 added MD049/MD050/MD051/MD053 and broke every consumer's
+        # Lint on long-standing markdown. Version comes from PYMARKDOWNLNT_VERSION
+        # in the template repo's repo-sync.py so this step and the local
+        # pre-commit hook always agree; bump it there, not here.
+        run: uvx --from pymarkdownlnt==0.9.39 pymarkdown --config .pymarkdownlint.json scan .
 
       - name: Run Ruff format check
         run: uvx ruff format . --check

@@ -51,8 +51,9 @@ scripts/develop
 
 or the *Run Home Assistant* task in VS Code. It starts Home Assistant with `config/` as its
 configuration directory and this integration loaded from `custom_components/`, then serves the
-UI on <http://localhost:8123>. `config/configuration.yaml` is versioned; the runtime state Home
-Assistant writes under `config/` is ignored by git.
+UI on <http://localhost:8123>.
+`config/configuration.yaml` is versioned; the runtime state Home Assistant writes under `config/`
+is ignored by git.
 
 ## ⚠️ The test suite cannot run natively on Windows
 

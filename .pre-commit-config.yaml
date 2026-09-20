@@ -42,10 +42,12 @@ repos:
         types: [yaml]
         verbose: true
 
-      # Markdown linting
+      # Markdown linting — pinned to the same pymarkdownlnt release as CI's
+      # lint.yml (PYMARKDOWNLNT_VERSION in the template repo's repo-sync.py).
+      # uvx, not the venv copy, so a devcontainer rebuild can't drift from CI.
       - id: pymarkdown
         name: pymarkdown
-        entry: pymarkdown --config .pymarkdownlint.json scan
+        entry: uvx --from pymarkdownlnt==0.9.39 pymarkdown --config .pymarkdownlint.json scan
         language: system
         types: [markdown]
         verbose: true

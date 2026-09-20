@@ -552,7 +552,7 @@ In addition to the shared Do's and Don'ts:
 - Mix sync/async code improperly
 
 <!-- BEGIN SHARED:repo-sync -->
-<!-- Synced by repo-sync on 2026-09-04 -->
+<!-- Synced by repo-sync on 2026-09-20 -->
 
 <!--
 ==============================================================================
@@ -800,9 +800,13 @@ Linting tools and settings are defined in `.pre-commit-config.yaml`:
 | ruff-format | `ruff format --check`          | Python formatting            |
 | jsonlint    | `uvx --from demjson3 jsonlint` | JSON validation              |
 | yamllint    | `uvx yamllint -d "{...}"`      | YAML linting (inline config) |
-| pymarkdown  | `pymarkdown scan`              | Markdown linting             |
+| pymarkdown  | `uvx --from pymarkdownlnt==X pymarkdown scan` | Markdown linting (pinned)    |
 
-All hooks use `language: system` (local tools) with `verbose: true` for visibility.
+All hooks use `language: system` with `verbose: true` for visibility. ruff and ty
+come from the venv; jsonlint, yamllint and pymarkdown run through `uvx`. pymarkdown
+is pinned to the exact release CI uses (`PYMARKDOWNLNT_VERSION` in the template
+repo's `repo-sync.py`, currently 0.9.39), because pymarkdownlnt
+minor releases add rules that turn long-standing markdown red.
 
 ## Pre-Commit Checks (MANDATORY)
 
@@ -829,8 +833,8 @@ Or run individual tools:
 ruff format .
 ruff check . --fix
 
-# Markdown linting
-pymarkdown scan .
+# Markdown linting (same pinned release as the hook and CI)
+uvx --from pymarkdownlnt==0.9.39 pymarkdown --config .pymarkdownlint.json scan .
 ```
 
 All checks must pass before committing. This applies to ALL commits, not just releases.
