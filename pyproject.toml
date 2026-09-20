@@ -28,8 +28,8 @@ dev = [
     "modbuslink~=1.5.0",
     "pre-commit",
     "pymarkdownlnt",
-    "ruff>=0.8.0",
-    "ty",
+    "ruff==0.16.8",
+    "ty==0.0.82",
     "pytest>=8.0.0",
     "pytest-asyncio>=0.23.0",
     "pytest-cov",
@@ -44,8 +44,8 @@ lint = [
     "mdformat-gfm",
     "pre-commit",
     "pymarkdownlnt",
-    "ruff>=0.8.0",
-    "ty",
+    "ruff==0.16.8",
+    "ty==0.0.82",
 ]
 pytest = [
     "pytest>=8.0.0",

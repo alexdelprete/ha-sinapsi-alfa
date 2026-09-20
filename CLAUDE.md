@@ -809,7 +809,8 @@ runs through `uvx` at the exact release CI uses (`TOOL_VERSIONS` in the template
 yamllint 1.38.0, pymarkdownlnt 0.9.39).
 ty and ruff are pre-1.0 / fast-moving and add rules between releases; unpinned they
 turn CI red on code that passes locally. The venv copies of ruff and ty only serve
-the VS Code extensions.
+the VS Code extensions; `repo-sync` rewrites their `pyproject.toml` entries to the same
+pins on every sync (and dependabot ignores them), so the editor matches CI too.
 
 ## Pre-Commit Checks (MANDATORY)
 

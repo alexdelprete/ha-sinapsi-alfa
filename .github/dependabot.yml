@@ -11,3 +11,8 @@ updates:
       interval: "weekly"
     ignore:
       - dependency-name: "homeassistant"
+      # ruff and ty are pinned fleet-wide by TOOL_VERSIONS in the template repo
+      # (CI, pre-commit hooks, and these pyproject entries are all rendered from
+      # it); a Dependabot bump here would fight the sync. Bump the table instead.
+      - dependency-name: "ruff"
+      - dependency-name: "ty"
