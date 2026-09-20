@@ -796,17 +796,20 @@ Linting tools and settings are defined in `.pre-commit-config.yaml`:
 
 | Hook        | Tool                           | Purpose                      |
 | ----------- | ------------------------------ | ---------------------------- |
-| ruff        | `ruff check --no-fix`          | Python linting               |
-| ruff-format | `ruff format --check`          | Python formatting            |
+| ruff        | `uvx ruff@X check --no-fix`    | Python linting               |
+| ruff-format | `uvx ruff@X format --check`    | Python formatting            |
 | jsonlint    | `uvx --from demjson3 jsonlint` | JSON validation              |
-| yamllint    | `uvx yamllint -d "{...}"`      | YAML linting (inline config) |
-| pymarkdown  | `uvx --from pymarkdownlnt==X pymarkdown scan` | Markdown linting (pinned)    |
+| yamllint    | `uvx yamllint@X -d "{...}"`    | YAML linting (inline config) |
+| pymarkdown  | `uvx --from pymarkdownlnt==X pymarkdown scan` | Markdown linting |
+| ty          | `uvx ty@X check --python "$(which python)"` | Type checking (needs the venv's HA) |
 
-All hooks use `language: system` with `verbose: true` for visibility. ruff and ty
-come from the venv; jsonlint, yamllint and pymarkdown run through `uvx`. pymarkdown
-is pinned to the exact release CI uses (`PYMARKDOWNLNT_VERSION` in the template
-repo's `repo-sync.py`, currently 0.9.39), because pymarkdownlnt
-minor releases add rules that turn long-standing markdown red.
+All hooks use `language: system` with `verbose: true` for visibility, and every tool
+runs through `uvx` at the exact release CI uses (`TOOL_VERSIONS` in the template repo's
+`repo-sync.py`: ruff 0.16.8, ty 0.0.82,
+yamllint 1.38.0, pymarkdownlnt 0.9.39).
+ty and ruff are pre-1.0 / fast-moving and add rules between releases; unpinned they
+turn CI red on code that passes locally. The venv copies of ruff and ty only serve
+the VS Code extensions.
 
 ## Pre-Commit Checks (MANDATORY)
 

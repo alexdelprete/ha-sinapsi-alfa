@@ -1,5 +1,8 @@
 # Pre-commit hooks configuration
-# Uses locally installed tools (no isolated environments)
+# Every tool runs through uvx at the exact version CI uses (TOOL_VERSIONS in the
+# template repo's repo-sync.py renders both this file and lint.yml), so a
+# devcontainer built on a different day cannot disagree with CI. ty is still
+# pointed at the venv interpreter so it resolves Home Assistant imports.
 # Run: pre-commit install (first time setup)
 # Run: pre-commit run --all-files (manual check)
 
@@ -9,7 +12,7 @@ repos:
       # Ruff linting (check-only)
       - id: ruff
         name: ruff
-        entry: ruff check --no-fix
+        entry: uvx ruff@0.16.8 check --no-fix
         language: system
         types: [python]
         verbose: true
@@ -17,7 +20,7 @@ repos:
       # Ruff formatting (check-only)
       - id: ruff-format
         name: ruff-format
-        entry: ruff format --check
+        entry: uvx ruff@0.16.8 format --check
         language: system
         types: [python]
         verbose: true
@@ -35,16 +38,14 @@ repos:
       - id: yamllint
         name: yamllint
         entry: >-
-          uvx yamllint -d "{extends: default, rules: {line-length: {max: 120},
+          uvx yamllint@1.38.0 -d "{extends: default, rules: {line-length: {max: 120},
           document-start: disable, truthy: {check-keys: false},
           comments: {min-spaces-from-content: 1}}}"
         language: system
         types: [yaml]
         verbose: true
 
-      # Markdown linting — pinned to the same pymarkdownlnt release as CI's
-      # lint.yml (PYMARKDOWNLNT_VERSION in the template repo's repo-sync.py).
-      # uvx, not the venv copy, so a devcontainer rebuild can't drift from CI.
+      # Markdown linting
       - id: pymarkdown
         name: pymarkdown
         entry: uvx --from pymarkdownlnt==0.9.39 pymarkdown --config .pymarkdownlint.json scan
@@ -58,7 +59,7 @@ repos:
       - id: ty
         name: ty
         entry: >-
-          bash -c 'ty check --python "$(which python)" custom_components/sinapsi_alfa'
+          bash -c 'uvx ty@0.0.82 check --python "$(which python)" custom_components/sinapsi_alfa'
         language: system
         pass_filenames: false
         types: [python]
