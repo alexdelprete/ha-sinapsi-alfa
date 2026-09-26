@@ -17,7 +17,8 @@
         "--label", "proxy.#1.scheme=http",
         "--label", "proxy.#2.port=8123",
         "--label", "proxy.#1.homepage.name=sinapsi code",
-        "--label", "proxy.#2.homepage.name=sinapsi hadev"
+        "--label", "proxy.#2.homepage.name=sinapsi hadev",
+        "--label", "proxy.*.homepage.show=false"
     ],
     "postCreateCommand": "git config --global --add safe.directory ${containerWorkspaceFolder} && sudo rm -rf ./*.egg-info && uv pip install -e '.[dev]' --config-settings editable_mode=compat && pre-commit install",
     "postStartCommand": "uv pip install -q -e '.[dev]' --config-settings editable_mode=compat",
