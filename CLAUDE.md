@@ -807,6 +807,9 @@ All hooks use `language: system` with `verbose: true` for visibility, and every 
 runs through `uvx` at the exact release CI uses (`[tool.repo-sync.tool-versions]` in the template
 repo's `pyproject.toml`: ruff 0.16.8, ty 0.0.82,
 yamllint 1.38.0, pymarkdownlnt 0.9.39).
+Template changes reach this repo as signed `repo-sync/propagate` pull requests opened by the
+template's `propagate.yml`; they auto-merge once the required checks pass. Do not edit those
+files by hand: change the template and let it propagate.
 ty and ruff are pre-1.0 / fast-moving and add rules between releases; unpinned they
 turn CI red on code that passes locally. The venv copies of ruff and ty only serve
 the VS Code extensions; `repo-sync` rewrites their `pyproject.toml` entries to the same
