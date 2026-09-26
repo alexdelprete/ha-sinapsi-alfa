@@ -16,3 +16,6 @@ updates:
       # it); a Dependabot bump here would fight the sync. Bump the table instead.
       - dependency-name: "ruff"
       - dependency-name: "ty"
+      # phacc (and through it the HA test version) is bumped by Dependabot in the
+      # template repo only; the bump reaches this repo as a synced PR.
+      - dependency-name: "pytest-homeassistant-custom-component"
