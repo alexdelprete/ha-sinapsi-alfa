@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Removed the deprecated `via_device` parameter from device registration** -
+  Home Assistant 2026.9 deprecates the `via_device` parameter of
+  `device_registry.async_get_or_create` (removal planned for HA 2027.8), and any
+  explicitly passed value, including `None`, triggers the deprecation warning.
+  The Alfa is registered as a single standalone device with no parent, so the
+  parameter carried no information and is simply removed; no `via_device_id`
+  link is needed.
+
 ## [1.13.9] - 2026-07-24
 
 **Patch release** - Fixes a v1.13.8 regression that prevented all sensors from

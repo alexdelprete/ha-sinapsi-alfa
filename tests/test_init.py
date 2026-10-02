@@ -379,8 +379,13 @@ class TestAsyncUpdateDeviceRegistry:
         assert device.manufacturer == "Sinapsi"
         assert device.model == "Alfa"
         assert device.name == TEST_NAME
+        # The Alfa is a standalone device: no parent link via the registry id
+        assert device.via_device_id is None
         # Deprecated in HA 2026.9, removed in HA 2027.8 - must not be used
         assert "device_registry.async_get_device" not in caplog.text
+        # via_device is deprecated since HA 2026.9 (removed in 2027.8); any
+        # explicitly passed value, even None, triggers the deprecation
+        assert "via_device" not in caplog.text
 
     async def test_update_device_registry_stores_device_id(
         self,
