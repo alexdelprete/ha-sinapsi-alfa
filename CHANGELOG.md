@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.13.10] - 2026-10-02
+
+**Patch release** - Removes two deprecated Home Assistant device registry APIs
+ahead of their scheduled removal, and raises the minimum supported Home
+Assistant version to 2026.8.0.
+
+### Changed
+
+- **Minimum supported Home Assistant version raised to 2026.8.0** - HA 2026.8
+  is the first release with `DeviceRegistry.async_get_device_by_identifier`,
+  which this release adopts. HACS will not offer this update to installations
+  running older HA cores.
+- **Coordinator update timestamps now use `dt_util.utcnow()`** - Internal
+  refactor aligning timestamp handling with Home Assistant conventions. No
+  functional change.
+
 ### Fixed
 
 - **Removed the deprecated `via_device` parameter from device registration** -
@@ -16,6 +32,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   The Alfa is registered as a single standalone device with no parent, so the
   parameter carried no information and is simply removed; no `via_device_id`
   link is needed.
+- **Replaced the deprecated `device_registry.async_get_device` lookup** - HA
+  2026.9 deprecates `async_get_device(identifiers={...})` because identifiers
+  are no longer unique across config entries (removal planned for HA 2027.8).
+  The integration no longer re-reads the device after registration at all: it
+  uses the `DeviceEntry` returned by `async_get_or_create` directly.
+
+**Full Release Notes:** [docs/releases/v1.13.10.md](docs/releases/v1.13.10.md)
+
+**Full Changelog:** [v1.13.9...v1.13.10](https://github.com/alexdelprete/ha-sinapsi-alfa/compare/v1.13.9...v1.13.10)
 
 ## [1.13.9] - 2026-07-24
 
