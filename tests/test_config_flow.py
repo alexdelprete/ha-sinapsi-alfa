@@ -291,6 +291,8 @@ async def test_reconfigure_flow_success(
 
     assert result["type"] == FlowResultType.ABORT
     assert result["reason"] == "reconfigure_successful"
+    # Translated centrally by core since HA 2026.10, hence no local key
+    assert result["translation_domain"] == "homeassistant"
 
 
 async def test_reconfigure_flow_invalid_host(

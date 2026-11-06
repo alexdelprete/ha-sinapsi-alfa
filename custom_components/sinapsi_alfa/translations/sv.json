@@ -40,7 +40,6 @@
     },
     "abort": {
       "already_configured": "Enheten ar redan konfigurerad",
-      "reconfigure_successful": "Omkonfigurering lyckades",
       "modbus_conflict": "Den inbyggda Modbus-integrationen är redan konfigurerad för denna enhet.\n\n**Din konfiguration:** {host}\n**Modbus-konfiguration:** {modbus_host}\n\nBåda pekar på samma enhet, som endast stöder en Modbus TCP-klient åt gången.\n\nTa bort Modbus-integrationsposten innan du konfigurerar denna integration. Kontrollera din configuration.yaml för 'modbus:'-poster, eller ta bort via Inställningar → Enheter & Tjänster → Modbus."
     }
   },

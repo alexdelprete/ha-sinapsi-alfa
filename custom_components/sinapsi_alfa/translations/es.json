@@ -40,7 +40,6 @@
     },
     "abort": {
       "already_configured": "El dispositivo ya esta configurado",
-      "reconfigure_successful": "Reconfiguracion exitosa",
       "modbus_conflict": "La integración Modbus nativa ya está configurada para este dispositivo.\n\n**Su configuración:** {host}\n**Configuración Modbus:** {modbus_host}\n\nAmbos apuntan al mismo dispositivo, que solo admite un cliente Modbus TCP a la vez.\n\nElimina la entrada de integración Modbus antes de configurar esta integración. Revisa tu configuration.yaml para entradas 'modbus:', o elimínala desde Ajustes → Dispositivos y Servicios → Modbus."
     }
   },
