@@ -41,7 +41,7 @@ def sinapsi_setup_fixture():
     """Mock sinapsi_alfa entry setup to avoid loading the full integration."""
     with patch(
         "custom_components.sinapsi_alfa.async_setup_entry",
-        return_value=True,
+        return_value=None,
     ):
         yield
 

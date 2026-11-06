@@ -46,8 +46,12 @@ class RuntimeData:
     coordinator: SinapsiAlfaCoordinator
 
 
-async def async_setup_entry(hass: HomeAssistant, config_entry: SinapsiAlfaConfigEntry) -> bool:
-    """Set up integration from a config entry."""
+async def async_setup_entry(hass: HomeAssistant, config_entry: SinapsiAlfaConfigEntry) -> None:
+    """Set up integration from a config entry.
+
+    Returns None; failure is signalled by raising (ConfigEntryNotReady here),
+    as Home Assistant 2026.11 expects.
+    """
     log_info(_LOGGER, "async_setup_entry", STARTUP_MESSAGE)
     log_debug(_LOGGER, "async_setup_entry", "Setup config_entry", domain=DOMAIN)
 
@@ -79,9 +83,6 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: SinapsiAlfaConfig
 
     # Register device
     async_update_device_registry(hass, config_entry)
-
-    # Return true to denote a successful setup.
-    return True
 
 
 @callback
@@ -126,27 +127,21 @@ async def async_remove_config_entry_device(
     return True
 
 
-async def async_unload_entry(hass: HomeAssistant, config_entry: SinapsiAlfaConfigEntry) -> bool:
-    """Unload a config entry."""
+async def async_unload_entry(hass: HomeAssistant, config_entry: SinapsiAlfaConfigEntry) -> None:
+    """Unload a config entry.
+
+    async_unload_platforms_or_raise raises a translated ConfigEntryError when a
+    platform fails to unload, so the per-entry cleanup below only runs after a
+    successful unload (HA 2026.11 pattern: return None, signal failure by raising).
+    """
     log_debug(_LOGGER, "async_unload_entry", "Unload config_entry: started")
 
-    # Unload platforms - only cleanup runtime_data if successful
-    # ref.: https://developers.home-assistant.io/blog/2025/02/19/new-config-entry-states/
-    if unload_ok := await hass.config_entries.async_unload_platforms(config_entry, PLATFORMS):
-        log_debug(_LOGGER, "async_unload_entry", "Platforms unloaded successfully")
-        # Cleanup per-entry resources only if unload succeeded
-        await config_entry.runtime_data.coordinator.api.close()
-        log_debug(_LOGGER, "async_unload_entry", "Closed API connection")
-    else:
-        log_debug(_LOGGER, "async_unload_entry", "Platform unload failed, skipping cleanup")
+    await hass.config_entries.async_unload_platforms_or_raise(config_entry, PLATFORMS)
+    log_debug(_LOGGER, "async_unload_entry", "Platforms unloaded successfully")
 
-    log_debug(
-        _LOGGER,
-        "async_unload_entry",
-        "Unload config_entry: completed",
-        unload_ok=unload_ok,
-    )
-    return unload_ok
+    await config_entry.runtime_data.coordinator.api.close()
+    log_debug(_LOGGER, "async_unload_entry", "Closed API connection")
+    log_debug(_LOGGER, "async_unload_entry", "Unload config_entry: completed")
 
 
 async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:

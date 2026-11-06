@@ -31,7 +31,7 @@ from custom_components.sinapsi_alfa.const import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.exceptions import ConfigEntryError, ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr
 
 from .conftest import TEST_HOST, TEST_MAC, TEST_NAME, TEST_PORT
@@ -120,9 +120,8 @@ class TestAsyncSetupEntry:
             ) as mock_device_reg,
             patch.object(hass.config_entries, "async_forward_entry_setups", new_callable=AsyncMock),
         ):
-            result = await async_setup_entry(hass, mock_config_entry)
+            assert await async_setup_entry(hass, mock_config_entry) is None
 
-            assert result is True
             assert mock_config_entry.runtime_data is not None
             assert isinstance(mock_config_entry.runtime_data, RuntimeData)
             mock_device_reg.assert_called_once()
@@ -164,9 +163,8 @@ class TestAsyncUnloadEntry:
             new_callable=AsyncMock,
             return_value=True,
         ):
-            result = await async_unload_entry(hass, mock_config_entry)
+            assert await async_unload_entry(hass, mock_config_entry) is None
 
-            assert result is True
             mock_coordinator.api.close.assert_called_once()
 
     async def test_unload_entry_failure(
@@ -175,19 +173,21 @@ class TestAsyncUnloadEntry:
         mock_config_entry,
         mock_coordinator,
     ):
-        """Test unload failure does not cleanup."""
+        """Test a failed platform unload raises and skips the cleanup."""
         mock_config_entry.runtime_data = RuntimeData(coordinator=mock_coordinator)
 
-        with patch.object(
-            hass.config_entries,
-            "async_unload_platforms",
-            new_callable=AsyncMock,
-            return_value=False,
+        with (
+            patch.object(
+                hass.config_entries,
+                "async_unload_platforms",
+                new_callable=AsyncMock,
+                return_value=False,
+            ),
+            pytest.raises(ConfigEntryError),
         ):
-            result = await async_unload_entry(hass, mock_config_entry)
+            await async_unload_entry(hass, mock_config_entry)
 
-            assert result is False
-            mock_coordinator.api.close.assert_not_called()
+        mock_coordinator.api.close.assert_not_called()
 
 
 class TestAsyncMigrateEntry:
