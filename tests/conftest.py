@@ -36,7 +36,14 @@ TEST_MAC = "AA:BB:CC:DD:EE:FF"
 def auto_enable_custom_integrations(
     enable_custom_integrations: None,
 ) -> None:
-    """Enable custom integrations for all tests."""
+    """Start a real hass for every test.
+
+    pytest-homeassistant's hass fixture already enables custom integrations, but
+    this autouse fixture is still needed: through enable_custom_integrations it
+    makes every test start hass, which sets up the frame helper that
+    DataUpdateCoordinator uses. Tests that only take mock_hass would fail with
+    "Frame helper not set up" without it.
+    """
 
 
 @pytest.fixture
