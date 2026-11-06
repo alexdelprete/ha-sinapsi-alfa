@@ -8,6 +8,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
+from homeassistant.core import callback
 from homeassistant.helpers import issue_registry as ir
 
 if TYPE_CHECKING:
@@ -25,6 +26,66 @@ ISSUE_DEVICE_WARMUP = "device_warmup"
 # Notification IDs
 NOTIFICATION_RECOVERY = "recovery"
 NOTIFICATION_WARMUP_RECOVERED = "warmup_recovered"
+
+
+def connection_issue_id(entry_id: str) -> str:
+    """Return the id of the connection-failure issue of a config entry."""
+    return f"{ISSUE_CONNECTION_FAILED}_{entry_id}"
+
+
+def modbus_conflict_issue_id(entry_id: str) -> str:
+    """Return the id of the Modbus-conflict issue of a config entry."""
+    return f"{ISSUE_MODBUS_CONFLICT}_{entry_id}"
+
+
+def warmup_issue_id(entry_id: str) -> str:
+    """Return the id of the device warm-up issue of a config entry."""
+    return f"{ISSUE_DEVICE_WARMUP}_{entry_id}"
+
+
+@callback
+def refresh_entry_issues(
+    hass: HomeAssistant,
+    entry_id: str,
+    *,
+    device_name: str,
+    host: str,
+    port: int,
+    connection_failed: bool | None,
+    device_warmup: bool | None,
+    modbus_conflict_host: str | None,
+) -> None:
+    """Bring the repair issues of a config entry in step with the last poll.
+
+    Each argument is the desired state of one issue: True creates it (or keeps it,
+    unchanged, with the user's ignore flag), False removes it, None keeps whatever
+    exists because the poll could not judge it (a warm-up poll says nothing about
+    the connection issue). The Modbus conflict is re-checked on every poll, so it
+    is never "keep".
+
+    async_refresh_issues (Home Assistant 2026.11) deletes, when the block exits,
+    every issue of the set that was not created or kept inside it, which replaces
+    the paired create/delete calls. The set is selected by the entry-suffixed ids
+    rather than by config_entry_id so that issues created before they were bound
+    to the entry are cleaned up too; creating one binds it.
+    """
+    connection_id = connection_issue_id(entry_id)
+    warmup_id = warmup_issue_id(entry_id)
+    with ir.async_refresh_issues(
+        hass,
+        DOMAIN,
+        issue_ids=[connection_id, warmup_id, modbus_conflict_issue_id(entry_id)],
+    ) as refresh:
+        if modbus_conflict_host:
+            create_modbus_conflict_issue(hass, entry_id, device_name, host, modbus_conflict_host)
+        if connection_failed:
+            create_connection_issue(hass, entry_id, device_name, host, port)
+        elif connection_failed is None:
+            refresh.async_keep([connection_id])
+        if device_warmup:
+            create_warmup_issue(hass, entry_id, device_name)
+        elif device_warmup is None:
+            refresh.async_keep([warmup_id])
 
 
 def create_connection_issue(
@@ -47,7 +108,8 @@ def create_connection_issue(
     ir.async_create_issue(
         hass,
         DOMAIN,
-        f"{ISSUE_CONNECTION_FAILED}_{entry_id}",
+        connection_issue_id(entry_id),
+        config_entry_id=entry_id,
         is_fixable=False,
         is_persistent=True,
         severity=ir.IssueSeverity.ERROR,
@@ -59,18 +121,6 @@ def create_connection_issue(
         },
     )
     _LOGGER.debug("Created repair issue for connection failure: %s", device_name)
-
-
-def delete_connection_issue(hass: HomeAssistant, entry_id: str) -> None:
-    """Delete the connection failure repair issue.
-
-    Args:
-        hass: HomeAssistant instance
-        entry_id: Config entry ID
-
-    """
-    ir.async_delete_issue(hass, DOMAIN, f"{ISSUE_CONNECTION_FAILED}_{entry_id}")
-    _LOGGER.debug("Deleted repair issue for entry: %s", entry_id)
 
 
 def create_modbus_conflict_issue(
@@ -97,7 +147,8 @@ def create_modbus_conflict_issue(
     ir.async_create_issue(
         hass,
         DOMAIN,
-        f"{ISSUE_MODBUS_CONFLICT}_{entry_id}",
+        modbus_conflict_issue_id(entry_id),
+        config_entry_id=entry_id,
         is_fixable=False,
         is_persistent=True,
         severity=ir.IssueSeverity.ERROR,
@@ -116,18 +167,6 @@ def create_modbus_conflict_issue(
     )
 
 
-def delete_modbus_conflict_issue(hass: HomeAssistant, entry_id: str) -> None:
-    """Delete the Modbus conflict repair issue.
-
-    Args:
-        hass: HomeAssistant instance
-        entry_id: Config entry ID
-
-    """
-    ir.async_delete_issue(hass, DOMAIN, f"{ISSUE_MODBUS_CONFLICT}_{entry_id}")
-    _LOGGER.debug("Deleted Modbus conflict repair issue for entry: %s", entry_id)
-
-
 def create_warmup_issue(hass: HomeAssistant, entry_id: str, device_name: str) -> None:
     """Create a repair issue for the device warm-up phase.
 
@@ -144,7 +183,8 @@ def create_warmup_issue(hass: HomeAssistant, entry_id: str, device_name: str) ->
     ir.async_create_issue(
         hass,
         DOMAIN,
-        f"{ISSUE_DEVICE_WARMUP}_{entry_id}",
+        warmup_issue_id(entry_id),
+        config_entry_id=entry_id,
         is_fixable=False,
         is_persistent=False,
         severity=ir.IssueSeverity.WARNING,
@@ -152,18 +192,6 @@ def create_warmup_issue(hass: HomeAssistant, entry_id: str, device_name: str) ->
         translation_placeholders={"device_name": device_name},
     )
     _LOGGER.debug("Created repair issue for device warm-up: %s", device_name)
-
-
-def delete_warmup_issue(hass: HomeAssistant, entry_id: str) -> None:
-    """Delete the device warm-up repair issue.
-
-    Args:
-        hass: HomeAssistant instance
-        entry_id: Config entry ID
-
-    """
-    ir.async_delete_issue(hass, DOMAIN, f"{ISSUE_DEVICE_WARMUP}_{entry_id}")
-    _LOGGER.debug("Deleted device warm-up repair issue for entry: %s", entry_id)
 
 
 def is_warmup_issue_active(hass: HomeAssistant, entry_id: str) -> bool:
@@ -177,9 +205,7 @@ def is_warmup_issue_active(hass: HomeAssistant, entry_id: str) -> bool:
         entry_id: Config entry ID
 
     """
-    return (
-        ir.async_get(hass).async_get_issue(DOMAIN, f"{ISSUE_DEVICE_WARMUP}_{entry_id}") is not None
-    )
+    return ir.async_get(hass).async_get_issue(DOMAIN, warmup_issue_id(entry_id)) is not None
 
 
 def create_warmup_recovery_notification(

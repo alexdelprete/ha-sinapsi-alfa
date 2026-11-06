@@ -37,6 +37,30 @@ from homeassistant.helpers.update_coordinator import UpdateFailed
 from .conftest import TEST_HOST, TEST_MAC, TEST_NAME, TEST_PORT, TEST_SCAN_INTERVAL, TEST_TIMEOUT
 
 
+@pytest.fixture(autouse=True)
+def mock_refresh_issues():
+    """Capture the desired issue state the coordinator hands to refresh_entry_issues.
+
+    The mock entries here are not registered with Home Assistant, so the real
+    helper (which binds issues to the entry) is exercised in test_repairs.py.
+    """
+    with patch(
+        "custom_components.sinapsi_alfa.coordinator.refresh_entry_issues",
+    ) as mock_refresh:
+        yield mock_refresh
+
+
+def issue_state(mock_refresh: MagicMock) -> dict:
+    """Return the desired issue state of the last refresh_entry_issues call."""
+    mock_refresh.assert_called_once()
+    kwargs = mock_refresh.call_args.kwargs
+    return {
+        "connection_failed": kwargs["connection_failed"],
+        "device_warmup": kwargs["device_warmup"],
+        "modbus_conflict_host": kwargs["modbus_conflict_host"],
+    }
+
+
 def create_mock_config_entry(
     scan_interval: int = TEST_SCAN_INTERVAL,
     timeout: int = TEST_TIMEOUT,
@@ -252,6 +276,7 @@ async def test_coordinator_update_increments_failure_counter(
 
 async def test_coordinator_creates_repair_issue_after_repeated_failures(
     hass: HomeAssistant,
+    mock_refresh_issues: MagicMock,
 ) -> None:
     """Test repair issue is created after repeated failures."""
     entry = create_mock_config_entry()
@@ -260,9 +285,6 @@ async def test_coordinator_creates_repair_issue_after_repeated_failures(
         patch(
             "custom_components.sinapsi_alfa.coordinator.SinapsiAlfaAPI",
         ) as mock_api_class,
-        patch(
-            "custom_components.sinapsi_alfa.coordinator.create_connection_issue",
-        ) as mock_create_issue,
     ):
         mock_api = mock_api_class.return_value
         mock_api.async_get_data = AsyncMock(side_effect=Exception("Connection failed"))
@@ -276,29 +298,26 @@ async def test_coordinator_creates_repair_issue_after_repeated_failures(
 
         # Now at threshold, issue should be created
         assert coordinator._consecutive_failures == DEFAULT_FAILURES_THRESHOLD
-        mock_create_issue.assert_called_once_with(
-            hass,
-            entry.entry_id,
-            TEST_NAME,
-            TEST_HOST,
-            TEST_PORT,
-        )
+        assert issue_state(mock_refresh_issues)["connection_failed"] is True
+        refresh_kwargs = mock_refresh_issues.call_args.kwargs
+        assert mock_refresh_issues.call_args.args == (hass, entry.entry_id)
+        assert refresh_kwargs["device_name"] == TEST_NAME
+        assert refresh_kwargs["host"] == TEST_HOST
+        assert refresh_kwargs["port"] == TEST_PORT
         assert coordinator._repair_issue_created is True
 
 
 async def test_coordinator_does_not_create_duplicate_repair_issue(
     hass: HomeAssistant,
+    mock_refresh_issues: MagicMock,
 ) -> None:
-    """Test repair issue is not created if already exists."""
+    """An ongoing outage keeps the existing issue (re-creating it is idempotent)."""
     entry = create_mock_config_entry()
 
     with (
         patch(
             "custom_components.sinapsi_alfa.coordinator.SinapsiAlfaAPI",
         ) as mock_api_class,
-        patch(
-            "custom_components.sinapsi_alfa.coordinator.create_connection_issue",
-        ) as mock_create_issue,
     ):
         mock_api = mock_api_class.return_value
         mock_api.async_get_data = AsyncMock(side_effect=Exception("Connection failed"))
@@ -311,12 +330,14 @@ async def test_coordinator_does_not_create_duplicate_repair_issue(
         with pytest.raises(UpdateFailed):
             await coordinator.async_update_data()
 
-        # Should not create another issue
-        mock_create_issue.assert_not_called()
+        # Still wanted, so the refresh keeps it; no second threshold event
+        assert issue_state(mock_refresh_issues)["connection_failed"] is True
+        assert coordinator._repair_issue_created is True
 
 
 async def test_coordinator_deletes_repair_issue_on_success(
     hass: HomeAssistant,
+    mock_refresh_issues: MagicMock,
     mock_api_data: dict,
 ) -> None:
     """Test repair issue is deleted when connection is restored."""
@@ -326,9 +347,6 @@ async def test_coordinator_deletes_repair_issue_on_success(
         patch(
             "custom_components.sinapsi_alfa.coordinator.SinapsiAlfaAPI",
         ) as mock_api_class,
-        patch(
-            "custom_components.sinapsi_alfa.coordinator.delete_connection_issue",
-        ) as mock_delete_issue,
         patch(
             "custom_components.sinapsi_alfa.coordinator.create_recovery_notification",
         ),
@@ -344,25 +362,23 @@ async def test_coordinator_deletes_repair_issue_on_success(
         await coordinator.async_update_data()
 
         # Issue should be deleted on successful update
-        mock_delete_issue.assert_called_once_with(hass, entry.entry_id)
+        assert issue_state(mock_refresh_issues)["connection_failed"] is False
         assert coordinator._repair_issue_created is False
         assert coordinator._consecutive_failures == 0
 
 
 async def test_coordinator_does_not_delete_nonexistent_repair_issue(
     hass: HomeAssistant,
+    mock_refresh_issues: MagicMock,
     mock_api_data: dict,
 ) -> None:
-    """Test no deletion attempted if repair issue wasn't created."""
+    """A healthy poll asks for no issues; removing an absent one is a no-op."""
     entry = create_mock_config_entry()
 
     with (
         patch(
             "custom_components.sinapsi_alfa.coordinator.SinapsiAlfaAPI",
         ) as mock_api_class,
-        patch(
-            "custom_components.sinapsi_alfa.coordinator.delete_connection_issue",
-        ) as mock_delete_issue,
     ):
         mock_api = mock_api_class.return_value
         mock_api.async_get_data = AsyncMock(return_value=mock_api_data)
@@ -373,12 +389,16 @@ async def test_coordinator_does_not_delete_nonexistent_repair_issue(
 
         await coordinator.async_update_data()
 
-        # Should not attempt to delete
-        mock_delete_issue.assert_not_called()
+        assert issue_state(mock_refresh_issues) == {
+            "connection_failed": False,
+            "device_warmup": False,
+            "modbus_conflict_host": None,
+        }
 
 
 async def test_coordinator_failure_below_threshold_no_issue(
     hass: HomeAssistant,
+    mock_refresh_issues: MagicMock,
 ) -> None:
     """Test no repair issue created when failures below threshold."""
     entry = create_mock_config_entry()
@@ -387,9 +407,6 @@ async def test_coordinator_failure_below_threshold_no_issue(
         patch(
             "custom_components.sinapsi_alfa.coordinator.SinapsiAlfaAPI",
         ) as mock_api_class,
-        patch(
-            "custom_components.sinapsi_alfa.coordinator.create_connection_issue",
-        ) as mock_create_issue,
     ):
         mock_api = mock_api_class.return_value
         mock_api.async_get_data = AsyncMock(side_effect=Exception("Connection failed"))
@@ -403,7 +420,8 @@ async def test_coordinator_failure_below_threshold_no_issue(
             await coordinator.async_update_data()
 
         assert coordinator._consecutive_failures == 1
-        mock_create_issue.assert_not_called()
+        # Below the threshold an existing issue is left as is, none is created
+        assert issue_state(mock_refresh_issues)["connection_failed"] is None
         assert coordinator._repair_issue_created is False
 
 
@@ -418,9 +436,6 @@ async def test_coordinator_recovery_with_script_info(
         patch(
             "custom_components.sinapsi_alfa.coordinator.SinapsiAlfaAPI",
         ) as mock_api_class,
-        patch(
-            "custom_components.sinapsi_alfa.coordinator.delete_connection_issue",
-        ),
         patch(
             "custom_components.sinapsi_alfa.coordinator.create_recovery_notification",
         ) as mock_create_notification,
@@ -459,9 +474,6 @@ async def test_coordinator_recovery_without_script(
         patch(
             "custom_components.sinapsi_alfa.coordinator.SinapsiAlfaAPI",
         ) as mock_api_class,
-        patch(
-            "custom_components.sinapsi_alfa.coordinator.delete_connection_issue",
-        ),
         patch(
             "custom_components.sinapsi_alfa.coordinator.create_recovery_notification",
         ) as mock_create_notification,
@@ -537,9 +549,6 @@ async def test_coordinator_execute_recovery_script(
         patch(
             "custom_components.sinapsi_alfa.coordinator.SinapsiAlfaAPI",
         ) as mock_api_class,
-        patch(
-            "custom_components.sinapsi_alfa.coordinator.create_connection_issue",
-        ),
     ):
         mock_api = mock_api_class.return_value
         mock_api.async_get_data = AsyncMock(side_effect=Exception("Connection failed"))
@@ -572,9 +581,6 @@ async def test_coordinator_execute_recovery_script_failure(
         patch(
             "custom_components.sinapsi_alfa.coordinator.SinapsiAlfaAPI",
         ) as mock_api_class,
-        patch(
-            "custom_components.sinapsi_alfa.coordinator.create_connection_issue",
-        ),
     ):
         mock_api = mock_api_class.return_value
         mock_api.async_get_data = AsyncMock(side_effect=Exception("Connection failed"))
@@ -695,9 +701,6 @@ async def test_coordinator_fires_device_event_on_failure_threshold(
         patch(
             "custom_components.sinapsi_alfa.coordinator.SinapsiAlfaAPI",
         ) as mock_api_class,
-        patch(
-            "custom_components.sinapsi_alfa.coordinator.create_connection_issue",
-        ),
     ):
         mock_api = mock_api_class.return_value
         mock_api.async_get_data = AsyncMock(side_effect=Exception("Connection failed"))
@@ -729,9 +732,6 @@ async def test_coordinator_fires_recovery_event(
             "custom_components.sinapsi_alfa.coordinator.SinapsiAlfaAPI",
         ) as mock_api_class,
         patch(
-            "custom_components.sinapsi_alfa.coordinator.delete_connection_issue",
-        ),
-        patch(
             "custom_components.sinapsi_alfa.coordinator.create_recovery_notification",
         ),
         patch("custom_components.sinapsi_alfa.coordinator.time") as mock_time,
@@ -760,6 +760,7 @@ async def test_coordinator_fires_recovery_event(
 
 async def test_coordinator_repair_notification_disabled(
     hass: HomeAssistant,
+    mock_refresh_issues: MagicMock,
 ) -> None:
     """Test repair issue not created when notifications disabled."""
     entry = create_mock_config_entry(enable_repair_notification=False)
@@ -768,9 +769,6 @@ async def test_coordinator_repair_notification_disabled(
         patch(
             "custom_components.sinapsi_alfa.coordinator.SinapsiAlfaAPI",
         ) as mock_api_class,
-        patch(
-            "custom_components.sinapsi_alfa.coordinator.create_connection_issue",
-        ) as mock_create_issue,
     ):
         mock_api = mock_api_class.return_value
         mock_api.async_get_data = AsyncMock(side_effect=Exception("Connection failed"))
@@ -782,8 +780,8 @@ async def test_coordinator_repair_notification_disabled(
         with pytest.raises(UpdateFailed):
             await coordinator.async_update_data()
 
-        # Should NOT create repair issue when disabled
-        mock_create_issue.assert_not_called()
+        # Disabled: the connection issue is not wanted (a stale one is removed)
+        assert issue_state(mock_refresh_issues)["connection_failed"] is False
         # But should still track that threshold was reached
         assert coordinator._repair_issue_created is True
 
@@ -795,6 +793,7 @@ async def test_coordinator_repair_notification_disabled(
 
 async def test_coordinator_modbus_conflict_detected(
     hass: HomeAssistant,
+    mock_refresh_issues: MagicMock,
     mock_api_data: dict,
 ) -> None:
     """Test modbus conflict is detected and repair issue created."""
@@ -808,9 +807,6 @@ async def test_coordinator_modbus_conflict_detected(
             "custom_components.sinapsi_alfa.coordinator.check_modbus_conflict",
             return_value="alfa.local",
         ),
-        patch(
-            "custom_components.sinapsi_alfa.coordinator.create_modbus_conflict_issue",
-        ) as mock_create_issue,
     ):
         mock_api = mock_api_class.return_value
         mock_api.async_get_data = AsyncMock(return_value=mock_api_data)
@@ -823,17 +819,12 @@ async def test_coordinator_modbus_conflict_detected(
         # Conflict should be detected and issue created
         assert coordinator._modbus_conflict_detected is True
         assert coordinator._modbus_conflict_host == "alfa.local"
-        mock_create_issue.assert_called_once_with(
-            hass,
-            entry.entry_id,
-            TEST_NAME,
-            TEST_HOST,
-            "alfa.local",
-        )
+        assert issue_state(mock_refresh_issues)["modbus_conflict_host"] == "alfa.local"
 
 
 async def test_coordinator_modbus_conflict_resolved(
     hass: HomeAssistant,
+    mock_refresh_issues: MagicMock,
     mock_api_data: dict,
 ) -> None:
     """Test modbus conflict resolution deletes repair issue."""
@@ -847,9 +838,6 @@ async def test_coordinator_modbus_conflict_resolved(
             "custom_components.sinapsi_alfa.coordinator.check_modbus_conflict",
             return_value=None,  # No conflict
         ),
-        patch(
-            "custom_components.sinapsi_alfa.coordinator.delete_modbus_conflict_issue",
-        ) as mock_delete_issue,
     ):
         mock_api = mock_api_class.return_value
         mock_api.async_get_data = AsyncMock(return_value=mock_api_data)
@@ -864,14 +852,15 @@ async def test_coordinator_modbus_conflict_resolved(
         # Conflict should be resolved
         assert coordinator._modbus_conflict_detected is False
         assert coordinator._modbus_conflict_host is None
-        mock_delete_issue.assert_called_once_with(hass, entry.entry_id)
+        assert issue_state(mock_refresh_issues)["modbus_conflict_host"] is None
 
 
 async def test_coordinator_modbus_conflict_no_duplicate_issue(
     hass: HomeAssistant,
+    mock_refresh_issues: MagicMock,
     mock_api_data: dict,
 ) -> None:
-    """Test modbus conflict issue is not recreated if already detected."""
+    """A persisting conflict keeps its issue (re-creating it is idempotent)."""
     entry = create_mock_config_entry()
 
     with (
@@ -882,9 +871,6 @@ async def test_coordinator_modbus_conflict_no_duplicate_issue(
             "custom_components.sinapsi_alfa.coordinator.check_modbus_conflict",
             return_value="alfa.local",
         ),
-        patch(
-            "custom_components.sinapsi_alfa.coordinator.create_modbus_conflict_issue",
-        ) as mock_create_issue,
     ):
         mock_api = mock_api_class.return_value
         mock_api.async_get_data = AsyncMock(return_value=mock_api_data)
@@ -896,12 +882,13 @@ async def test_coordinator_modbus_conflict_no_duplicate_issue(
 
         await coordinator.async_update_data()
 
-        # Should not create another issue
-        mock_create_issue.assert_not_called()
+        assert issue_state(mock_refresh_issues)["modbus_conflict_host"] == "alfa.local"
+        assert coordinator._modbus_conflict_detected is True
 
 
 async def test_coordinator_modbus_no_conflict_no_action(
     hass: HomeAssistant,
+    mock_refresh_issues: MagicMock,
     mock_api_data: dict,
 ) -> None:
     """Test no action when no modbus conflict exists."""
@@ -915,12 +902,6 @@ async def test_coordinator_modbus_no_conflict_no_action(
             "custom_components.sinapsi_alfa.coordinator.check_modbus_conflict",
             return_value=None,
         ),
-        patch(
-            "custom_components.sinapsi_alfa.coordinator.create_modbus_conflict_issue",
-        ) as mock_create_issue,
-        patch(
-            "custom_components.sinapsi_alfa.coordinator.delete_modbus_conflict_issue",
-        ) as mock_delete_issue,
     ):
         mock_api = mock_api_class.return_value
         mock_api.async_get_data = AsyncMock(return_value=mock_api_data)
@@ -932,22 +913,17 @@ async def test_coordinator_modbus_no_conflict_no_action(
 
         # No conflict - no actions needed
         assert coordinator._modbus_conflict_detected is False
-        mock_create_issue.assert_not_called()
-        mock_delete_issue.assert_not_called()
+        assert issue_state(mock_refresh_issues)["modbus_conflict_host"] is None
 
 
-async def test_coordinator_warmup_raises_update_failed(hass: HomeAssistant) -> None:
+async def test_coordinator_warmup_raises_update_failed(
+    hass: HomeAssistant, mock_refresh_issues: MagicMock
+) -> None:
     """Device warm-up fails the poll and raises a dedicated warm-up issue."""
     entry = create_mock_config_entry()
 
     with (
         patch("custom_components.sinapsi_alfa.coordinator.SinapsiAlfaAPI") as mock_api_class,
-        patch(
-            "custom_components.sinapsi_alfa.coordinator.create_warmup_issue",
-        ) as mock_create_warmup,
-        patch(
-            "custom_components.sinapsi_alfa.coordinator.create_connection_issue",
-        ) as mock_create_conn,
     ):
         mock_api = mock_api_class.return_value
         mock_api.async_get_data = AsyncMock(side_effect=SinapsiWarmupError("warm-up"))
@@ -958,23 +934,24 @@ async def test_coordinator_warmup_raises_update_failed(hass: HomeAssistant) -> N
             await coordinator.async_update_data()
 
         # Warm-up issue raised; connection-failure machinery untouched.
-        mock_create_warmup.assert_called_once_with(hass, entry.entry_id, TEST_NAME)
-        mock_create_conn.assert_not_called()
+        assert issue_state(mock_refresh_issues) == {
+            "connection_failed": None,
+            "device_warmup": True,
+            "modbus_conflict_host": None,
+        }
         assert coordinator._consecutive_failures == 0
         assert coordinator._repair_issue_created is False
 
 
 async def test_coordinator_warmup_no_issue_when_notifications_disabled(
     hass: HomeAssistant,
+    mock_refresh_issues: MagicMock,
 ) -> None:
     """No warm-up issue is created when repair notifications are disabled."""
     entry = create_mock_config_entry(enable_repair_notification=False)
 
     with (
         patch("custom_components.sinapsi_alfa.coordinator.SinapsiAlfaAPI") as mock_api_class,
-        patch(
-            "custom_components.sinapsi_alfa.coordinator.create_warmup_issue",
-        ) as mock_create_warmup,
     ):
         mock_api = mock_api_class.return_value
         mock_api.async_get_data = AsyncMock(side_effect=SinapsiWarmupError("warm-up"))
@@ -984,11 +961,11 @@ async def test_coordinator_warmup_no_issue_when_notifications_disabled(
         with pytest.raises(UpdateFailed):
             await coordinator.async_update_data()
 
-        mock_create_warmup.assert_not_called()
+        assert issue_state(mock_refresh_issues)["device_warmup"] is False
 
 
 async def test_coordinator_warmup_recovery_on_success(
-    hass: HomeAssistant, mock_api_data: dict
+    hass: HomeAssistant, mock_api_data: dict, mock_refresh_issues: MagicMock
 ) -> None:
     """A successful poll while a warm-up issue is active clears it and notifies."""
     entry = create_mock_config_entry()
@@ -1000,9 +977,6 @@ async def test_coordinator_warmup_recovery_on_success(
             return_value=True,
         ),
         patch(
-            "custom_components.sinapsi_alfa.coordinator.delete_warmup_issue",
-        ) as mock_delete_warmup,
-        patch(
             "custom_components.sinapsi_alfa.coordinator.create_warmup_recovery_notification",
         ) as mock_warmup_notify,
     ):
@@ -1012,12 +986,12 @@ async def test_coordinator_warmup_recovery_on_success(
         coordinator = SinapsiAlfaCoordinator(hass, entry)
         await coordinator.async_update_data()
 
-        mock_delete_warmup.assert_called_once_with(hass, entry.entry_id)
+        assert issue_state(mock_refresh_issues)["device_warmup"] is False
         mock_warmup_notify.assert_called_once_with(hass, entry.entry_id, TEST_NAME)
 
 
 async def test_coordinator_no_warmup_recovery_when_inactive(
-    hass: HomeAssistant, mock_api_data: dict
+    hass: HomeAssistant, mock_api_data: dict, mock_refresh_issues: MagicMock
 ) -> None:
     """A successful poll with no active warm-up issue does not notify."""
     entry = create_mock_config_entry()
@@ -1029,9 +1003,6 @@ async def test_coordinator_no_warmup_recovery_when_inactive(
             return_value=False,
         ),
         patch(
-            "custom_components.sinapsi_alfa.coordinator.delete_warmup_issue",
-        ) as mock_delete_warmup,
-        patch(
             "custom_components.sinapsi_alfa.coordinator.create_warmup_recovery_notification",
         ) as mock_warmup_notify,
     ):
@@ -1041,5 +1012,5 @@ async def test_coordinator_no_warmup_recovery_when_inactive(
         coordinator = SinapsiAlfaCoordinator(hass, entry)
         await coordinator.async_update_data()
 
-        mock_delete_warmup.assert_not_called()
+        assert issue_state(mock_refresh_issues)["device_warmup"] is False
         mock_warmup_notify.assert_not_called()

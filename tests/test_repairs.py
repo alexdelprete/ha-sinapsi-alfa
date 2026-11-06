@@ -7,26 +7,165 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
+import pytest
+from pytest_homeassistant.common import MockConfigEntry
+
 from custom_components.sinapsi_alfa.const import DOMAIN
 from custom_components.sinapsi_alfa.repairs import (
     ISSUE_CONNECTION_FAILED,
     ISSUE_DEVICE_WARMUP,
     ISSUE_MODBUS_CONFLICT,
     NOTIFICATION_RECOVERY,
+    connection_issue_id,
     create_connection_issue,
     create_modbus_conflict_issue,
     create_recovery_notification,
     create_warmup_issue,
     create_warmup_recovery_notification,
-    delete_connection_issue,
-    delete_modbus_conflict_issue,
-    delete_warmup_issue,
     is_warmup_issue_active,
+    modbus_conflict_issue_id,
+    refresh_entry_issues,
+    warmup_issue_id,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import issue_registry as ir
 
 from .conftest import TEST_HOST, TEST_NAME, TEST_PORT
+
+
+@pytest.fixture
+def entry(hass: HomeAssistant) -> MockConfigEntry:
+    """Return a config entry registered with Home Assistant (issues bind to it)."""
+    config_entry = MockConfigEntry(domain=DOMAIN, entry_id="repairs_entry", title=TEST_NAME)
+    config_entry.add_to_hass(hass)
+    return config_entry
+
+
+def _refresh(hass: HomeAssistant, entry_id: str, **state) -> None:
+    """Call refresh_entry_issues with the fixed device details and a desired state."""
+    desired = {"connection_failed": None, "device_warmup": None, "modbus_conflict_host": None}
+    desired.update(state)
+    refresh_entry_issues(
+        hass, entry_id, device_name=TEST_NAME, host=TEST_HOST, port=TEST_PORT, **desired
+    )
+
+
+def _issue(hass: HomeAssistant, issue_id: str) -> ir.IssueEntry | None:
+    return ir.async_get(hass).async_get_issue(DOMAIN, issue_id)
+
+
+class TestRefreshEntryIssues:
+    """refresh_entry_issues against the real issue registry (HA 2026.11)."""
+
+    def test_creates_wanted_issues_bound_to_entry(
+        self, hass: HomeAssistant, entry: MockConfigEntry
+    ) -> None:
+        """Wanted issues are created and linked to the config entry."""
+        _refresh(
+            hass,
+            entry.entry_id,
+            connection_failed=True,
+            device_warmup=True,
+            modbus_conflict_host="alfa.local",
+        )
+
+        for issue_id in (
+            connection_issue_id(entry.entry_id),
+            warmup_issue_id(entry.entry_id),
+            modbus_conflict_issue_id(entry.entry_id),
+        ):
+            issue = _issue(hass, issue_id)
+            assert issue is not None
+            assert issue.config_entry_id == entry.entry_id
+
+    def test_removes_unwanted_issues(self, hass: HomeAssistant, entry: MockConfigEntry) -> None:
+        """False (and no conflict host) removes existing issues, no paired delete needed."""
+        _refresh(
+            hass,
+            entry.entry_id,
+            connection_failed=True,
+            device_warmup=True,
+            modbus_conflict_host="alfa.local",
+        )
+        _refresh(hass, entry.entry_id, connection_failed=False, device_warmup=False)
+
+        assert _issue(hass, connection_issue_id(entry.entry_id)) is None
+        assert _issue(hass, warmup_issue_id(entry.entry_id)) is None
+        assert _issue(hass, modbus_conflict_issue_id(entry.entry_id)) is None
+
+    def test_none_keeps_existing_issue_and_creates_nothing(
+        self, hass: HomeAssistant, entry: MockConfigEntry
+    ) -> None:
+        """None leaves an existing issue in place and does not create a missing one."""
+        _refresh(hass, entry.entry_id, connection_failed=True)
+        _refresh(hass, entry.entry_id, connection_failed=None, device_warmup=None)
+
+        assert _issue(hass, connection_issue_id(entry.entry_id)) is not None
+        assert _issue(hass, warmup_issue_id(entry.entry_id)) is None
+
+    def test_recreating_keeps_the_ignore_flag(
+        self, hass: HomeAssistant, entry: MockConfigEntry
+    ) -> None:
+        """An issue the user ignored stays ignored while it remains wanted."""
+        _refresh(hass, entry.entry_id, connection_failed=True)
+        issue_id = connection_issue_id(entry.entry_id)
+        ir.async_ignore_issue(hass, DOMAIN, issue_id, True)
+
+        _refresh(hass, entry.entry_id, connection_failed=True)
+
+        issue = _issue(hass, issue_id)
+        assert issue is not None
+        assert issue.dismissed_version is not None
+
+    def test_cleans_up_issue_created_before_entry_binding(
+        self, hass: HomeAssistant, entry: MockConfigEntry
+    ) -> None:
+        """An unbound issue from an older release is removed (or bound) by the refresh."""
+        issue_id = connection_issue_id(entry.entry_id)
+        ir.async_create_issue(
+            hass,
+            DOMAIN,
+            issue_id,
+            is_fixable=False,
+            is_persistent=True,
+            severity=ir.IssueSeverity.ERROR,
+            translation_key=ISSUE_CONNECTION_FAILED,
+        )
+
+        _refresh(hass, entry.entry_id, connection_failed=True)
+        issue = _issue(hass, issue_id)
+        assert issue is not None
+        assert issue.config_entry_id == entry.entry_id
+
+        _refresh(hass, entry.entry_id, connection_failed=False)
+        assert _issue(hass, issue_id) is None
+
+    def test_leaves_other_entries_alone(self, hass: HomeAssistant, entry: MockConfigEntry) -> None:
+        """A refresh only touches the issues of its own entry."""
+        other = MockConfigEntry(domain=DOMAIN, entry_id="other_entry", title="Other")
+        other.add_to_hass(hass)
+        _refresh(hass, other.entry_id, connection_failed=True)
+
+        _refresh(hass, entry.entry_id, connection_failed=False, device_warmup=False)
+
+        assert _issue(hass, connection_issue_id(other.entry_id)) is not None
+
+    async def test_issues_are_removed_with_the_entry(
+        self, hass: HomeAssistant, entry: MockConfigEntry
+    ) -> None:
+        """Issues linked to the entry disappear when the entry is removed."""
+        _refresh(
+            hass,
+            entry.entry_id,
+            connection_failed=True,
+            modbus_conflict_host="alfa.local",
+        )
+
+        await hass.config_entries.async_remove(entry.entry_id)
+        await hass.async_block_till_done()
+
+        assert _issue(hass, connection_issue_id(entry.entry_id)) is None
+        assert _issue(hass, modbus_conflict_issue_id(entry.entry_id)) is None
 
 
 class TestCreateConnectionIssue:
@@ -62,6 +201,7 @@ class TestCreateConnectionIssue:
             assert kwargs["is_persistent"] is True
             assert kwargs["severity"] == ir.IssueSeverity.ERROR
             assert kwargs["translation_key"] == ISSUE_CONNECTION_FAILED
+            assert kwargs["config_entry_id"] == entry_id
 
     def test_create_connection_issue_placeholders(self, hass: HomeAssistant) -> None:
         """Test connection issue has correct placeholders."""
@@ -99,42 +239,6 @@ class TestCreateConnectionIssue:
             assert issue_id_1 != issue_id_2
             assert entry_id_1 in issue_id_1
             assert entry_id_2 in issue_id_2
-
-
-class TestDeleteConnectionIssue:
-    """Tests for delete_connection_issue function."""
-
-    def test_delete_connection_issue(self, hass: HomeAssistant) -> None:
-        """Test deleting a connection issue."""
-        entry_id = "test_entry_789"
-
-        with patch.object(ir, "async_delete_issue") as mock_delete:
-            delete_connection_issue(hass, entry_id)
-
-            mock_delete.assert_called_once()
-            call_args = mock_delete.call_args
-
-            # Check domain and issue ID
-            assert call_args[0][0] == hass
-            assert call_args[0][1] == DOMAIN
-
-            expected_issue_id = f"{ISSUE_CONNECTION_FAILED}_{entry_id}"
-            assert call_args[0][2] == expected_issue_id
-
-    def test_delete_connection_issue_correct_id_format(self, hass: HomeAssistant) -> None:
-        """Test delete uses same ID format as create."""
-        entry_id = "matching_entry"
-
-        with patch.object(ir, "async_create_issue") as mock_create:
-            create_connection_issue(hass, entry_id, TEST_NAME, TEST_HOST, TEST_PORT)
-            created_issue_id = mock_create.call_args[0][2]
-
-        with patch.object(ir, "async_delete_issue") as mock_delete:
-            delete_connection_issue(hass, entry_id)
-            deleted_issue_id = mock_delete.call_args[0][2]
-
-        # Issue IDs should match
-        assert created_issue_id == deleted_issue_id
 
 
 class TestIssueConstants:
@@ -205,6 +309,7 @@ class TestCreateModbusConflictIssue:
             assert kwargs["is_persistent"] is True
             assert kwargs["severity"] == ir.IssueSeverity.ERROR
             assert kwargs["translation_key"] == ISSUE_MODBUS_CONFLICT
+            assert kwargs["config_entry_id"] == entry_id
 
     def test_create_modbus_conflict_issue_placeholders(self, hass: HomeAssistant) -> None:
         """Test modbus conflict issue has correct placeholders."""
@@ -244,43 +349,6 @@ class TestCreateModbusConflictIssue:
             assert issue_id_1 != issue_id_2
             assert entry_id_1 in issue_id_1
             assert entry_id_2 in issue_id_2
-
-
-class TestDeleteModbusConflictIssue:
-    """Tests for delete_modbus_conflict_issue function."""
-
-    def test_delete_modbus_conflict_issue(self, hass: HomeAssistant) -> None:
-        """Test deleting a modbus conflict issue."""
-        entry_id = "test_entry_789"
-
-        with patch.object(ir, "async_delete_issue") as mock_delete:
-            delete_modbus_conflict_issue(hass, entry_id)
-
-            mock_delete.assert_called_once()
-            call_args = mock_delete.call_args
-
-            # Check domain and issue ID
-            assert call_args[0][0] == hass
-            assert call_args[0][1] == DOMAIN
-
-            expected_issue_id = f"{ISSUE_MODBUS_CONFLICT}_{entry_id}"
-            assert call_args[0][2] == expected_issue_id
-
-    def test_delete_modbus_conflict_issue_correct_id_format(self, hass: HomeAssistant) -> None:
-        """Test delete uses same ID format as create."""
-        entry_id = "matching_entry"
-        modbus_host = "192.168.1.100"
-
-        with patch.object(ir, "async_create_issue") as mock_create:
-            create_modbus_conflict_issue(hass, entry_id, TEST_NAME, TEST_HOST, modbus_host)
-            created_issue_id = mock_create.call_args[0][2]
-
-        with patch.object(ir, "async_delete_issue") as mock_delete:
-            delete_modbus_conflict_issue(hass, entry_id)
-            deleted_issue_id = mock_delete.call_args[0][2]
-
-        # Issue IDs should match
-        assert created_issue_id == deleted_issue_id
 
 
 class TestCreateRecoveryNotification:
@@ -434,27 +502,17 @@ class TestWarmupIssue:
             assert kwargs["severity"] == ir.IssueSeverity.WARNING
             assert kwargs["translation_key"] == ISSUE_DEVICE_WARMUP
             assert kwargs["translation_placeholders"] == {"device_name": TEST_NAME}
+            assert kwargs["config_entry_id"] == entry_id
 
-    def test_delete_warmup_issue(self, hass: HomeAssistant) -> None:
-        """Test deleting a warm-up issue uses the matching id."""
-        entry_id = "warmup_entry_456"
-
-        with patch.object(ir, "async_delete_issue") as mock_delete:
-            delete_warmup_issue(hass, entry_id)
-
-            mock_delete.assert_called_once_with(hass, DOMAIN, f"{ISSUE_DEVICE_WARMUP}_{entry_id}")
-
-    def test_is_warmup_issue_active(self, hass: HomeAssistant) -> None:
+    def test_is_warmup_issue_active(self, hass: HomeAssistant, entry: MockConfigEntry) -> None:
         """Test warm-up issue presence is reported from the issue registry."""
-        entry_id = "warmup_active_entry"
+        assert is_warmup_issue_active(hass, entry.entry_id) is False
 
-        assert is_warmup_issue_active(hass, entry_id) is False
+        create_warmup_issue(hass, entry.entry_id, TEST_NAME)
+        assert is_warmup_issue_active(hass, entry.entry_id) is True
 
-        create_warmup_issue(hass, entry_id, TEST_NAME)
-        assert is_warmup_issue_active(hass, entry_id) is True
-
-        delete_warmup_issue(hass, entry_id)
-        assert is_warmup_issue_active(hass, entry_id) is False
+        ir.async_delete_issue(hass, DOMAIN, warmup_issue_id(entry.entry_id))
+        assert is_warmup_issue_active(hass, entry.entry_id) is False
 
     def test_warmup_issue_id_format(self) -> None:
         """Test the warm-up issue constant value."""
