@@ -23,9 +23,6 @@ from custom_components.sinapsi_alfa.const import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import CoreState, HomeAssistant
 
-# Register pytest-homeassistant-custom-component plugin
-pytest_plugins = ["pytest_homeassistant_custom_component"]
-
 # Test configuration values
 TEST_HOST = "192.168.1.100"
 TEST_NAME = "Test Alfa"
@@ -164,7 +161,7 @@ def mock_hass() -> MagicMock:
     component logic directly without needing the real HA event bus/services.
 
     Note: For integration tests, use the built-in `hass` fixture from
-    pytest_homeassistant_custom_component instead.
+    pytest_homeassistant instead.
     """
     mock = MagicMock(spec=HomeAssistant)
     mock.config_entries = MagicMock()
