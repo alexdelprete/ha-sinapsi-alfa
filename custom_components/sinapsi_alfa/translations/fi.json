@@ -40,7 +40,6 @@
     },
     "abort": {
       "already_configured": "Laite on jo maaritetty",
-      "reconfigure_successful": "Uudelleenmaaritys onnistui",
       "modbus_conflict": "Sisäänrakennettu Modbus-integraatio on jo määritetty tälle laitteelle.\n\n**Sinun asetuksesi:** {host}\n**Modbus-asetukset:** {modbus_host}\n\nMolemmat viittaavat samaan laitteeseen, joka tukee vain yhtä Modbus TCP -asiakasta kerrallaan.\n\nPoista Modbus-integraation merkintä ennen tämän integraation määrittämistä. Tarkista configuration.yaml-tiedostosi 'modbus:'-merkintöjen varalta tai poista kohdasta Asetukset → Laitteet & Palvelut → Modbus."
     }
   },

@@ -21,7 +21,7 @@ vars:
   python_import_name: ""
 
   # -- HA/HACS --
-  ha_min_version: "2026.8.0"
+  ha_min_version: "2026.11.0"             # unload_or_raise, entry-bound issues, entity id hook
   hide_default_branch: false
   ignore_brands: false
 
@@ -44,6 +44,14 @@ vars:
   gitignore_extra: []
   bug_extra_fields: []
   config_extra_links: []
+
+  # ── Dev dependencies ──
+  # Integration-specific packages appended to the shared dev extra / dev group
+  # that repo-sync renders into pyproject.toml.
+  dev_extra_requirements:
+    - "colorlog>=6.10.0"
+    - "getmac>=0.9.5"
+    - "modbuslink~=1.5.0"
 
 copy_files:
   - .gitattributes

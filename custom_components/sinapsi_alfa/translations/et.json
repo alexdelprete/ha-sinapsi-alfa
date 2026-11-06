@@ -40,7 +40,6 @@
     },
     "abort": {
       "already_configured": "Seade on juba seadistatud",
-      "reconfigure_successful": "Umberseadistamine onnestus",
       "modbus_conflict": "Sisseehitatud Modbus integratsioon on juba selle seadme jaoks konfigureeritud.\n\n**Teie konfiguratsioon:** {host}\n**Modbus konfiguratsioon:** {modbus_host}\n\nMõlemad viitavad samale seadmele, mis toetab korraga ainult ühte Modbus TCP klienti.\n\nPalun eemaldage Modbus integratsiooni kirje enne selle integratsiooni seadistamist. Kontrollige oma configuration.yaml faili 'modbus:' kirjete osas või eemaldage Seaded → Seadmed ja Teenused → Modbus kaudu."
     }
   },

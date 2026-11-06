@@ -17,33 +17,39 @@ classifiers = [
 "Homepage" = "https://github.com/alexdelprete/ha-sinapsi-alfa"
 "Bug Tracker" = "https://github.com/alexdelprete/ha-sinapsi-alfa/issues"
 
+# <!-- BEGIN SHARED:repo-sync -->
+# Synced by repo-sync on 2026-11-06
+
+# Development dependencies, shared across the fleet. The pins come from the
+# template repo (requirements-fleet-pins.txt and [tool.repo-sync.tool-versions]);
+# integration-specific packages come from `dev_extra_requirements` in
+# .repo-sync.yaml. `uv pip install -e '.[dev]'` (CI, devcontainer) and
+# `uv sync` (dependency groups) install the same set.
 [project.optional-dependencies]
 dev = [
-    "colorlog>=6.10.0",
-    "getmac>=0.9.5",
-    "homeassistant>=2026.8.0",
-    "homeassistant-stubs==2026.9.3",
+    "homeassistant>=2026.11.0",
     "mdformat",
     "mdformat-gfm",
-    "modbuslink~=1.5.0",
     "pre-commit",
-    "pymarkdownlnt",
+    "pymarkdownlnt==0.9.39",
     "ruff==0.16.8",
     "ty==0.0.82",
     "pytest>=8.0.0",
     "pytest-asyncio>=0.23.0",
     "pytest-cov",
-    "pytest-homeassistant-custom-component==0.13.366",
+    "pytest-homeassistant==2026.11.0",
     "pytest-timeout",
+    "colorlog>=6.10.0",
+    "getmac>=0.9.5",
+    "modbuslink~=1.5.0",
 ]
 
 [dependency-groups]
 lint = [
-    "homeassistant-stubs==2026.9.3",
     "mdformat",
     "mdformat-gfm",
     "pre-commit",
-    "pymarkdownlnt",
+    "pymarkdownlnt==0.9.39",
     "ruff==0.16.8",
     "ty==0.0.82",
 ]
@@ -51,21 +57,17 @@ pytest = [
     "pytest>=8.0.0",
     "pytest-asyncio>=0.23.0",
     "pytest-cov",
-    "pytest-homeassistant-custom-component==0.13.366",
+    "pytest-homeassistant==2026.11.0",
     "pytest-timeout",
 ]
 dev = [
+    "homeassistant>=2026.11.0",
     "colorlog>=6.10.0",
     "getmac>=0.9.5",
-    "homeassistant>=2026.8.0",
     "modbuslink~=1.5.0",
     { include-group = "lint" },
     { include-group = "pytest" },
 ]
-
-# <!-- BEGIN SHARED:repo-sync -->
-# Synced by repo-sync on 2026-08-31
-
 
 # Explicit package discovery: scripts/develop creates a config/ directory at the
 # repo root for the live HA dev instance, which makes setuptools' flat-layout
@@ -79,9 +81,13 @@ quiet-level = 3
 ignore-words-list = "hass"
 
 [tool.pytest.ini_options]
+# -p no:respx: pytest-homeassistant needs Home Assistant to install its httpx
+# alias before respx is imported; only respx's own pytest plugin is disabled.
 addopts = """
   --timeout=20
+  -p no:respx
 """
+pythonpath = ["."]
 testpaths = ["tests"]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"

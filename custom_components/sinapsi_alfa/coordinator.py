@@ -37,15 +37,10 @@ from .const import (
 )
 from .helpers import check_modbus_conflict, log_debug, log_info, log_warning
 from .repairs import (
-    create_connection_issue,
-    create_modbus_conflict_issue,
     create_recovery_notification,
-    create_warmup_issue,
     create_warmup_recovery_notification,
-    delete_connection_issue,
-    delete_modbus_conflict_issue,
-    delete_warmup_issue,
     is_warmup_issue_active,
+    refresh_entry_issues,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -173,16 +168,7 @@ class SinapsiAlfaCoordinator(DataUpdateCoordinator[bool]):
         conflicting_host = await check_modbus_conflict(self.hass, self.conf_host)
 
         if conflicting_host and not self._modbus_conflict_detected:
-            # Conflict just detected
-            self._modbus_conflict_detected = True
-            self._modbus_conflict_host = conflicting_host
-            create_modbus_conflict_issue(
-                self.hass,
-                self._entry_id,
-                self.conf_name,
-                self.conf_host,
-                conflicting_host,
-            )
+            # Conflict just detected (the issue is created by the refresh below)
             log_warning(
                 _LOGGER,
                 "async_update_data",
@@ -192,187 +178,202 @@ class SinapsiAlfaCoordinator(DataUpdateCoordinator[bool]):
             )
         elif not conflicting_host and self._modbus_conflict_detected:
             # Conflict resolved (user removed Modbus integration)
-            self._modbus_conflict_detected = False
-            self._modbus_conflict_host = None
-            delete_modbus_conflict_issue(self.hass, self._entry_id)
             log_info(
                 _LOGGER,
                 "async_update_data",
                 "Modbus conflict resolved",
                 host=self.conf_host,
             )
+        self._modbus_conflict_detected = bool(conflicting_host)
+        self._modbus_conflict_host = conflicting_host or None
 
+        # Desired state of this entry's repair issues after the poll: True create
+        # or keep, False remove, None leave as is (see refresh_entry_issues).
+        connection_failed: bool | None = None
+        device_warmup: bool | None = None
         try:
-            self.last_update_status = await self.api.async_get_data()
-            self.last_update_time = dt_util.utcnow()
-            log_debug(
-                _LOGGER,
-                "async_update_data",
-                "Update completed",
-                time=self.last_update_time,
-            )
-            # Handle warm-up recovery: the device finished warming up after a
-            # restart/reboot. Detected via the issue registry (not instance state)
-            # because the coordinator is rebuilt on every config-entry setup retry.
-            if is_warmup_issue_active(self.hass, self._entry_id):
-                delete_warmup_issue(self.hass, self._entry_id)
-                create_warmup_recovery_notification(self.hass, self._entry_id, self.conf_name)
-                log_info(
+            try:
+                self.last_update_status = await self.api.async_get_data()
+                self.last_update_time = dt_util.utcnow()
+                log_debug(
                     _LOGGER,
                     "async_update_data",
-                    "Device finished warm-up, repair issue cleared",
+                    "Update completed",
+                    time=self.last_update_time,
                 )
+                # Handle warm-up recovery: the device finished warming up after a
+                # restart/reboot. Detected via the issue registry (not instance state)
+                # because the coordinator is rebuilt on every config-entry setup retry.
+                if is_warmup_issue_active(self.hass, self._entry_id):
+                    create_warmup_recovery_notification(self.hass, self._entry_id, self.conf_name)
+                    log_info(
+                        _LOGGER,
+                        "async_update_data",
+                        "Device finished warm-up, repair issue cleared",
+                    )
 
-            # Handle recovery after repair issue was created
-            if self._repair_issue_created:
-                # Calculate downtime and format times using locale-aware format
-                downtime_seconds = 0
-                if self._failure_start_time:
-                    downtime_seconds = int(time.time() - self._failure_start_time)
+                # Handle recovery after repair issue was created
+                if self._repair_issue_created:
+                    # Calculate downtime and format times using locale-aware format
+                    downtime_seconds = 0
+                    if self._failure_start_time:
+                        downtime_seconds = int(time.time() - self._failure_start_time)
 
-                # Format times using locale-aware format (%X)
-                ended_at = dt_util.as_local(dt_util.utcnow()).strftime("%X")
-                started_at = ""
-                if self._failure_start_time:
-                    started_at = dt_util.as_local(
-                        dt_util.utc_from_timestamp(self._failure_start_time)
-                    ).strftime("%X")
-                downtime = self._format_downtime(downtime_seconds)
+                    # Format times using locale-aware format (%X)
+                    ended_at = dt_util.as_local(dt_util.utcnow()).strftime("%X")
+                    started_at = ""
+                    if self._failure_start_time:
+                        started_at = dt_util.as_local(
+                            dt_util.utc_from_timestamp(self._failure_start_time)
+                        ).strftime("%X")
+                    downtime = self._format_downtime(downtime_seconds)
 
-                # Get script execution time if script was executed
-                script_executed_at = None
-                if self._recovery_script_executed and self._script_executed_time:
-                    script_executed_at = dt_util.as_local(
-                        dt_util.utc_from_timestamp(self._script_executed_time)
-                    ).strftime("%X")
+                    # Get script execution time if script was executed
+                    script_executed_at = None
+                    if self._recovery_script_executed and self._script_executed_time:
+                        script_executed_at = dt_util.as_local(
+                            dt_util.utc_from_timestamp(self._script_executed_time)
+                        ).strftime("%X")
 
-                # Fire device_recovered event
-                self._fire_device_event(
-                    "device_recovered",
-                    {
-                        "previous_failures": self._consecutive_failures,
-                        "downtime_seconds": downtime_seconds,
-                    },
-                )
+                    # Fire device_recovered event
+                    self._fire_device_event(
+                        "device_recovered",
+                        {
+                            "previous_failures": self._consecutive_failures,
+                            "downtime_seconds": downtime_seconds,
+                        },
+                    )
 
-                delete_connection_issue(self.hass, self._entry_id)
-                log_info(
-                    _LOGGER,
-                    "async_update_data",
-                    "Connection restored, repair issue deleted",
-                    downtime_seconds=downtime_seconds,
-                )
+                    log_info(
+                        _LOGGER,
+                        "async_update_data",
+                        "Connection restored, repair issue deleted",
+                        downtime_seconds=downtime_seconds,
+                    )
 
-                # Always create recovery notification (with or without script info)
-                create_recovery_notification(
-                    self.hass,
-                    self._entry_id,
-                    self.conf_name,
-                    started_at=started_at,
-                    ended_at=ended_at,
-                    downtime=downtime,
-                    script_name=self._recovery_script if self._recovery_script_executed else None,
-                    script_executed_at=script_executed_at,
-                )
-                log_info(
-                    _LOGGER,
-                    "async_update_data",
-                    "Recovery notification created",
-                    started_at=started_at,
-                    ended_at=ended_at,
-                    downtime=downtime,
-                    script=self._recovery_script if self._recovery_script_executed else None,
-                )
-
-                # Reset tracking variables
-                self._repair_issue_created = False
-                self._failure_start_time = None
-                self._last_error_type = None
-                self._recovery_script_executed = False
-                self._script_executed_time = None
-
-            # Reset failure counter on success
-            self._consecutive_failures = 0
-        except SinapsiWarmupError as ex:
-            # Device warm-up after a restart/reboot: registers return 0 for a few
-            # minutes. This is an expected transient, not a fault — fail the poll so
-            # sensors stay unavailable (no zeroed data published), but do NOT touch
-            # the connection-failure counter, the connection issue, or the recovery
-            # script. A dedicated warm-up repair issue is raised instead.
-            self.last_update_status = False
-            log_info(
-                _LOGGER,
-                "async_update_data",
-                "Device in warm-up phase, skipping update",
-            )
-            if self._enable_repair_notification:
-                create_warmup_issue(self.hass, self._entry_id, self.conf_name)
-            raise UpdateFailed from ex
-        except Exception as ex:
-            self.last_update_status = False
-            self._consecutive_failures += 1
-
-            # Determine error type for device trigger
-            if isinstance(ex, SinapsiConnectionError):
-                self._last_error_type = "device_unreachable"
-            elif isinstance(ex, SinapsiModbusError):
-                self._last_error_type = "device_not_responding"
-            else:
-                self._last_error_type = "device_unreachable"  # Default to unreachable
-
-            log_debug(
-                _LOGGER,
-                "async_update_data",
-                "Coordinator update error",
-                error=ex,
-                error_type=self._last_error_type,
-                consecutive_failures=self._consecutive_failures,
-                time=self.last_update_time,
-            )
-
-            # Create repair issue and fire device trigger after threshold reached
-            if (
-                self._consecutive_failures >= self._failures_threshold
-                and not self._repair_issue_created
-            ):
-                # Record failure start time for downtime tracking
-                self._failure_start_time = time.time()
-
-                # Fire device trigger event
-                self._fire_device_event(
-                    self._last_error_type,
-                    {
-                        "error": str(ex),
-                        "failures_threshold": self._failures_threshold,
-                    },
-                )
-
-                # Create repair issue (if enabled)
-                if self._enable_repair_notification:
-                    create_connection_issue(
+                    # Always create recovery notification (with or without script info)
+                    create_recovery_notification(
                         self.hass,
                         self._entry_id,
                         self.conf_name,
-                        self.conf_host,
-                        self.conf_port,
+                        started_at=started_at,
+                        ended_at=ended_at,
+                        downtime=downtime,
+                        script_name=self._recovery_script
+                        if self._recovery_script_executed
+                        else None,
+                        script_executed_at=script_executed_at,
                     )
                     log_info(
                         _LOGGER,
                         "async_update_data",
-                        "Repair issue created after repeated failures",
-                        failures=self._consecutive_failures,
-                        threshold=self._failures_threshold,
+                        "Recovery notification created",
+                        started_at=started_at,
+                        ended_at=ended_at,
+                        downtime=downtime,
+                        script=self._recovery_script if self._recovery_script_executed else None,
                     )
 
-                self._repair_issue_created = True
+                    # Reset tracking variables
+                    self._repair_issue_created = False
+                    self._failure_start_time = None
+                    self._last_error_type = None
+                    self._recovery_script_executed = False
+                    self._script_executed_time = None
 
-                # Execute recovery script if configured
-                if self._recovery_script:
-                    await self._execute_recovery_script()
+                # Reset failure counter on success
+                self._consecutive_failures = 0
+                connection_failed = device_warmup = False
+            except SinapsiWarmupError as ex:
+                # Device warm-up after a restart/reboot: registers return 0 for a few
+                # minutes. This is an expected transient, not a fault — fail the poll so
+                # sensors stay unavailable (no zeroed data published), but do NOT touch
+                # the connection-failure counter, the connection issue, or the recovery
+                # script. A dedicated warm-up repair issue is raised instead.
+                self.last_update_status = False
+                log_info(
+                    _LOGGER,
+                    "async_update_data",
+                    "Device in warm-up phase, skipping update",
+                )
+                device_warmup = self._enable_repair_notification
+                raise UpdateFailed from ex
+            except Exception as ex:
+                self.last_update_status = False
+                self._consecutive_failures += 1
 
-            raise UpdateFailed from ex
+                # Determine error type for device trigger
+                if isinstance(ex, SinapsiConnectionError):
+                    self._last_error_type = "device_unreachable"
+                elif isinstance(ex, SinapsiModbusError):
+                    self._last_error_type = "device_not_responding"
+                else:
+                    self._last_error_type = "device_unreachable"  # Default to unreachable
 
-        return self.last_update_status
+                log_debug(
+                    _LOGGER,
+                    "async_update_data",
+                    "Coordinator update error",
+                    error=ex,
+                    error_type=self._last_error_type,
+                    consecutive_failures=self._consecutive_failures,
+                    time=self.last_update_time,
+                )
+
+                # Create repair issue and fire device trigger after threshold reached
+                if (
+                    self._consecutive_failures >= self._failures_threshold
+                    and not self._repair_issue_created
+                ):
+                    # Record failure start time for downtime tracking
+                    self._failure_start_time = time.time()
+
+                    # Fire device trigger event
+                    self._fire_device_event(
+                        self._last_error_type,
+                        {
+                            "error": str(ex),
+                            "failures_threshold": self._failures_threshold,
+                        },
+                    )
+
+                    # Repair issue (if enabled) is created by the refresh below
+                    if self._enable_repair_notification:
+                        log_info(
+                            _LOGGER,
+                            "async_update_data",
+                            "Repair issue created after repeated failures",
+                            failures=self._consecutive_failures,
+                            threshold=self._failures_threshold,
+                        )
+
+                    self._repair_issue_created = True
+
+                    # Execute recovery script if configured
+                    if self._recovery_script:
+                        await self._execute_recovery_script()
+
+                # Keep the connection issue while the outage lasts. Below the threshold
+                # the poll cannot judge the outage, so an existing issue (for example
+                # one persisted across a Home Assistant restart) is left untouched.
+                if not self._enable_repair_notification:
+                    connection_failed = False
+                elif self._repair_issue_created:
+                    connection_failed = True
+                raise UpdateFailed from ex
+
+            return self.last_update_status
+        finally:
+            refresh_entry_issues(
+                self.hass,
+                self._entry_id,
+                device_name=self.conf_name,
+                host=self.conf_host,
+                port=self.conf_port,
+                connection_failed=connection_failed,
+                device_warmup=device_warmup,
+                modbus_conflict_host=self._modbus_conflict_host,
+            )
 
     async def _execute_recovery_script(self) -> None:
         """Execute the configured recovery script."""

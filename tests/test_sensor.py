@@ -114,6 +114,12 @@ class TestAsyncSetupEntry:
 class TestSinapsiAlfaSensor:
     """Tests for SinapsiAlfaSensor class."""
 
+    def test_opts_in_to_in_place_entity_id_change(self, power_sensor) -> None:
+        """The sensor implements async_entity_id_changed (HA 2026.11 opt-in)."""
+        assert "async_entity_id_changed" in SinapsiAlfaSensor.__dict__
+        # Delegates to the base classes; nothing of its own is keyed on the id.
+        power_sensor.async_entity_id_changed("sensor.old_id")
+
     @pytest.fixture
     def power_sensor(self, mock_coordinator):
         """Create a power sensor."""

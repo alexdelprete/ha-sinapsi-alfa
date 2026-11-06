@@ -6,7 +6,7 @@ https://github.com/alexdelprete/ha-sinapsi-alfa
 import logging
 from typing import Any
 
-import voluptuous as vol
+import probatio
 
 from homeassistant import config_entries
 from homeassistant.config_entries import (
@@ -213,34 +213,36 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg
 
         return self.async_show_form(
             step_id="user",
-            data_schema=vol.Schema(
+            data_schema=probatio.Schema(
                 {
-                    vol.Required(
+                    probatio.Required(
                         CONF_NAME,
                         default=DEFAULT_NAME,
                     ): cv.string,
-                    vol.Required(
+                    probatio.Required(
                         CONF_HOST,
                     ): cv.string,
-                    vol.Required(
+                    probatio.Required(
                         CONF_PORT,
                         default=DEFAULT_PORT,
-                    ): vol.All(vol.Coerce(int), vol.Clamp(min=MIN_PORT, max=MAX_PORT)),
-                    vol.Required(
+                    ): probatio.All(
+                        probatio.Coerce(int), probatio.Clamp(min=MIN_PORT, max=MAX_PORT)
+                    ),
+                    probatio.Required(
                         CONF_SCAN_INTERVAL,
                         default=DEFAULT_SCAN_INTERVAL,
-                    ): vol.All(
-                        vol.Coerce(int),
-                        vol.Clamp(min=MIN_SCAN_INTERVAL, max=MAX_SCAN_INTERVAL),
+                    ): probatio.All(
+                        probatio.Coerce(int),
+                        probatio.Clamp(min=MIN_SCAN_INTERVAL, max=MAX_SCAN_INTERVAL),
                     ),
-                    vol.Required(
+                    probatio.Required(
                         CONF_TIMEOUT,
                         default=DEFAULT_TIMEOUT,
-                    ): vol.All(
-                        vol.Coerce(int),
-                        vol.Clamp(min=MIN_TIMEOUT, max=MAX_TIMEOUT),
+                    ): probatio.All(
+                        probatio.Coerce(int),
+                        probatio.Clamp(min=MIN_TIMEOUT, max=MAX_TIMEOUT),
                     ),
-                    vol.Optional(
+                    probatio.Optional(
                         CONF_SKIP_MAC_DETECTION,
                         default=DEFAULT_SKIP_MAC_DETECTION,
                     ): cv.boolean,
@@ -330,21 +332,23 @@ class SinapsiAlfaConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg
 
         return self.async_show_form(
             step_id="reconfigure",
-            data_schema=vol.Schema(
+            data_schema=probatio.Schema(
                 {
-                    vol.Required(
+                    probatio.Required(
                         CONF_NAME,
                         default=reconfigure_entry.data.get(CONF_NAME, DEFAULT_NAME),
                     ): cv.string,
-                    vol.Required(
+                    probatio.Required(
                         CONF_HOST,
                         default=reconfigure_entry.data.get(CONF_HOST),
                     ): cv.string,
-                    vol.Required(
+                    probatio.Required(
                         CONF_PORT,
                         default=reconfigure_entry.data.get(CONF_PORT, DEFAULT_PORT),
-                    ): vol.All(vol.Coerce(int), vol.Clamp(min=MIN_PORT, max=MAX_PORT)),
-                    vol.Optional(
+                    ): probatio.All(
+                        probatio.Coerce(int), probatio.Clamp(min=MIN_PORT, max=MAX_PORT)
+                    ),
+                    probatio.Optional(
                         CONF_SKIP_MAC_DETECTION,
                         default=reconfigure_entry.data.get(
                             CONF_SKIP_MAC_DETECTION, DEFAULT_SKIP_MAC_DETECTION
@@ -391,24 +395,24 @@ class SinapsiAlfaOptionsFlow(OptionsFlowWithReload):
 
         return self.async_show_form(
             step_id="init",
-            data_schema=vol.Schema(
+            data_schema=probatio.Schema(
                 {
                     # 1. Recovery script (right after variables description)
                     # Use suggested_value instead of default for optional entity selectors
                     # to avoid pre-filling with empty string which fails validation
-                    vol.Optional(
+                    probatio.Optional(
                         CONF_RECOVERY_SCRIPT,
                         description={"suggested_value": recovery_script or None},
                     ): EntitySelector(
                         EntitySelectorConfig(domain="script"),
                     ),
                     # 2. Enable repair notifications checkbox
-                    vol.Required(
+                    probatio.Required(
                         CONF_ENABLE_REPAIR_NOTIFICATION,
                         default=enable_repair,
                     ): cv.boolean,
                     # 3. Failures threshold as input box (not slider)
-                    vol.Required(
+                    probatio.Required(
                         CONF_FAILURES_THRESHOLD,
                         default=failures_threshold,
                     ): NumberSelector(
@@ -419,7 +423,7 @@ class SinapsiAlfaOptionsFlow(OptionsFlowWithReload):
                         )
                     ),
                     # 4. Polling period
-                    vol.Required(
+                    probatio.Required(
                         CONF_SCAN_INTERVAL,
                         default=current_options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL),
                     ): NumberSelector(
@@ -431,7 +435,7 @@ class SinapsiAlfaOptionsFlow(OptionsFlowWithReload):
                         )
                     ),
                     # 5. Connection timeout
-                    vol.Required(
+                    probatio.Required(
                         CONF_TIMEOUT,
                         default=current_options.get(CONF_TIMEOUT, DEFAULT_TIMEOUT),
                     ): NumberSelector(

@@ -41,7 +41,7 @@ def sinapsi_setup_fixture():
     """Mock sinapsi_alfa entry setup to avoid loading the full integration."""
     with patch(
         "custom_components.sinapsi_alfa.async_setup_entry",
-        return_value=True,
+        return_value=None,
     ):
         yield
 
@@ -291,6 +291,8 @@ async def test_reconfigure_flow_success(
 
     assert result["type"] == FlowResultType.ABORT
     assert result["reason"] == "reconfigure_successful"
+    # Translated centrally by core since HA 2026.10, hence no local key
+    assert result["translation_domain"] == "homeassistant"
 
 
 async def test_reconfigure_flow_invalid_host(

@@ -263,6 +263,18 @@ class SinapsiAlfaSensor(CoordinatorEntity[SinapsiAlfaCoordinator], RestoreSensor
         """No need to poll. Coordinator notifies entity of updates."""
         return False
 
+    @callback
+    def async_entity_id_changed(self, old_entity_id: str) -> None:
+        """Opt in to in-place entity id changes (Home Assistant 2026.11).
+
+        A renamed entity is updated in place instead of removed and re-added;
+        implementing this hook opts in before the fallback ends in 2027.11.
+        Nothing here is keyed on the entity id (the restore baseline and the
+        coordinator listener follow the entity object), so there is nothing
+        to re-key beyond what the base classes do.
+        """
+        super().async_entity_id_changed(old_entity_id)
+
     @property
     def available(self) -> bool:
         """Return if entity is available."""

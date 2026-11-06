@@ -1,8 +1,9 @@
 # Home Assistant Integration Quality Scale
-# https://developers.home-assistant.io/docs/core/integration-quality-scale/
+# https://contributors.home-assistant.io/docs/core/integration-quality-scale/
 #
-# This is a HACS custom integration, not a core integration.
-# We track these rules for quality improvement purposes.
+# This is a custom integration (Marketplace), not a core integration: hassfest
+# does not validate this file for it. We track the rules for quality purposes and
+# declare the tier reached ("quality_scale" in manifest.json), so keep both in step.
 
 rules:
   # ============================================================================
@@ -41,7 +42,7 @@ rules:
   docs-high-level-description: done # README.md describes Sinapsi Alfa device
 
   # Rule: The documentation provides step-by-step installation instructions
-  docs-installation-instructions: done # README.md with HACS instructions
+  docs-installation-instructions: done # README.md with Marketplace and manual instructions
 
   # Rule: The documentation provides removal instructions
   docs-removal-instructions: done # Standard HA removal via integrations page

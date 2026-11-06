@@ -40,7 +40,6 @@
     },
     "abort": {
       "already_configured": "Gerat ist bereits konfiguriert",
-      "reconfigure_successful": "Neukonfiguration erfolgreich",
       "modbus_conflict": "Die integrierte Modbus-Integration ist bereits für dieses Gerät konfiguriert.\n\n**Ihre Konfiguration:** {host}\n**Modbus-Konfiguration:** {modbus_host}\n\nBeide verweisen auf dasselbe Gerät, das nur einen Modbus-TCP-Client gleichzeitig unterstützt.\n\nBitte entfernen Sie den Modbus-Integrationseintrag, bevor Sie diese Integration einrichten. Prüfen Sie Ihre configuration.yaml auf 'modbus:'-Einträge oder entfernen Sie ihn über Einstellungen → Geräte & Dienste → Modbus."
     }
   },

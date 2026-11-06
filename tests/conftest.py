@@ -23,9 +23,6 @@ from custom_components.sinapsi_alfa.const import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import CoreState, HomeAssistant
 
-# Register pytest-homeassistant-custom-component plugin
-pytest_plugins = ["pytest_homeassistant_custom_component"]
-
 # Test configuration values
 TEST_HOST = "192.168.1.100"
 TEST_NAME = "Test Alfa"
@@ -39,7 +36,14 @@ TEST_MAC = "AA:BB:CC:DD:EE:FF"
 def auto_enable_custom_integrations(
     enable_custom_integrations: None,
 ) -> None:
-    """Enable custom integrations for all tests."""
+    """Start a real hass for every test.
+
+    pytest-homeassistant's hass fixture already enables custom integrations, but
+    this autouse fixture is still needed: through enable_custom_integrations it
+    makes every test start hass, which sets up the frame helper that
+    DataUpdateCoordinator uses. Tests that only take mock_hass would fail with
+    "Frame helper not set up" without it.
+    """
 
 
 @pytest.fixture
@@ -47,7 +51,7 @@ def mock_setup_entry() -> Generator[AsyncMock]:
     """Override async_setup_entry."""
     with patch(
         "custom_components.sinapsi_alfa.async_setup_entry",
-        return_value=True,
+        return_value=None,
     ) as mock_setup:
         yield mock_setup
 
@@ -164,7 +168,7 @@ def mock_hass() -> MagicMock:
     component logic directly without needing the real HA event bus/services.
 
     Note: For integration tests, use the built-in `hass` fixture from
-    pytest_homeassistant_custom_component instead.
+    pytest_homeassistant instead.
     """
     mock = MagicMock(spec=HomeAssistant)
     mock.config_entries = MagicMock()

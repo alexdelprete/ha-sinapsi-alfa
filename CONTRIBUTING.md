@@ -16,8 +16,8 @@ with no further setup:
 - the exact **Python** version pinned in `.python-version`, in a virtualenv that is already on
   `PATH`;
 - all development dependencies, installed with `uv pip install -e '.[dev]'` from `pyproject.toml`.
-  That includes `pytest-homeassistant-custom-component`, which pins the exact Home Assistant
-  release the tests run against;
+  That includes `pytest-homeassistant`, the test package Home Assistant core publishes with every
+  release, which pins the exact Home Assistant release the tests run against;
 - `pre-commit` installed and wired to the git hooks, so every commit is linted;
 - a live Home Assistant instance you can start on port **8123** (see below).
 
@@ -70,7 +70,7 @@ explain why it is the supported path rather than a convenience:
 
 | Symptom | Cause |
 |---|---|
-| `No matching distribution found for homeassistant>=2026.8.0` | Python older than **3.14.2** — pip does not say so. |
+| `No matching distribution found for homeassistant>=2026.11.0` | Python older than **3.14.2** — pip does not say so. |
 
 ## Installing dependencies by hand
 
@@ -84,7 +84,7 @@ pre-commit install
 ```
 
 `pyproject.toml` is the single source of truth for development dependencies: there is no
-`requirements-dev.txt`. `pytest-homeassistant-custom-component` is pinned there to an exact version,
+`requirements-dev.txt`. `pytest-homeassistant` is pinned there to an exact version,
 and it in turn pins the exact `homeassistant` release, which is what makes the test environment
 reproducible.
 
