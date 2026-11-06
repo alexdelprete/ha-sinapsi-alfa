@@ -778,7 +778,7 @@ These repos are standardized on the **Python 3.14+** toolchain:
 - `pyproject.toml`: `requires-python = ">=3.14.2"` (matches Home Assistant
   core's own floor)
 - `[tool.ruff]`: `target-version = "py314"`
-- Minimum supported Home Assistant core: **2026.8.0** (per repo, in
+- Minimum supported Home Assistant core: **2026.11.0** (per repo, in
   `.repo-sync.yaml`; `hacs.json` is rendered from the same value, so Marketplace users
   on older HA don't see updates). The scaffold starts at 2026.11.0, the release that
   brought `async_unload_platforms_or_raise`, `DeviceInfo` as a dataclass, issues bound

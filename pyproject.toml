@@ -27,7 +27,7 @@ classifiers = [
 # `uv sync` (dependency groups) install the same set.
 [project.optional-dependencies]
 dev = [
-    "homeassistant>=2026.8.0",
+    "homeassistant>=2026.11.0",
     "mdformat",
     "mdformat-gfm",
     "pre-commit",
@@ -61,7 +61,7 @@ pytest = [
     "pytest-timeout",
 ]
 dev = [
-    "homeassistant>=2026.8.0",
+    "homeassistant>=2026.11.0",
     "colorlog>=6.10.0",
     "getmac>=0.9.5",
     "modbuslink~=1.5.0",
