@@ -22,7 +22,7 @@ dev = [
     "colorlog>=6.10.0",
     "getmac>=0.9.5",
     "homeassistant>=2026.8.0",
-    "homeassistant-stubs",
+    "homeassistant-stubs==2026.9.3",
     "mdformat",
     "mdformat-gfm",
     "modbuslink~=1.5.0",
@@ -39,7 +39,7 @@ dev = [
 
 [dependency-groups]
 lint = [
-    "homeassistant-stubs",
+    "homeassistant-stubs==2026.9.3",
     "mdformat",
     "mdformat-gfm",
     "pre-commit",
