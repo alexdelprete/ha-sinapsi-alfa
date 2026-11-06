@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Minimum supported Home Assistant version raised to 2026.11.0** - the
+  integration now uses APIs introduced in Home Assistant 2026.11. The
+  Marketplace will not offer this update to installations running older cores.
+- **Repair issues are linked to the integration entry** - the connection,
+  warm-up and Modbus-conflict issues now appear on the integration's page and
+  are removed together with the entry. They are kept in step with each poll:
+  an issue that is still valid keeps your "ignore" choice, and a connection
+  issue left over from before a Home Assistant restart is cleared by the first
+  successful poll instead of lingering.
+- **In-place entity ID renames** - renaming a sensor's entity ID now updates the
+  entity in place instead of removing and re-adding it (Home Assistant 2026.11).
+- **Marketplace category and quality tier** - the manifest declares the
+  `energy.meters_monitoring` category and the Platinum quality scale tier.
+- **Validation engine** - configuration and options forms use probatio, Home
+  Assistant's validation engine, instead of voluptuous. No user-visible change.
+- **Development tooling** - tests run on `pytest-homeassistant` 2026.11.0, the
+  test package published by Home Assistant core, replacing
+  `pytest-homeassistant-custom-component`.
+
+### Removed
+
+- Local translation of the "Reconfiguration successful" message: Home
+  Assistant translates it centrally since 2026.10.
+
 ## [1.13.10] - 2026-10-02
 
 **Patch release** - Removes two deprecated Home Assistant device registry APIs
