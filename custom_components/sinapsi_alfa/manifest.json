@@ -1,6 +1,7 @@
 {
   "domain": "sinapsi_alfa",
   "name": "Alfa by Sinapsi",
+  "categories": ["energy.meters_monitoring"],
   "codeowners": ["@alexdelprete"],
   "config_flow": true,
   "documentation": "https://github.com/alexdelprete/ha-sinapsi-alfa",
