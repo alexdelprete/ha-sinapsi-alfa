@@ -790,6 +790,8 @@ These repos are standardized on the **Python 3.14+** toolchain:
   `follow-ha.yml`, merged after the fleet tests pass, then propagated); never edit either
   by hand in a consumer. A Python minor bump (3.14 to 3.15) is a fleet migration done by
   hand in the template.
+- Workflow runners: every synced workflow runs on the `ubuntu-NN.NN` label Home Assistant
+  core's CI uses for that release (never `ubuntu-latest`), followed by the same daily job.
 
 **Implication for source code**: code in these repos may use 3.14-only
 syntax (e.g. PEP 758's parenthesis-free `except A, B:`) and is **not**
