@@ -51,7 +51,7 @@ vars:
   dev_extra_requirements:
     - "colorlog>=6.10.0"
     - "getmac>=0.9.5"
-    - "modbuslink~=1.5.0"
+    - "modbuslink~=1.5.1"
 
 copy_files:
   - .gitattributes
