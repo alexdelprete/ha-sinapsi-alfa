@@ -632,6 +632,46 @@ gh run list --repo alexdelprete/ha-sinapsi-alfa --limit 5 | grep Tests
 gh run view <run_id> --repo alexdelprete/ha-sinapsi-alfa --log 2>&1 | grep "TOTAL"
 ```
 
+### Waiting for CI and Pull Requests
+
+> **Never wait with `sleep` loops that poll `gh run list` or `gh pr view`.** They overshoot, and a
+> filter that silently matches nothing (a short SHA passed to `gh run list --commit`, which needs the
+> full SHA) makes them sleep long after the work is done. Run every wait as a background command so
+> its exit is the notification: no `sleep`, no timers.
+
+**A pull request** (merged or closed, checks finished, new push): use `gh event listen` first.
+
+```bash
+# Merged, closed, reopened, ready for review or converted to draft
+gh event listen --resource https://github.com/alexdelprete/ha-sinapsi-alfa/pull/<n> \
+  --event com.github.pull_request.state.changed.v1
+# One check suite (one CI workflow) on the head commit finished
+gh event listen --resource https://github.com/alexdelprete/ha-sinapsi-alfa/pull/<n> \
+  --event com.github.pull_request.check_suite.status.changed.v1
+```
+
+- Earlier events are not replayed: once it prints that it is attached, read the PR's current state
+  once, since the change may already have happened.
+- Every CI workflow is its own check suite and sends its own event: after each one, re-read
+  `gh pr checks <n>` to know whether all checks are done.
+
+If event subscriptions are not enabled on the account (`HTTP 403: Event subscriptions are not
+enabled for this account`), fall back to watching the PR's checks (every check, including statuses
+that are not workflow runs, such as `codecov/patch`), then read its state once:
+
+```bash
+gh pr checks <n> --repo alexdelprete/ha-sinapsi-alfa --watch --fail-fast
+gh pr view <n> --repo alexdelprete/ha-sinapsi-alfa --json state,mergedAt
+```
+
+**One workflow run not tied to a pull request** (push to the default branch, release, schedule,
+manual dispatch): `gh event listen` cannot watch it (pull requests only), so:
+
+```bash
+gh run list --repo alexdelprete/ha-sinapsi-alfa --workflow <file> --limit 1   # run ID, once
+gh run watch <run_id> --repo alexdelprete/ha-sinapsi-alfa --exit-status
+```
+
 ## Coding Standards
 
 ### Data Storage Pattern
@@ -792,6 +832,10 @@ These repos are standardized on the **Python 3.14+** toolchain:
   hand in the template.
 - Workflow runners: every synced workflow runs on the `ubuntu-NN.NN` label Home Assistant
   core's CI uses for that release (never `ubuntu-latest`), followed by the same daily job.
+- Actions in synced workflows are pinned to commit SHAs (`@<sha> # v7.0.1`) and kept current
+  by the template; Dependabot here ignores them. Workflows this repo owns are its own business.
+- zizmor (workflow security audit) runs on the synced workflows in the pre-commit hook and the
+  Lint job, at the version Home Assistant core pins. Fix findings in the template, not here.
 
 **Implication for source code**: code in these repos may use 3.14-only
 syntax (e.g. PEP 758's parenthesis-free `except A, B:`) and is **not**
@@ -851,12 +895,16 @@ Linting tools and settings are defined in `.pre-commit-config.yaml`:
 | jsonlint    | `uvx --from demjson3 jsonlint` | JSON validation              |
 | yamllint    | `uvx yamllint@X -d "{...}"`    | YAML linting (inline config) |
 | pymarkdown  | `uvx --from pymarkdownlnt==X pymarkdown scan` | Markdown linting |
+| zizmor      | `uvx zizmor@X --offline --min-severity low` | Workflow security audit (synced workflows) |
 | ty          | `uvx ty@X check --python "$(which python)"` | Type checking (needs the venv's HA) |
 
 All hooks use `language: system` with `verbose: true` for visibility, and every tool
 runs through `uvx` at the exact release CI uses (`[tool.repo-sync.tool-versions]` in the template
-repo's `pyproject.toml`: ruff 0.16.8, ty 0.0.82,
-yamllint 1.38.0, pymarkdownlnt 0.9.39).
+repo's `pyproject.toml`: ruff 0.17.3, ty 0.0.82,
+yamllint 1.38.0, pymarkdownlnt 0.9.39,
+zizmor 1.31.1). ruff and zizmor follow the versions Home Assistant core pins,
+moved by the template's daily `follow-ha.yml` after every integration's tests and lint pass on them;
+ty and pymarkdownlnt are bumped by hand there after a fleet-wide dry run.
 Template changes reach this repo as signed `repo-sync/propagate` pull requests opened by the
 template's `propagate.yml`; they auto-merge once the required checks pass. Do not edit those
 files by hand: change the template and let it propagate.
