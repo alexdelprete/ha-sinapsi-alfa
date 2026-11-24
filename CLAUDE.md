@@ -552,7 +552,7 @@ In addition to the shared Do's and Don'ts:
 - Mix sync/async code improperly
 
 <!-- BEGIN SHARED:repo-sync -->
-<!-- Synced by repo-sync on 2026-11-21 -->
+<!-- Synced by repo-sync on 2026-11-24 -->
 
 <!--
 ==============================================================================
@@ -921,7 +921,7 @@ so the tests run against what Home Assistant ships: Dependabot ignores it, and t
 daily conflicts check opens an issue here when it differs (change it in `.repo-sync.yaml`, never
 in `pyproject.toml`, which sync rewrites). A range (`>=`, `~=`) stays with Dependabot.
 `pytest-homeassistant` (the test package Home Assistant core publishes with every release) is
-pinned fleet-wide to 2026.11.2; it pins `homeassistant` to that
+pinned fleet-wide to 2026.11.3; it pins `homeassistant` to that
 same release, and ty reads the types Home Assistant ships (`py.typed`; `homeassistant-stubs` is
 deprecated), so the type check and the tests see the same Home Assistant.
 
